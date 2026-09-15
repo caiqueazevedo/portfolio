@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Gaze Poster</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=IBM+Plex+Mono&display=swap">
+<style>
+  :root {
+    --ground: #e6e2db;
+    --panel: #f8f6f2;
+    --line: #cfc9bf;
+    --ink: #141210;
+    --muted: #6d675f;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-serif: "Bodoni Moda", "Didot", "Times New Roman", serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-inline: 20px;
+    padding-block: 28px 40px;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 780px) { .wrap { grid-template-columns: 1fr; } }
+
+  .poster {
+    display: block;
+    width: 100%;
+    max-width: min(100%, calc(86vh * 9 / 16));
+    height: auto;
+    justify-self: center;
+    background: #fff;
+    box-shadow: 0 30px 70px rgba(30, 20, 10, 0.25), 0 2px 6px rgba(30, 20, 10, 0.15);
+  }
+  .poster text { user-select: none; }
+  .poster .display { font-family: var(--font-display); }
+  .poster .serif { font-family: var(--font-serif); }
+
+  /* ---------- Panel ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 22px;
+    display: grid;
+    gap: 16px;
+  }
+  .panel h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    margin: 0 0 6px;
+  }
+  .panel > p { margin: 0; color: var(--muted); font-size: 14px; max-width: 40ch; }
+  .group {
+    display: grid;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .group h2 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field { display: grid; gap: 5px; }
+  .field label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field label output {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  input[type="text"], textarea {
+    font: inherit;
+    font-size: 15px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    width: 100%;
+  }
+  textarea { resize: vertical; min-height: 64px; line-height: 1.4; }
+  input[type="range"] { width: 100%; accent-color: var(--ink); margin: 0; }
+  :is(input, textarea, button, .upload):focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .seg { display: flex; border: 1px solid var(--line); }
+  .seg label {
+    flex: 1;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 0;
+    cursor: pointer;
+  }
+  .seg input { display: none; }
+  .seg input:checked + span { background: var(--ink); color: var(--panel); }
+  .seg span { display: block; }
+  button, .upload {
+    font: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    text-align: center;
+  }
+  button:hover, .upload:hover { border-color: var(--ink); }
+  .upload input { display: none; }
+  .note { font-size: 12.5px; color: var(--muted); margin: 0; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <svg class="poster" id="poster" viewBox="0 0 900 1600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Poster editorial">
+    <defs>
+      <!-- White = photo shows. Right-hand rect plus the word glyphs. -->
+      <mask id="reveal" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="1600">
+        <rect width="900" height="1600" fill="#000"/>
+        <rect id="m-rect" x="290" y="0" width="610" height="1600" fill="#fff"/>
+        <text id="m-word" class="display" fill="#fff" lengthAdjust="spacingAndGlyphs">GAZE</text>
+      </mask>
+    </defs>
+
+    <rect width="900" height="1600" fill="#ffffff"/>
+
+    <g mask="url(#reveal)">
+      <g id="photo-g">
+        <image id="photo" href="photo.jpg" width="900" height="1600" preserveAspectRatio="xMidYMid slice"/>
+      </g>
+    </g>
+
+    <!-- Outline runs over both halves; it vanishes into the white side by itself. -->
+    <text id="o-word" class="display" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="miter" lengthAdjust="spacingAndGlyphs" paint-order="stroke">GAZE</text>
+
+    <!-- Left column -->
+    <path id="bracket" d="M 46 250 H 22 V 700 H 46" fill="none" stroke="#141210" stroke-width="7"/>
+    <text id="t-title" class="display" font-size="58" fill="#141210" transform="translate(106 690) rotate(-90)">Magical Gaze</text>
+    <text id="t-blurb" class="serif" font-size="17" fill="#141210" transform="translate(150 690) rotate(-90)"></text>
+
+    <text id="t-time" class="serif" font-size="62" fill="#141210" transform="translate(56 1560) rotate(-90)">08 PM</text>
+    <text id="t-date" class="serif" font-size="62" fill="#141210" transform="translate(126 1560) rotate(-90)"><tspan id="t-min">00</tspan><tspan id="t-day" font-size="32" dx="14">04 FEB 2024</tspan></text>
+  </svg>
+
+  <aside class="panel">
+    <div>
+      <h1>Gaze Poster</h1>
+      <p>A palavra vertical recorta a foto: onde cai no branco, mostra a imagem por dentro; onde cai na foto, fica só o contorno.</p>
+    </div>
+
+    <div class="group">
+      <h2>Palavra</h2>
+      <div class="field">
+        <label for="word">Texto</label>
+        <input type="text" id="word" value="GAZE" maxlength="12" autocomplete="off">
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Direção de leitura">
+        <label><input type="radio" name="dir" value="90" checked><span>de cima p/ baixo</span></label>
+        <label><input type="radio" name="dir" value="-90"><span>de baixo p/ cima</span></label>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="cap">Altura da letra <output id="cap-out">230</output></label>
+          <input type="range" id="cap" min="80" max="420" step="2" value="230">
+        </div>
+        <div class="field">
+          <label for="stroke">Contorno <output id="stroke-out">4</output></label>
+          <input type="range" id="stroke" min="0" max="12" step="0.5" value="4">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="pad">Margem vertical <output id="pad-out">60</output></label>
+          <input type="range" id="pad" min="0" max="300" step="5" value="60">
+        </div>
+        <div class="field">
+          <label for="shift">Deslocar palavra <output id="shift-out">0</output></label>
+          <input type="range" id="shift" min="-200" max="200" step="2" value="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Foto</h2>
+      <div class="field">
+        <label for="split">Divisa branco / foto <output id="split-out">32%</output></label>
+        <input type="range" id="split" min="0" max="100" step="1" value="32">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="zoom">Zoom <output id="zoom-out">1.00</output></label>
+          <input type="range" id="zoom" min="1" max="2.5" step="0.01" value="1">
+        </div>
+        <div class="field">
+          <label for="ox">Deslocar X <output id="ox-out">90</output></label>
+          <input type="range" id="ox" min="-600" max="600" step="5" value="90">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="oy">Deslocar Y <output id="oy-out">0</output></label>
+          <input type="range" id="oy" min="-800" max="800" step="5" value="0">
+        </div>
+        <label class="upload" style="align-self:end">Trocar foto<input type="file" id="file" accept="image/*"></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Coluna</h2>
+      <div class="field">
+        <label for="title">Título</label>
+        <input type="text" id="title" value="Magical Gaze" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="blurb">Texto (Enter quebra linha)</label>
+        <textarea id="blurb">Beyond literature, the magical gaze can
+also be understood as a way of perceiving</textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="time">Hora</label>
+          <input type="text" id="time" value="08 PM" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="min">Minuto</label>
+          <input type="text" id="min" value="00" autocomplete="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="date">Data</label>
+        <input type="text" id="date" value="04 FEB 2024" autocomplete="off">
+      </div>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+
+    <p class="note">Tudo é um único <code>&lt;svg&gt;</code>: a foto recebe <code>mask="url(#reveal)"</code>, e a máscara é o retângulo da direita mais o mesmo <code>&lt;text&gt;</code> em branco. A foto não sai do navegador.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const W = 900, H = 1600;
+  const CAP_RATIO = 0.72; // Anton cap height as a fraction of font-size
+
+  const ctl = {
+    word: $('word'), cap: $('cap'), stroke: $('stroke'), pad: $('pad'), shift: $('shift'),
+    split: $('split'), zoom: $('zoom'), ox: $('ox'), oy: $('oy'),
+    title: $('title'), blurb: $('blurb'), time: $('time'), min: $('min'), date: $('date'),
+  };
+  const out = ['cap', 'stroke', 'pad', 'shift', 'split', 'zoom', 'ox', 'oy']
+    .reduce((o, k) => (o[k] = $(k + '-out'), o), {});
+  const defaults = Object.fromEntries(Object.entries(ctl).map(([k, el]) => [k, el.value]));
+
+  const mWord = $('m-word'), oWord = $('o-word'), mRect = $('m-rect');
+  const photoG = $('photo-g'), photo = $('photo');
+
+  const dir = () => Number(document.querySelector('input[name="dir"]:checked').value);
+
+  function renderWord() {
+    const word = ctl.word.value.trim() || 'GAZE';
+    const cap = Number(ctl.cap.value);
+    const fs = cap / CAP_RATIO;
+    const pad = Number(ctl.pad.value);
+    const len = Math.max(50, H - pad * 2);
+    const split = W * ctl.split.value / 100 + Number(ctl.shift.value);
+    const d = dir();
+    // rotate(90): baseline runs down x=tx, glyph tops point +x. rotate(-90): baseline runs up, tops point -x.
+    // Either way we want the cap band centred on the split line.
+    const tx = d > 0 ? split - cap / 2 : split + cap / 2;
+    const ty = d > 0 ? pad : H - pad;
+    const transform = `translate(${tx} ${ty}) rotate(${d})`;
+
+    for (const t of [mWord, oWord]) {
+      t.textContent = word;
+      t.setAttribute('font-size', fs);
+      t.setAttribute('textLength', len);
+      t.setAttribute('transform', transform);
+    }
+    oWord.setAttribute('stroke-width', ctl.stroke.value);
+
+    mRect.setAttribute('x', W * ctl.split.value / 100);
+    mRect.setAttribute('width', W - W * ctl.split.value / 100);
+
+    out.cap.textContent = cap;
+    out.stroke.textContent = ctl.stroke.value;
+    out.pad.textContent = pad;
+    out.shift.textContent = ctl.shift.value;
+    out.split.textContent = ctl.split.value + '%';
+  }
+
+  function renderPhoto() {
+    const z = Number(ctl.zoom.value);
+    const ox = Number(ctl.ox.value), oy = Number(ctl.oy.value);
+    // Zoom about the poster centre, then offset.
+    photoG.setAttribute('transform', `translate(${W / 2 + ox} ${H / 2 + oy}) scale(${z}) translate(${-W / 2} ${-H / 2})`);
+    out.zoom.textContent = z.toFixed(2);
+    out.ox.textContent = ox;
+    out.oy.textContent = oy;
+  }
+
+  function renderColumn() {
+    $('t-title').textContent = ctl.title.value;
+    const blurb = $('t-blurb');
+    blurb.textContent = '';
+    ctl.blurb.value.split('\n').forEach((line, i) => {
+      const ts = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+      ts.setAttribute('x', 0);
+      ts.setAttribute('dy', i === 0 ? 0 : 22);
+      ts.textContent = line || ' ';
+      blurb.appendChild(ts);
+    });
+    $('t-time').textContent = ctl.time.value;
+    $('t-min').textContent = ctl.min.value;
+    $('t-day').textContent = ctl.date.value;
+  }
+
+  ['word', 'cap', 'stroke', 'pad', 'shift', 'split'].forEach(k => ctl[k].addEventListener('input', renderWord));
+  document.querySelectorAll('input[name="dir"]').forEach(r => r.addEventListener('change', renderWord));
+  ['zoom', 'ox', 'oy'].forEach(k => ctl[k].addEventListener('input', renderPhoto));
+  ['title', 'blurb', 'time', 'min', 'date'].forEach(k => ctl[k].addEventListener('input', renderColumn));
+
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => photo.setAttribute('href', reader.result);
+    reader.readAsDataURL(f);
+  });
+
+  $('reset').addEventListener('click', () => {
+    Object.entries(defaults).forEach(([k, v]) => { ctl[k].value = v; });
+    document.querySelector('input[name="dir"][value="90"]').checked = true;
+    renderWord(); renderPhoto(); renderColumn();
+  });
+
+  // Fonts change glyph metrics; re-run once they land so textLength stretches the real face.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderWord);
+
+  renderWord(); renderPhoto(); renderColumn();
+})();
+</script>
+
+</html>

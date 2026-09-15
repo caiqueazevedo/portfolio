@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Frosted Reveal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10;
+    --panel: #13171c;
+    --line: #232a32;
+    --ink: #e8ecef;
+    --muted: #8a94a0;
+    --frost: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+    --frost-scale: 1.06;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-inline: 20px;
+    padding-block: 28px 40px;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .wrap { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Stage ---------- */
+  .stage {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    max-width: min(100%, calc(82vh * 4 / 5));
+    justify-self: center;
+    overflow: hidden;
+    background: #000;
+    border-radius: 6px;
+    user-select: none;
+    touch-action: none;
+    cursor: grab;
+    container-type: inline-size;
+  }
+  .stage.dragging { cursor: grabbing; }
+  .stage img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    display: block;
+  }
+  /* Frosted copy: the filter blurs the image edge inward, so oversize it slightly to hide the halo. */
+  .stage .frost {
+    filter: url(#frost);
+    transform: scale(var(--frost-scale));
+    transform-origin: center;
+  }
+  .stage .tint {
+    position: absolute;
+    inset: 0;
+    background: rgba(201, 216, 230, var(--fog-opacity, 0.22));
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  .word {
+    position: absolute;
+    left: 0; right: 0;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: clamp(64px, 22vw, 180px);
+    line-height: 0.9;
+    letter-spacing: 0.06em;
+    color: rgba(232, 236, 239, 0.14);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .word.top { top: -0.06em; }
+  .word.bottom { bottom: -0.1em; }
+
+  .caption {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: clamp(8px, 2.9cqw, 14px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-shadow: 0 1px 12px rgba(0,0,0,0.5);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* Clear window: a sharp copy of the image, offset so it lines up with the stage. */
+  .window {
+    position: absolute;
+    overflow: hidden;
+    border-radius: 3px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.55),
+      0 0 0 1px rgba(0,0,0,0.35),
+      0 24px 60px rgba(0,0,0,0.45);
+    pointer-events: none;
+  }
+  .window img {
+    position: absolute;
+    top: 0; left: 0;
+    width: auto; height: auto;
+    inset: auto;
+    object-fit: unset;
+    transform-origin: center;
+  }
+  .window::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255,255,255,0.18), transparent 35%, transparent 70%, rgba(255,255,255,0.08));
+    pointer-events: none;
+  }
+  .window .tag {
+    position: absolute;
+    right: 8px; bottom: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  }
+
+  /* ---------- Panel ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px;
+    display: grid;
+    gap: 18px;
+  }
+  .panel h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 30px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .panel p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    max-width: 38ch;
+  }
+  .field { display: grid; gap: 6px; }
+  .field label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field label output {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--frost);
+    margin: 0;
+  }
+  input[type="range"]:focus-visible,
+  button:focus-visible,
+  .check:focus-within {
+    outline: 2px solid var(--frost);
+    outline-offset: 3px;
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .check input { accent-color: var(--frost); width: 16px; height: 16px; margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload {
+    font: inherit;
+    font-size: 13px;
+    padding: 9px 12px;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+  }
+  button:hover, .upload:hover { border-color: var(--frost); }
+  .upload input { display: none; }
+  .note {
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .note code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .window { transition: width 120ms ease, height 120ms ease; }
+  }
+</style>
+
+<!-- The "Distort > Glass" step: turbulence noise drives a displacement map, then a Gaussian blur softens it. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="frost" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+    <feTurbulence id="fx-noise" type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise"/>
+    <feDisplacementMap id="fx-disp" in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G" result="glass"/>
+    <feGaussianBlur id="fx-blur" in="glass" stdDeviation="10"/>
+  </filter>
+</svg>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <img class="sharp" id="img-sharp" src="photo.jpg" alt="">
+    <img class="frost" id="img-frost" src="photo.jpg" alt="Retrato atrás de vidro fosco">
+    <div class="tint"></div>
+    <div class="word top">REVEAL</div>
+    <div class="word bottom">TRUTH</div>
+    <div class="caption" id="caption">The fog doesn't hide the truth</div>
+    <div class="window" id="window">
+      <img id="img-window" src="photo.jpg" alt="">
+      <span class="tag">CLEAR</span>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Frosted Reveal</h1>
+      <p>Vidro fosco sobre o retrato, com uma janela nítida. Arraste a janela ou deixe ela seguir o cursor.</p>
+    </div>
+
+    <div class="field">
+      <label for="blur">Desfoque <output id="blur-out">10 px</output></label>
+      <input type="range" id="blur" min="0" max="30" step="0.5" value="10">
+    </div>
+    <div class="field">
+      <label for="disp">Distorção do vidro <output id="disp-out">22</output></label>
+      <input type="range" id="disp" min="0" max="80" step="1" value="22">
+    </div>
+    <div class="field">
+      <label for="grain">Grão <output id="grain-out">0.90</output></label>
+      <input type="range" id="grain" min="0.05" max="2" step="0.05" value="0.9">
+    </div>
+    <div class="field">
+      <label for="fog">Névoa <output id="fog-out">22%</output></label>
+      <input type="range" id="fog" min="0" max="60" step="1" value="22">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="w">Largura <output id="w-out">44%</output></label>
+        <input type="range" id="w" min="10" max="100" step="1" value="44">
+      </div>
+      <div class="field">
+        <label for="h">Altura <output id="h-out">13%</output></label>
+        <input type="range" id="h" min="5" max="100" step="1" value="13">
+      </div>
+    </div>
+
+    <label class="check"><input type="checkbox" id="follow"> Janela segue o cursor</label>
+
+    <div class="row">
+      <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+
+    <p class="note">Efeito: <code>feTurbulence</code> → <code>feDisplacementMap</code> → <code>feGaussianBlur</code> num <code>&lt;filter&gt;</code> SVG aplicado a uma cópia da imagem. A janela é uma cópia nítida com <code>overflow: hidden</code> e deslocamento negativo. A foto nunca sai do navegador.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const stage = document.getElementById('stage');
+  const win = document.getElementById('window');
+  const imgWin = document.getElementById('img-window');
+  const imgs = [document.getElementById('img-sharp'), document.getElementById('img-frost'), imgWin];
+  const caption = document.getElementById('caption');
+
+  const ctl = {
+    blur: document.getElementById('blur'),
+    disp: document.getElementById('disp'),
+    grain: document.getElementById('grain'),
+    fog: document.getElementById('fog'),
+    w: document.getElementById('w'),
+    h: document.getElementById('h'),
+    follow: document.getElementById('follow'),
+  };
+  const out = {
+    blur: document.getElementById('blur-out'),
+    disp: document.getElementById('disp-out'),
+    grain: document.getElementById('grain-out'),
+    fog: document.getElementById('fog-out'),
+    w: document.getElementById('w-out'),
+    h: document.getElementById('h-out'),
+  };
+  const fx = {
+    blur: document.getElementById('fx-blur'),
+    disp: document.getElementById('fx-disp'),
+    noise: document.getElementById('fx-noise'),
+  };
+
+  const frostScale = parseFloat(getComputedStyle(stage).getPropertyValue('--frost-scale')) || 1;
+  const defaults = { blur: 10, disp: 22, grain: 0.9, fog: 22, w: 44, h: 13, cx: 0.60, cy: 0.42 };
+  // Window center as a fraction of the stage, so it survives resizes.
+  const pos = { cx: defaults.cx, cy: defaults.cy };
+
+  function applyFilter() {
+    fx.blur.setAttribute('stdDeviation', ctl.blur.value);
+    fx.disp.setAttribute('scale', ctl.disp.value);
+    fx.noise.setAttribute('baseFrequency', ctl.grain.value);
+    stage.style.setProperty('--fog-opacity', ctl.fog.value / 100);
+    out.blur.textContent = ctl.blur.value + ' px';
+    out.disp.textContent = ctl.disp.value;
+    out.grain.textContent = Number(ctl.grain.value).toFixed(2);
+    out.fog.textContent = ctl.fog.value + '%';
+  }
+
+  function layoutWindow() {
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const w = W * ctl.w.value / 100, h = H * ctl.h.value / 100;
+    let x = pos.cx * W - w / 2, y = pos.cy * H - h / 2;
+    x = Math.max(0, Math.min(W - w, x));
+    y = Math.max(0, Math.min(H - h, y));
+    win.style.width = w + 'px';
+    win.style.height = h + 'px';
+    win.style.left = x + 'px';
+    win.style.top = y + 'px';
+    // Sharp copy sized to the whole stage, shifted back so it lines up with the frosted layer.
+    imgWin.style.width = W + 'px';
+    imgWin.style.height = H + 'px';
+    imgWin.style.objectFit = 'cover';
+    imgWin.style.transform = `translate(${-x}px, ${-y}px) scale(${frostScale})`;
+    caption.style.top = (y - 26) + 'px';
+    out.w.textContent = ctl.w.value + '%';
+    out.h.textContent = ctl.h.value + '%';
+  }
+
+  function moveTo(clientX, clientY) {
+    const r = stage.getBoundingClientRect();
+    pos.cx = (clientX - r.left) / r.width;
+    pos.cy = (clientY - r.top) / r.height;
+    layoutWindow();
+  }
+
+  let dragging = false;
+  stage.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    stage.classList.add('dragging');
+    stage.setPointerCapture(e.pointerId);
+    moveTo(e.clientX, e.clientY);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (dragging || ctl.follow.checked) moveTo(e.clientX, e.clientY);
+  });
+  const stop = () => { dragging = false; stage.classList.remove('dragging'); };
+  stage.addEventListener('pointerup', stop);
+  stage.addEventListener('pointercancel', stop);
+
+  ['blur', 'disp', 'grain', 'fog'].forEach(k => ctl[k].addEventListener('input', applyFilter));
+  ['w', 'h'].forEach(k => ctl[k].addEventListener('input', layoutWindow));
+  window.addEventListener('resize', layoutWindow);
+
+  document.getElementById('reset').addEventListener('click', () => {
+    Object.keys(defaults).forEach(k => { if (ctl[k]) ctl[k].value = defaults[k]; });
+    pos.cx = defaults.cx; pos.cy = defaults.cy;
+    ctl.follow.checked = false;
+    applyFilter(); layoutWindow();
+  });
+
+  document.getElementById('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => imgs.forEach(i => { i.src = reader.result; });
+    reader.readAsDataURL(f);
+  });
+
+  applyFilter();
+  layoutWindow();
+})();
+</script>
+
+</html>

@@ -8,6 +8,7 @@
     "roleLine2": "Web · Mobile · Serverless",
     "home": "Início",
     "work": "Cases",
+    "openSource": "Código aberto",
     "about": "Sobre",
     "contact": "Contato",
     "open": "Aberto a projetos",
@@ -128,5 +129,19 @@
   "notFound": {
     "title": "Essa página não existe.",
     "back": "← Início"
+  },
+  "openSource": {
+    "metaTitle": "Código aberto",
+    "metaDescription": "Experimentos de interface com demo ao vivo e código na tela.",
+    "kicker": "Código aberto",
+    "title": "Efeitos pra copiar.",
+    "lead": "Experimentos isolados, em HTML, CSS e JS puros. Cada um roda ao vivo aqui e o código está do lado, pra copiar e usar.",
+    "sticker": "copie à vontade",
+    "liveDemo": "demo ao vivo",
+    "fullscreen": "Abrir em tela cheia",
+    "copy": "Copiar",
+    "copied": "Copiado ✱",
+    "lines": "linhas",
+    "how": "Como funciona"
   }
 }

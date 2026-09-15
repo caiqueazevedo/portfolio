@@ -186,3 +186,15 @@
 @utility animate-pulse-dot {
   animation: rf-pulse 1.2s infinite;
 }
+
+/* Shiki output inside the open-source code panel: the panel owns the background. */
+.code-panel pre.shiki {
+  background: transparent !important;
+  margin: 0;
+  white-space: pre;
+  tab-size: 2;
+}
+.code-panel code {
+  display: block;
+  min-width: max-content;
+}

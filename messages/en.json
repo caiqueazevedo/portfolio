@@ -8,6 +8,7 @@
     "roleLine2": "Web · Mobile · Serverless",
     "home": "Home",
     "work": "Work",
+    "openSource": "Open source",
     "about": "About",
     "contact": "Contact",
     "open": "Open to projects",
@@ -128,5 +129,19 @@
   "notFound": {
     "title": "That page does not exist.",
     "back": "← Home"
+  },
+  "openSource": {
+    "metaTitle": "Open source",
+    "metaDescription": "Interface experiments with a live demo and the code on screen.",
+    "kicker": "Open source",
+    "title": "Effects to steal.",
+    "lead": "Isolated experiments in plain HTML, CSS and JS. Each one runs live here with the code beside it, ready to copy and use.",
+    "sticker": "copy freely",
+    "liveDemo": "live demo",
+    "fullscreen": "Open full screen",
+    "copy": "Copy",
+    "copied": "Copied ✱",
+    "lines": "lines",
+    "how": "How it works"
   }
 }

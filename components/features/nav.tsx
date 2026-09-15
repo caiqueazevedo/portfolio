@@ -12,6 +12,7 @@ export async function Nav() {
   const items: NavItem[] = [
     { href: "/", label: t("home") },
     { href: "/work", label: t("work") },
+    { href: "/open-source", label: t("openSource") },
     { href: "/about", label: t("about") },
     { href: "/contact", label: t("contact") },
   ];
