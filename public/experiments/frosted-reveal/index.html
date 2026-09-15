@@ -225,18 +225,19 @@
     overflow: hidden;
   }
   .seg label {
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    padding: 8px 0;
+    display: grid;
+    place-items: center;
+    padding: 7px 0;
     cursor: pointer;
     color: var(--muted);
   }
   .seg label + label { border-left: 1px solid var(--line); }
+  .seg label:hover { color: var(--ink); }
   .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
-  .seg input:checked + span { color: var(--ground); }
-  .seg label:has(input:checked) { background: var(--frost); }
-  .seg span { display: block; }
+  .seg label:has(input:checked) { background: var(--frost); color: var(--ground); }
+  .seg span { display: block; line-height: 0; }
+  /* Icons take the label colour: filled shapes, solid "T" for the word option. */
+  .seg svg { width: 18px; height: 18px; fill: currentColor; }
   button, .upload {
     font: inherit;
     font-size: 13px;
@@ -343,12 +344,13 @@
 
     <div class="group">
       <h2>Janela</h2>
+      <!-- One icon per shape; the accessible name lives on the input. -->
       <div class="seg" role="radiogroup" aria-label="Forma da janela">
-        <label><input type="radio" name="shape" value="rect" checked><span>Retângulo</span></label>
-        <label><input type="radio" name="shape" value="ellipse"><span>Elipse</span></label>
-        <label><input type="radio" name="shape" value="diamond"><span>Losango</span></label>
-        <label><input type="radio" name="shape" value="triangle"><span>Triângulo</span></label>
-        <label><input type="radio" name="shape" value="word"><span>Palavra</span></label>
+        <label title="Retângulo"><input type="radio" name="shape" value="rect" aria-label="Retângulo" checked><span><svg viewBox="0 0 20 20"><rect x="2" y="5" width="16" height="10" rx="1"/></svg></span></label>
+        <label title="Elipse"><input type="radio" name="shape" value="ellipse" aria-label="Elipse"><span><svg viewBox="0 0 20 20"><ellipse cx="10" cy="10" rx="8" ry="5.5"/></svg></span></label>
+        <label title="Losango"><input type="radio" name="shape" value="diamond" aria-label="Losango"><span><svg viewBox="0 0 20 20"><polygon points="10,2 18,10 10,18 2,10"/></svg></span></label>
+        <label title="Triângulo"><input type="radio" name="shape" value="triangle" aria-label="Triângulo"><span><svg viewBox="0 0 20 20"><polygon points="10,3 18,17 2,17"/></svg></span></label>
+        <label title="Palavra"><input type="radio" name="shape" value="word" aria-label="Palavra"><span><svg viewBox="0 0 20 20"><text x="10" y="16" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="17">T</text></svg></span></label>
       </div>
       <div class="field" id="word-field" hidden>
         <label for="word">Palavra <output id="word-out">5/12</output></label>
