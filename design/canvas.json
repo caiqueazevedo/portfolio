@@ -1,0 +1,12 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Home · desktop", "x": 0, "y": 0, "w": 1440, "h": 4400, "expand": "fit" },
+    { "file": "Case.dc.html", "title": "Case study · ZenID", "x": 1560, "y": 0, "w": 1440, "h": 3120, "expand": "fit" },
+    { "file": "Mobile.dc.html", "title": "Home · 390px", "x": 3120, "y": 0, "w": 390, "h": 3400, "expand": "fit" }
+  ],
+  "annotations": [
+    { "id": "tokens", "x": 0, "y": -220, "w": 520, "text": "Tokens\nfundo #0f0e0c · superfície #16140f · texto #ece7dc · muted #9a9384 · acento #d2b27a (único)\nDisplay: Instrument Serif (itálico = acento) · Corpo: Geist\nRetângulos com grain = assets que vêm do Higgsfield (vídeo do hero, capas 16:10 e 21:9)." },
+    { "id": "copy", "x": 560, "y": -220, "w": 420, "text": "Copy é rascunho em PT-BR. Colchetes [ ] marcam dado que só o Caique tem (cidade, métricas)." }
+  ],
+  "launch": { "view": "canvas" }
+}

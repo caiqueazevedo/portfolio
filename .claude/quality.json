@@ -1,7 +1,6 @@
 {
   "version": 1,
   "_": "Manifesto de qualidade do repo. Fonte unica dos comandos reais — lido pelo /verify e pelos hooks. null = etapa nao configurada (o gate pula e reporta, nunca finge que passou).",
-
   "commands": {
     "lint": "corepack pnpm lint",
     "typecheck": "corepack pnpm typecheck",
@@ -9,26 +8,44 @@
     "e2e": null,
     "build": "corepack pnpm build"
   },
-
-  "coverage": { "min": null },
-
+  "coverage": {
+    "min": null
+  },
   "commit": {
-    "types": ["feature", "bugfix", "fix", "refactor", "docs", "test", "chore", "release", "hotfix"],
+    "types": [
+      "feature",
+      "bugfix",
+      "fix",
+      "refactor",
+      "docs",
+      "test",
+      "chore",
+      "release",
+      "hotfix"
+    ],
     "scopes": null,
     "scope_required": false,
     "subject_max": 72,
-    "type_aliases": { "feat": "feature" }
+    "type_aliases": {
+      "feat": "feature"
+    }
   },
-
   "gate": {
-    "commit": { "run": [], "blocking": true },
-    "stop": { "run": [], "blocking": false }
+    "commit": {
+      "run": [],
+      "blocking": true
+    },
+    "stop": {
+      "run": [],
+      "blocking": false
+    }
   },
-
   "known_issues": [
     "Usar sempre `corepack pnpm`, nunca `pnpm` direto: packageManager pinado em pnpm@11.1.2.",
     "`typecheck` depende dos tipos gerados em `.next/types` (LayoutProps, next/root-params): rode `next build` ou `next typegen` antes num clone limpo.",
     "`test:run` roda `vitest run --coverage`; sem arquivos de teste ele falha por design (nao usar --passWithNoTests).",
-    "Build do OpenNext (`preview`/`deploy`) e oficialmente suportado so em Linux; no Windows o `.npmrc` com node-linker=hoisted contorna o EPERM de symlink. Deploy real e via GitHub Actions."
+    "Build do OpenNext (`preview`/`deploy`) e oficialmente suportado so em Linux; no Windows o `.npmrc` com node-linker=hoisted contorna o EPERM de symlink. Deploy real e via GitHub Actions.",
+    "O binding `send_email` fala com a Cloudflare mesmo em `next dev`; enquanto o dominio nao estiver onboarded em Email Service, POST /api/contact responde 502 {error:'email'} (comportamento esperado, nao bug).",
+    "Tailwind 4 varre o repo inteiro por classes; `.wrangler/` precisa ficar no .gitignore e em `@source not` no globals.css, senao o Turbopack quebra lendo o sqlite travado do miniflare."
   ]
 }

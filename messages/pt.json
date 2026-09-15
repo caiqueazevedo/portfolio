@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "title": "Caique Azevedo — Engenharia de software, do login ao deploy",
+    "description": "Engenheiro de software. Web, mobile e backend serverless para quem precisa de um produto inteiro em produção, não só de uma tela."
+  },
+  "nav": {
+    "work": "Cases",
+    "about": "Sobre",
+    "contact": "Contato",
+    "cta": "Vamos conversar",
+    "menu": "Abrir menu",
+    "close": "Fechar menu",
+    "home": "Início"
+  },
+  "locale": {
+    "label": "Idioma",
+    "pt": "Português",
+    "en": "English"
+  },
+  "hero": {
+    "eyebrow": "Engenharia de software · produto completo",
+    "titleStart": "Software que sai do slide e",
+    "titleAccent": "entra em produção.",
+    "lead": "Web, mobile e backend serverless para quem precisa de um engenheiro que entrega o sistema inteiro: do login ao deploy, com a disciplina de quem opera o que constrói.",
+    "primary": "Vamos conversar",
+    "secondary": "Ver cases",
+    "liveLabel": "Em produção",
+    "availability": "Disponível para novos projetos",
+    "videoLabel": "Vídeo de fundo decorativo"
+  },
+  "services": {
+    "eyebrow": "Serviços",
+    "titleStart": "O que eu entrego, e",
+    "titleAccent": "como.",
+    "lead": "Sem time inflado, sem handoff. Um engenheiro do desenho à operação."
+  },
+  "cases": {
+    "eyebrow": "Cases em destaque",
+    "titleStart": "Sistemas que eu",
+    "titleAccent": "uso todo dia.",
+    "all": "Todos os projetos",
+    "read": "Ler o case",
+    "status": {
+      "production": "Em produção",
+      "active": "Em desenvolvimento",
+      "paused": "Pausado"
+    }
+  },
+  "approach": {
+    "eyebrow": "Como eu trabalho",
+    "titleStart": "Pesquisa antes, operação",
+    "titleAccent": "depois."
+  },
+  "cta": {
+    "eyebrow": "Próximo projeto",
+    "titleStart": "Tem um sistema pra tirar do papel?",
+    "titleAccent": "Vamos conversar.",
+    "lead": "Resposta em até 2 dias úteis. Sem formulário de 12 campos.",
+    "button": "Enviar mensagem"
+  },
+  "work": {
+    "metaTitle": "Cases",
+    "metaDescription": "Produtos que eu desenhei, construí e opero: identidade, social, desktop, observabilidade.",
+    "eyebrow": "Cases",
+    "titleStart": "Seis sistemas,",
+    "titleAccent": "um responsável.",
+    "lead": "Cada um destes eu desenhei, construí e opero. Os três primeiros estão em uso todo dia."
+  },
+  "case": {
+    "back": "Todos os cases",
+    "role": "Papel",
+    "stack": "Stack",
+    "surfaces": "Superfícies",
+    "live": "Ao vivo",
+    "repo": "Código",
+    "next": "Próximo case",
+    "read": "Ler",
+    "screenshot": "Captura de tela"
+  },
+  "about": {
+    "metaTitle": "Sobre",
+    "metaDescription": "Engenheiro de software: Salesforce no trabalho, produtos inteiros por conta própria.",
+    "eyebrow": "Sobre",
+    "titleStart": "Engenheiro de software com",
+    "titleAccent": "mania de operar.",
+    "experience": "Experiência",
+    "stack": "Stack",
+    "present": "atual",
+    "portraitAlt": "Retrato de Caique Azevedo"
+  },
+  "contact": {
+    "metaTitle": "Contato",
+    "metaDescription": "Fale comigo sobre seu próximo produto.",
+    "eyebrow": "Contato",
+    "titleStart": "Me conta o que você",
+    "titleAccent": "quer construir.",
+    "lead": "Descreva o problema em duas linhas. Eu respondo em até 2 dias úteis com perguntas ou uma proposta de próximo passo.",
+    "channels": "Outros canais",
+    "form": {
+      "name": "Nome",
+      "email": "E-mail",
+      "company": "Empresa (opcional)",
+      "message": "Mensagem",
+      "messagePlaceholder": "O que você precisa, pra quando e o que já existe.",
+      "submit": "Enviar mensagem",
+      "sending": "Enviando…",
+      "success": "Recebi. Respondo em até 2 dias úteis.",
+      "error": "Não consegui enviar. Tenta de novo ou me escreve direto no e-mail.",
+      "invalid": "Confere os campos destacados.",
+      "captcha": "Confirme que você não é um robô."
+    }
+  },
+  "notFound": {
+    "title": "Essa página não existe.",
+    "back": "Voltar ao início"
+  },
+  "footer": {
+    "rights": "© {year} Caique Azevedo",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "email": "E-mail"
+  }
+}

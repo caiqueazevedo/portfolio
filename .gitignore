@@ -48,3 +48,8 @@ graphify-out/
 
 # opennext
 /.open-next/
+portfolio-caique-azevedo.html
+
+# wrangler local state (miniflare sqlite); also keeps Tailwind source scanning out of it
+.wrangler/
+.dev.vars*
