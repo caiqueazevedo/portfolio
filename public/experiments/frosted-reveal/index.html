@@ -109,40 +109,20 @@
     white-space: nowrap;
   }
 
-  /* Clear window: a sharp copy of the image, offset so it lines up with the stage. */
+  /* Clear window: an SVG whose mask is a shape or a word. The sharp photo sits inside it,
+     offset so it lines up with the stage; drop-shadow follows whatever the mask draws. */
   .window {
     position: absolute;
-    overflow: hidden;
-    border-radius: 3px;
-    box-shadow:
-      inset 0 0 0 1px rgba(255,255,255,0.55),
-      0 0 0 1px rgba(0,0,0,0.35),
-      0 24px 60px rgba(0,0,0,0.45);
+    overflow: visible;
     pointer-events: none;
+    filter: drop-shadow(0 24px 60px rgba(0,0,0,0.45));
   }
-  .window img {
-    position: absolute;
-    top: 0; left: 0;
-    width: auto; height: auto;
-    inset: auto;
-    object-fit: unset;
-    transform-origin: center;
-  }
-  .window::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, rgba(255,255,255,0.18), transparent 35%, transparent 70%, rgba(255,255,255,0.08));
-    pointer-events: none;
-  }
+  .window .glyph { font-family: var(--font-display); }
   .window .tag {
-    position: absolute;
-    right: 8px; bottom: 6px;
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.12em;
-    color: rgba(255,255,255,0.85);
-    text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+    fill: rgba(255,255,255,0.85);
   }
 
   /* ---------- Panel ---------- */
@@ -169,6 +149,21 @@
     font-size: 13.5px;
     max-width: 38ch;
   }
+  .group {
+    display: grid;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .group h2 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
   .field { display: grid; gap: 6px; }
   .field label {
     display: flex;
@@ -192,9 +187,22 @@
     accent-color: var(--frost);
     margin: 0;
   }
+  input[type="text"] {
+    font: inherit;
+    font-size: 15px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--ink);
+    width: 100%;
+    text-transform: uppercase;
+  }
   input[type="range"]:focus-visible,
+  input[type="text"]:focus-visible,
   button:focus-visible,
-  .check:focus-within {
+  .check:focus-within,
+  .seg label:focus-within {
     outline: 2px solid var(--frost);
     outline-offset: 3px;
   }
@@ -208,6 +216,27 @@
   }
   .check input { accent-color: var(--frost); width: 16px; height: 16px; margin: 0; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* Segmented control: one radio per shape. */
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .seg label {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 8px 0;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg input:checked + span { color: var(--ground); }
+  .seg label:has(input:checked) { background: var(--frost); }
+  .seg span { display: block; }
   button, .upload {
     font: inherit;
     font-size: 13px;
@@ -232,6 +261,7 @@
     font-size: 11.5px;
     color: var(--ink);
   }
+  [hidden] { display: none !important; }
   @media (prefers-reduced-motion: no-preference) {
     .window { transition: width 120ms ease, height 120ms ease; }
   }
@@ -254,10 +284,34 @@
     <div class="word top">REVEAL</div>
     <div class="word bottom">TRUTH</div>
     <div class="caption" id="caption">The fog doesn't hide the truth</div>
-    <div class="window" id="window">
-      <img id="img-window" src="photo.jpg" alt="">
-      <span class="tag">CLEAR</span>
-    </div>
+
+    <!-- White in the mask = sharp photo shows. The same shape is reused for the outline and the gloss. -->
+    <svg class="window" id="window" aria-hidden="true">
+      <defs>
+        <!-- fill lives on the mask, not on the shapes, so the <use> outline below can inherit fill="none". -->
+        <mask id="win-mask" maskUnits="userSpaceOnUse" fill="#fff">
+          <g id="win-shape">
+            <rect id="shape-rect" rx="3"/>
+            <ellipse id="shape-ellipse"/>
+            <polygon id="shape-diamond"/>
+            <polygon id="shape-triangle"/>
+            <text id="shape-word" class="glyph" text-anchor="middle" lengthAdjust="spacingAndGlyphs"></text>
+          </g>
+        </mask>
+        <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#fff" stop-opacity="0.18"/>
+          <stop offset="0.35" stop-color="#fff" stop-opacity="0"/>
+          <stop offset="0.7" stop-color="#fff" stop-opacity="0"/>
+          <stop offset="1" stop-color="#fff" stop-opacity="0.08"/>
+        </linearGradient>
+      </defs>
+      <g mask="url(#win-mask)">
+        <image id="img-window" href="photo.jpg" preserveAspectRatio="xMidYMid slice"/>
+        <rect id="win-gloss" fill="url(#gloss)"/>
+      </g>
+      <use href="#win-shape" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+      <text id="win-tag" class="tag" text-anchor="end">CLEAR</text>
+    </svg>
   </div>
 
   <aside class="panel">
@@ -282,63 +336,73 @@
       <label for="fog">Névoa <output id="fog-out">22%</output></label>
       <input type="range" id="fog" min="0" max="60" step="1" value="22">
     </div>
-    <div class="row">
-      <div class="field">
-        <label for="w">Largura <output id="w-out">44%</output></label>
-        <input type="range" id="w" min="10" max="100" step="1" value="44">
-      </div>
-      <div class="field">
-        <label for="h">Altura <output id="h-out">13%</output></label>
-        <input type="range" id="h" min="5" max="100" step="1" value="13">
-      </div>
-    </div>
 
-    <label class="check"><input type="checkbox" id="follow"> Janela segue o cursor</label>
+    <div class="group">
+      <h2>Janela</h2>
+      <div class="seg" role="radiogroup" aria-label="Forma da janela">
+        <label><input type="radio" name="shape" value="rect" checked><span>Retângulo</span></label>
+        <label><input type="radio" name="shape" value="ellipse"><span>Elipse</span></label>
+        <label><input type="radio" name="shape" value="diamond"><span>Losango</span></label>
+        <label><input type="radio" name="shape" value="triangle"><span>Triângulo</span></label>
+        <label><input type="radio" name="shape" value="word"><span>Palavra</span></label>
+      </div>
+      <div class="field" id="word-field" hidden>
+        <label for="word">Palavra <output id="word-out">5/12</output></label>
+        <input type="text" id="word" value="CLEAR" maxlength="12" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="w">Largura <output id="w-out">44%</output></label>
+          <input type="range" id="w" min="10" max="100" step="1" value="44">
+        </div>
+        <div class="field">
+          <label for="h">Altura <output id="h-out">13%</output></label>
+          <input type="range" id="h" min="5" max="100" step="1" value="13">
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="follow"> Janela segue o cursor</label>
+    </div>
 
     <div class="row">
       <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
       <button type="button" id="reset">Redefinir</button>
     </div>
 
-    <p class="note">Efeito: <code>feTurbulence</code> → <code>feDisplacementMap</code> → <code>feGaussianBlur</code> num <code>&lt;filter&gt;</code> SVG aplicado a uma cópia da imagem. A janela é uma cópia nítida com <code>overflow: hidden</code> e deslocamento negativo. A foto nunca sai do navegador.</p>
+    <p class="note">Efeito: <code>feTurbulence</code> → <code>feDisplacementMap</code> → <code>feGaussianBlur</code> num <code>&lt;filter&gt;</code> SVG aplicado a uma cópia da imagem. A janela é um <code>&lt;svg&gt;</code> com uma cópia nítida da foto sob <code>mask</code>: a máscara é a forma escolhida ou a palavra em <code>&lt;text&gt;</code>. A foto nunca sai do navegador.</p>
   </aside>
 </div>
 
 <script>
 (function () {
-  const stage = document.getElementById('stage');
-  const win = document.getElementById('window');
-  const imgWin = document.getElementById('img-window');
-  const imgs = [document.getElementById('img-sharp'), document.getElementById('img-frost'), imgWin];
-  const caption = document.getElementById('caption');
+  const $ = (id) => document.getElementById(id);
+  const SVG = 'http://www.w3.org/2000/svg';
+  const CAP_RATIO = 0.72; // Anton cap height as a fraction of font-size
+  const MAX_WORD = 12;
+
+  const stage = $('stage');
+  const win = $('window');
+  const imgWin = $('img-window');
+  const imgs = [$('img-sharp'), $('img-frost')];
+  const caption = $('caption');
 
   const ctl = {
-    blur: document.getElementById('blur'),
-    disp: document.getElementById('disp'),
-    grain: document.getElementById('grain'),
-    fog: document.getElementById('fog'),
-    w: document.getElementById('w'),
-    h: document.getElementById('h'),
-    follow: document.getElementById('follow'),
+    blur: $('blur'), disp: $('disp'), grain: $('grain'), fog: $('fog'),
+    w: $('w'), h: $('h'), word: $('word'), follow: $('follow'),
   };
-  const out = {
-    blur: document.getElementById('blur-out'),
-    disp: document.getElementById('disp-out'),
-    grain: document.getElementById('grain-out'),
-    fog: document.getElementById('fog-out'),
-    w: document.getElementById('w-out'),
-    h: document.getElementById('h-out'),
-  };
-  const fx = {
-    blur: document.getElementById('fx-blur'),
-    disp: document.getElementById('fx-disp'),
-    noise: document.getElementById('fx-noise'),
+  const out = ['blur', 'disp', 'grain', 'fog', 'w', 'h', 'word']
+    .reduce((o, k) => (o[k] = $(k + '-out'), o), {});
+  const fx = { blur: $('fx-blur'), disp: $('fx-disp'), noise: $('fx-noise') };
+  const shapes = {
+    rect: $('shape-rect'), ellipse: $('shape-ellipse'), diamond: $('shape-diamond'),
+    triangle: $('shape-triangle'), word: $('shape-word'),
   };
 
   const frostScale = parseFloat(getComputedStyle(stage).getPropertyValue('--frost-scale')) || 1;
-  const defaults = { blur: 10, disp: 22, grain: 0.9, fog: 22, w: 44, h: 13, cx: 0.60, cy: 0.42 };
+  const defaults = { blur: 10, disp: 22, grain: 0.9, fog: 22, w: 44, h: 13, word: 'CLEAR', shape: 'rect', cx: 0.60, cy: 0.42 };
   // Window center as a fraction of the stage, so it survives resizes.
   const pos = { cx: defaults.cx, cy: defaults.cy };
+
+  const shape = () => document.querySelector('input[name="shape"]:checked').value;
 
   function applyFilter() {
     fx.blur.setAttribute('stdDeviation', ctl.blur.value);
@@ -351,21 +415,51 @@
     out.fog.textContent = ctl.fog.value + '%';
   }
 
+  // Only the chosen mask element gets geometry; the others collapse to nothing.
+  function drawShape(w, h) {
+    const kind = shape();
+    for (const [k, el] of Object.entries(shapes)) el.setAttribute('visibility', k === kind ? 'visible' : 'hidden');
+    const set = (el, attrs) => Object.entries(attrs).forEach(([a, v]) => el.setAttribute(a, v));
+    set(shapes.rect, { x: 0, y: 0, width: w, height: h });
+    set(shapes.ellipse, { cx: w / 2, cy: h / 2, rx: w / 2, ry: h / 2 });
+    set(shapes.diamond, { points: `${w / 2},0 ${w},${h / 2} ${w / 2},${h} 0,${h / 2}` });
+    set(shapes.triangle, { points: `${w / 2},0 ${w},${h} 0,${h}` });
+
+    const word = ctl.word.value.trim().toUpperCase().slice(0, MAX_WORD) || defaults.word;
+    const fs = h / CAP_RATIO;
+    shapes.word.textContent = word;
+    // Baseline sits at the bottom of the box: caps fill the height, textLength fills the width.
+    set(shapes.word, { x: w / 2, y: h, 'font-size': fs, textLength: w });
+    out.word.textContent = word.length + '/' + MAX_WORD;
+    $('word-field').hidden = kind !== 'word';
+    $('win-tag').setAttribute('visibility', kind === 'rect' ? 'visible' : 'hidden');
+  }
+
   function layoutWindow() {
     const W = stage.clientWidth, H = stage.clientHeight;
     const w = W * ctl.w.value / 100, h = H * ctl.h.value / 100;
     let x = pos.cx * W - w / 2, y = pos.cy * H - h / 2;
     x = Math.max(0, Math.min(W - w, x));
     y = Math.max(0, Math.min(H - h, y));
-    win.style.width = w + 'px';
-    win.style.height = h + 'px';
+    win.setAttribute('width', w);
+    win.setAttribute('height', h);
+    win.setAttribute('viewBox', `0 0 ${w} ${h}`);
     win.style.left = x + 'px';
     win.style.top = y + 'px';
-    // Sharp copy sized to the whole stage, shifted back so it lines up with the frosted layer.
-    imgWin.style.width = W + 'px';
-    imgWin.style.height = H + 'px';
-    imgWin.style.objectFit = 'cover';
-    imgWin.style.transform = `translate(${-x}px, ${-y}px) scale(${frostScale})`;
+    // Sharp copy sized to the whole stage, shifted back so it lines up with the frosted layer,
+    // and scaled about the stage centre like the frosted copy.
+    const cx = W / 2 - x, cy = H / 2 - y;
+    imgWin.setAttribute('x', -x);
+    imgWin.setAttribute('y', -y);
+    imgWin.setAttribute('width', W);
+    imgWin.setAttribute('height', H);
+    imgWin.setAttribute('transform', `translate(${cx} ${cy}) scale(${frostScale}) translate(${-cx} ${-cy})`);
+    const gloss = $('win-gloss');
+    gloss.setAttribute('width', w);
+    gloss.setAttribute('height', h);
+    $('win-tag').setAttribute('x', w - 8);
+    $('win-tag').setAttribute('y', h - 6);
+    drawShape(w, h);
     caption.style.top = (y - 26) + 'px';
     out.w.textContent = ctl.w.value + '%';
     out.h.textContent = ctl.h.value + '%';
@@ -393,27 +487,39 @@
   stage.addEventListener('pointercancel', stop);
 
   ['blur', 'disp', 'grain', 'fog'].forEach(k => ctl[k].addEventListener('input', applyFilter));
-  ['w', 'h'].forEach(k => ctl[k].addEventListener('input', layoutWindow));
+  ['w', 'h', 'word'].forEach(k => ctl[k].addEventListener('input', layoutWindow));
+  document.querySelectorAll('input[name="shape"]').forEach(r => r.addEventListener('change', () => {
+    // A word needs room: widen the box the first time it is picked.
+    if (shape() === 'word' && Number(ctl.h.value) < 18) ctl.h.value = 18;
+    layoutWindow();
+    if (shape() === 'word') ctl.word.focus();
+  }));
   window.addEventListener('resize', layoutWindow);
 
-  document.getElementById('reset').addEventListener('click', () => {
+  $('reset').addEventListener('click', () => {
     Object.keys(defaults).forEach(k => { if (ctl[k]) ctl[k].value = defaults[k]; });
     pos.cx = defaults.cx; pos.cy = defaults.cy;
     ctl.follow.checked = false;
+    document.querySelector(`input[name="shape"][value="${defaults.shape}"]`).checked = true;
     applyFilter(); layoutWindow();
   });
 
-  document.getElementById('file').addEventListener('change', (e) => {
+  $('file').addEventListener('change', (e) => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     const reader = new FileReader();
-    reader.onload = () => imgs.forEach(i => { i.src = reader.result; });
+    reader.onload = () => {
+      imgs.forEach(i => { i.src = reader.result; });
+      imgWin.setAttribute('href', reader.result);
+    };
     reader.readAsDataURL(f);
   });
+
+  // Fonts change glyph metrics; re-run once they land so textLength stretches the real face.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutWindow);
 
   applyFilter();
   layoutWindow();
 })();
 </script>
-
 </html>
