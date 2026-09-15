@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Repo tooling and build output:
     ".claude/**",
+    "design/**",
     ".open-next/**",
     "coverage/**",
   ]),

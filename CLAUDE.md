@@ -14,7 +14,6 @@ Substitui o `portfolio-web` (v1, estética vaporwave), que fica intocado.
 | React | 19.2 | Server Components por padrão |
 | Tailwind | 4 | tokens em `app/globals.css` via `@theme` |
 | next-intl | 4.14 | `app/[locale]/`, locale lido por `next/root-params`; **sem `proxy.ts`** |
-| motion | 13.3 | só em client islands pequenos; `MotionConfig reducedMotion="user"` |
 | Vitest + RTL + jsdom | 4 / 16 | testes co-locados `*.test.tsx` |
 | @opennextjs/cloudflare | 1.20 | deploy em Workers; build no GitHub Actions (Linux) |
 | pnpm | 11.1.2 via corepack | usar sempre `corepack pnpm` |
@@ -43,12 +42,26 @@ Sem coautoria.
 
 ## Regras de UI
 
-- **Mobile first, sem exceção.** Classe base é a do celular; `sm:`/`md:`/`lg:` adicionam. Alvo mínimo
-  320px. `document.scrollWidth` nunca passa de `clientWidth`.
-- Todo container que envolve conteúdo largo leva `min-w-0`. `overflow-x-auto` sem `min-w-0` não contém nada.
-- Tipografia com `clamp()`; nunca `px` cravado em heading.
-- Vídeo/animação respeita `prefers-reduced-motion`: fallback estático, sem baixar bytes do vídeo.
+Design system **Raw Folio** (fonte: `design/raw-folio/`, gerado no Claude Design a partir de
+uma referência grunge/streetwear). Resumo do que não pode faltar:
+
+- **Cores**: fundo `ink-950`, texto `paper-100`, acento primário `acid-500` em blocos e
+  destaques, `blue-500` raro (stickers/selos). Máximo 2 acentos por tela.
+- **Tipo**: `font-display` (Anton) sempre uppercase, line-height .9, tamanhos gigantes;
+  `font-sans` (Archivo) no corpo; `.label` (Archivo Narrow 700 12px tracking .14em) em
+  labels; `font-marker` só 1-2 vezes por tela; `font-mono` em números, anos e meta.
+- **Forma**: canto 0 em tudo. Bordas 2px sólidas. Sombra nunca com blur: `shadow-hard*`
+  (5px 5px 0). Hover desloca -2px com sombra 7px; press entra na sombra.
+- **Textura**: `.grain` sobre preto e ácido; papel sempre `.paper-tex.torn` com
+  `filter: drop-shadow` (nunca `box-shadow`, que seria cortado). Fotos sempre P&B (`.bw`).
+- **Motion**: seca, 120ms, `ease-snap`. Sem fade longo, sem bounce.
+- **Layout**: blocos colados com bordas compartilhadas alternando com respiro grande;
+  faixa de estatísticas full-bleed em ácido; stickers levemente tortos (-3° a 3°).
+- **Mobile first, sem exceção.** Classe base é a do celular; `sm:`/`md:`/`lg:` adicionam.
+  Alvo mínimo 320px. `document.scrollWidth` nunca passa de `clientWidth`. Todo container
+  que envolve conteúdo largo leva `min-w-0`.
 - Conteúdo público em `content/*.ts` não carrega detalhe de infra (URLs internas, ids, buckets).
+- Sem emoji. Glifos unicode (✱ ★ ✕ → ↗ ◉) como ícone decorativo.
 
 ## Invariantes
 

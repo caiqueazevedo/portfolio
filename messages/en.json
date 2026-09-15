@@ -1,16 +1,18 @@
 {
   "meta": {
     "title": "Caique Azevedo — Software engineering, from login to deploy",
-    "description": "Software engineer. Web, mobile and serverless backends for teams that need a whole product in production, not just a screen."
+    "description": "Software engineer. Web, mobile and serverless backends. Whole systems in production, not just screens."
   },
   "nav": {
+    "roleLine1": "Software engineer",
+    "roleLine2": "Web · Mobile · Serverless",
+    "home": "Home",
     "work": "Work",
     "about": "About",
     "contact": "Contact",
-    "cta": "Let's talk",
+    "open": "Open to projects",
     "menu": "Open menu",
-    "close": "Close menu",
-    "home": "Home"
+    "close": "Close menu"
   },
   "locale": {
     "label": "Language",
@@ -18,106 +20,113 @@
     "en": "English"
   },
   "hero": {
-    "eyebrow": "Software engineering · end-to-end product",
-    "titleStart": "Software that leaves the slide and",
-    "titleAccent": "ships to production.",
-    "lead": "Web, mobile and serverless backends for teams that need one engineer to deliver the whole system: from login to deploy, with the discipline of someone who operates what they build.",
-    "primary": "Let's talk",
-    "secondary": "See the work",
-    "liveLabel": "In production",
-    "availability": "Available for new projects",
-    "videoLabel": "Decorative background video"
+    "title": "Caique Azevedo",
+    "statement": "I build whole systems that leave the slide and ship to production.",
+    "lead": "Web, mobile and serverless backends. From login to deploy, with the discipline of someone who operates what they build.",
+    "cta": "Let's build →",
+    "sticker": "Available for new projects",
+    "portrait": "Your portrait — B&W",
+    "paperLine1": "code",
+    "paperLine2": "product",
+    "paperLine3": "production"
   },
   "services": {
-    "eyebrow": "Services",
-    "titleStart": "What I deliver, and",
-    "titleAccent": "how.",
-    "lead": "No bloated team, no handoff. One engineer from design to operations."
+    "title": "Services"
   },
-  "cases": {
-    "eyebrow": "Selected work",
-    "titleStart": "Systems I",
-    "titleAccent": "use every day.",
-    "all": "All projects",
-    "read": "Read the case",
+  "works": {
+    "title": "Selected work",
+    "all": "All",
+    "open": "Open case"
+  },
+  "stats": {
+    "production": "In production",
+    "systems": "Systems in the portfolio",
+    "years": "Years coding",
+    "reply": "Reply time"
+  },
+  "approach": {
+    "title": "How I work"
+  },
+  "footer": {
+    "ctaLine1": "Let's build",
+    "ctaLine2": "something real.",
+    "talk": "Talk to me",
+    "form": "Form →",
+    "social": "Elsewhere",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "email": "Email",
+    "sticker": "make it bold.",
+    "rights": "© {year} Caique Azevedo"
+  },
+  "work": {
+    "metaTitle": "Work",
+    "metaDescription": "Systems I designed, built and operate: identity, social, desktop, observability.",
+    "kicker": "Work",
+    "title": "Six systems, one owner.",
+    "lead": "Each one I designed, built and operate. The first three are in use every day."
+  },
+  "case": {
+    "back": "← Back",
+    "role": "Role",
+    "year": "Year",
+    "stack": "Stack",
+    "surfaces": "Surfaces",
+    "live": "Live",
+    "repo": "Code",
+    "cta": "I want one of these →",
+    "next": "Next:",
+    "nextLabel": "Next case",
+    "hero": "Main project image",
     "status": {
       "production": "In production",
       "active": "In development",
       "paused": "Paused"
     }
   },
-  "approach": {
-    "eyebrow": "How I work",
-    "titleStart": "Research first, operations",
-    "titleAccent": "after."
-  },
-  "cta": {
-    "eyebrow": "Next project",
-    "titleStart": "Got a system to get off the ground?",
-    "titleAccent": "Let's talk.",
-    "lead": "Reply within 2 business days. No 12-field form.",
-    "button": "Send a message"
-  },
-  "work": {
-    "metaTitle": "Work",
-    "metaDescription": "Products I designed, built and operate: identity, social, desktop, observability.",
-    "eyebrow": "Work",
-    "titleStart": "Six systems,",
-    "titleAccent": "one owner.",
-    "lead": "Each of these I designed, built and operate. The first three are in use every day."
-  },
-  "case": {
-    "back": "All work",
-    "role": "Role",
-    "stack": "Stack",
-    "surfaces": "Surfaces",
-    "live": "Live",
-    "repo": "Code",
-    "next": "Next case",
-    "read": "Read",
-    "screenshot": "Screenshot"
-  },
   "about": {
     "metaTitle": "About",
     "metaDescription": "Software engineer: Salesforce by day, whole products on my own.",
-    "eyebrow": "About",
-    "titleStart": "A software engineer who",
-    "titleAccent": "likes to operate.",
+    "kicker": "About",
+    "title": "An engineer who likes to operate.",
     "experience": "Experience",
     "stack": "Stack",
     "present": "present",
-    "portraitAlt": "Portrait of Caique Azevedo"
+    "portrait": "Portrait — B&W",
+    "sticker": "i operate what i build"
   },
   "contact": {
     "metaTitle": "Contact",
-    "metaDescription": "Talk to me about your next product.",
-    "eyebrow": "Contact",
-    "titleStart": "Tell me what you",
-    "titleAccent": "want to build.",
-    "lead": "Describe the problem in two lines. I reply within 2 business days with questions or a proposed next step.",
-    "channels": "Other channels",
+    "metaDescription": "Talk to me about your next system.",
+    "titleStart": "Let's",
+    "titleAccent": "build",
+    "titleEnd": "something real.",
+    "lead": "Tell me what you need: a new product, a backend, a login, an app. I reply within 48h.",
+    "statReply": "48h",
+    "statReplyLabel": "Reply time",
+    "statShipped": "03",
+    "statShippedLabel": "Products in production",
+    "sticker": "hello — remote, worldwide",
+    "formTitle": "Talk to me ✱",
+    "backHome": "← Home",
     "form": {
       "name": "Name",
+      "namePlaceholder": "Your name",
       "email": "Email",
+      "emailPlaceholder": "you@domain.com",
       "company": "Company (optional)",
-      "message": "Message",
-      "messagePlaceholder": "What you need, by when, and what already exists.",
-      "submit": "Send message",
+      "message": "Project",
+      "messagePlaceholder": "Tell me the idea: what you need, by when, what already exists.",
+      "submit": "Send message →",
       "sending": "Sending…",
-      "success": "Got it. I reply within 2 business days.",
-      "error": "Couldn't send. Try again or email me directly.",
-      "invalid": "Check the highlighted fields.",
+      "success": "Got it! I reply within 48h.",
+      "error": "Didn't go through. Try again or email me.",
+      "invalid": "Check the marked fields.",
       "captcha": "Please confirm you are not a robot."
     }
   },
   "notFound": {
     "title": "That page does not exist.",
-    "back": "Back to home"
-  },
-  "footer": {
-    "rights": "© {year} Caique Azevedo",
-    "github": "GitHub",
-    "linkedin": "LinkedIn",
-    "email": "Email"
+    "back": "← Home"
   }
 }

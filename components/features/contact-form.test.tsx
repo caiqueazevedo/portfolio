@@ -17,16 +17,16 @@ vi.mock("@marsidev/react-turnstile", () => ({
 function setup() {
   render(
     <NextIntlClientProvider locale="pt" messages={pt}>
-      <ContactForm siteKey="1x00000000000000000000AA" />
+      <ContactForm siteKey="1x00000000000000000000AA" title="Fale comigo" />
     </NextIntlClientProvider>,
   );
   return userEvent.setup();
 }
 
 async function fillValid(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("Nome"), "Ana Souza");
-  await user.type(screen.getByLabelText("E-mail"), "ana@example.com");
-  await user.type(screen.getByLabelText("Mensagem"), "Preciso de um app pra minha loja, com login e catálogo.");
+  await user.type(screen.getByLabelText(pt.contact.form.name), "Ana Souza");
+  await user.type(screen.getByLabelText(pt.contact.form.email), "ana@example.com");
+  await user.type(screen.getByLabelText(pt.contact.form.message), "Preciso de um app pra minha loja, com login e catálogo.");
 }
 
 afterEach(() => vi.unstubAllGlobals());
@@ -44,10 +44,10 @@ describe("ContactForm", () => {
     vi.stubGlobal("fetch", fetchMock);
     const user = setup();
     await user.click(screen.getByRole("button", { name: "solve" }));
-    await user.type(screen.getByLabelText("Nome"), "A");
+    await user.type(screen.getByLabelText(pt.contact.form.name), "A");
     await user.click(screen.getByRole("button", { name: /enviar mensagem/i }));
     expect(screen.getByRole("status")).toHaveTextContent(pt.contact.form.invalid);
-    expect(screen.getByLabelText("Nome")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText(pt.contact.form.name)).toHaveAttribute("aria-invalid", "true");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

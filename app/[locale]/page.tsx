@@ -1,17 +1,19 @@
 import { Approach } from "@/components/features/approach";
-import { Cta } from "@/components/features/cta";
-import { FeaturedCases } from "@/components/features/featured-cases";
 import { Hero } from "@/components/features/hero";
-import { ServiceGrid } from "@/components/features/service-grid";
+import { SelectedWorks } from "@/components/features/selected-works";
+import { Services } from "@/components/features/services";
+import { StatsBand } from "@/components/features/stats-band";
 
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <ServiceGrid />
-      <FeaturedCases />
+      <section className="grid grid-cols-1 border-t-2 border-ink-700 md:grid-cols-[1fr_1.6fr]">
+        <Services />
+        <SelectedWorks />
+      </section>
+      <StatsBand />
       <Approach />
-      <Cta />
     </>
   );
 }

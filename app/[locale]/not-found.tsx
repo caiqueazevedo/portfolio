@@ -5,10 +5,12 @@ import { Container } from "@/components/ui/container";
 export default async function NotFound() {
   const t = await getTranslations("notFound");
   return (
-    <section>
+    <section className="grain">
       <Container className="flex flex-col items-start gap-6 py-section lg:py-40">
-        <p className="font-serif text-hero">404</p>
-        <p className="text-lead text-muted">{t("title")}</p>
+        <h1 className="text-hero text-paper-100">
+          404<span className="text-acid-500">.</span>
+        </h1>
+        <p className="text-[19px] font-extrabold uppercase">{t("title")}</p>
         <ButtonLink href="/" variant="ghost">
           {t("back")}
         </ButtonLink>

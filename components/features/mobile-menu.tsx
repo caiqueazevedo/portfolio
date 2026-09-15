@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { Link } from "@/i18n/navigation";
-import type { NavItem } from "./nav-items";
+import { Badge } from "@/components/ui/badge";
+import { Link, usePathname } from "@/i18n/navigation";
+import { cn } from "@/lib/cn";
 import { LocaleSwitch } from "./locale-switch";
+import type { NavItem } from "./nav-items";
 
-type Props = { items: NavItem[]; cta: NavItem; openLabel: string; closeLabel: string };
+type Props = { items: NavItem[]; openLabel: string; closeLabel: string; badge: string };
 
-export function MobileMenu({ items, cta, openLabel, closeLabel }: Props) {
+export function MobileMenu({ items, openLabel, closeLabel, badge }: Props) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!open) return;
@@ -30,35 +33,41 @@ export function MobileMenu({ items, cta, openLabel, closeLabel }: Props) {
         aria-controls={panelId}
         aria-label={open ? closeLabel : openLabel}
         onClick={() => setOpen((v) => !v)}
-        className="-mr-2 flex h-11 w-11 items-center justify-center text-fg"
+        className="flex h-11 w-11 items-center justify-center border-2 border-paper-100 text-[20px] font-extrabold text-paper-100"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-          {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M3 8h18M3 16h18" />}
-        </svg>
+        <span aria-hidden="true">{open ? "✕" : "☰"}</span>
       </button>
       <div
         id={panelId}
         hidden={!open}
-        className="fixed inset-x-0 top-[72px] bottom-0 z-40 flex flex-col gap-2 border-t border-line bg-bg px-gutter pt-8 pb-10"
+        className="fixed inset-x-0 top-[72px] bottom-0 z-40 flex flex-col border-t-2 border-ink-700 bg-ink-950 px-gutter pt-6 pb-8"
       >
-        {items.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setOpen(false)}
-            className="font-serif text-subtitle py-3 text-fg"
-          >
-            {item.label}
-          </Link>
-        ))}
-        <Link
-          href={cta.href}
-          onClick={() => setOpen(false)}
-          className="mt-6 inline-flex h-13 items-center justify-center rounded-full bg-fg text-sm font-medium text-bg"
-        >
-          {cta.label}
-        </Link>
-        <LocaleSwitch className="mt-auto" />
+        <nav className="flex flex-col border-2 border-paper-100">
+          {items.map((item, i) => {
+            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "px-5 py-4 font-display text-[28px] uppercase",
+                  i > 0 && "border-t-2 border-paper-100",
+                  active ? "bg-acid-500 text-ink-950" : "text-paper-100",
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="mt-6 flex items-center justify-between gap-4">
+          <Badge color="blue" pulse>
+            {badge}
+          </Badge>
+          <LocaleSwitch />
+        </div>
       </div>
     </div>
   );

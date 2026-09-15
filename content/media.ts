@@ -1,12 +1,9 @@
 /**
- * Generated assets (see docs/higgsfield-prompts.md). `null` renders the built-in
- * placeholder, so the site ships before every asset exists. Flip an entry to the
- * public path once the file is in `public/media/`.
+ * Photos (see docs/higgsfield-prompts.md). `null` renders the kit's grey placeholder,
+ * so the site ships before every asset exists. Flip an entry to the public path once
+ * the file is in `public/media/`. Everything renders black and white with grain.
  */
-export type HeroVideo = { webm: string; mp4: string; poster: string };
-
 export const media = {
-  heroVideo: null as HeroVideo | null,
   portrait: null as string | null,
   covers: {
     zenid: null,

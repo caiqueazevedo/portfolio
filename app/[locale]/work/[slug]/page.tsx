@@ -2,18 +2,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Reveal } from "@/components/features/reveal";
-import { ArrowIcon } from "@/components/ui/arrow-icon";
+import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { Cover } from "@/components/ui/cover";
-import { Eyebrow } from "@/components/ui/eyebrow";
+import { IconButtonLink } from "@/components/ui/icon-button";
+import { Photo } from "@/components/ui/photo";
+import { Sticker } from "@/components/ui/sticker";
 import { Tag } from "@/components/ui/tag";
 import { media } from "@/content/media";
 import { findProject, projects } from "@/content/projects";
-import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
-
 
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
@@ -30,9 +28,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/work/[sl
   };
 }
 
-function hostOf(url: string) {
-  return new URL(url).host;
-}
+const hostOf = (url: string) => new URL(url).host;
 
 export default async function CasePage({ params }: PageProps<"/[locale]/work/[slug]">) {
   const { slug } = await params;
@@ -41,101 +37,98 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
 
   const locale = await getLocale();
   const t = await getTranslations("case");
-  const ts = await getTranslations("cases");
   const index = projects.indexOf(project);
   const next = projects[(index + 1) % projects.length];
+  const number = String(index + 1).padStart(2, "0");
   const cover = media.covers[`${project.cover}-wide`] ?? media.covers[project.cover] ?? null;
-
-  const meta = [
-    { label: t("role"), value: project.role[locale] },
-    { label: t("stack"), value: project.stack.join(" · ") },
-    { label: t("surfaces"), value: project.surfaces[locale] },
-    project.liveUrl
-      ? { label: t("live"), value: hostOf(project.liveUrl), href: project.liveUrl }
-      : project.repoUrl
-        ? { label: t("repo"), value: hostOf(project.repoUrl), href: project.repoUrl }
-        : null,
-  ].filter((m): m is NonNullable<typeof m> => m !== null);
+  const link = project.liveUrl
+    ? { label: t("live"), href: project.liveUrl }
+    : project.repoUrl
+      ? { label: t("repo"), href: project.repoUrl }
+      : null;
 
   return (
     <article>
-      <Container className="flex flex-col gap-6 pt-12 pb-10 sm:pt-16 lg:pt-20 lg:pb-14">
-        <Link href="/work" className="inline-flex items-center gap-2 text-[13px] text-muted transition-colors hover:text-fg">
-          <ArrowIcon direction="left" size={14} />
-          {t("back")}
-        </Link>
-        <ul className="flex flex-wrap gap-2">
-          {project.tags[locale].map((tag) => (
-            <li key={tag}>
-              <Tag>{tag}</Tag>
-            </li>
-          ))}
-          <li>
-            <Tag>{project.years}</Tag>
-          </li>
-        </ul>
-        <h1 className="max-w-[18ch] font-serif text-hero text-balance">{project.headline[locale]}</h1>
-        <p className="max-w-[44rem] text-lead font-light text-fg-soft">{project.lead[locale]}</p>
-      </Container>
-
-      <Container>
-        <Cover src={cover} alt="" ratio="21/9" glow="35% 60%" priority />
-      </Container>
-
-      <Container>
-        <dl className="grid grid-cols-1 gap-6 border-b border-line py-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          {meta.map((m) => (
-            <div key={m.label} className="min-w-0">
-              <dt className="text-tag tracking-[0.14em] text-muted uppercase">{m.label}</dt>
-              <dd className="mt-1.5 text-[15px] break-words">
-                {"href" in m && m.href ? (
-                  <a href={m.href} target="_blank" rel="noopener" className="transition-colors hover:text-accent">
-                    {m.value} ↗
-                  </a>
-                ) : (
-                  m.value
-                )}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </Container>
-
-      <Container className="grid grid-cols-1 gap-10 py-section lg:grid-cols-12 lg:gap-8">
-        <nav aria-label={project.name} className="hidden lg:col-span-3 lg:block">
-          <ol className="sticky top-24 flex flex-col gap-3 text-[13px] text-muted">
-            {project.sections.map((s) => (
-              <li key={s.heading.en}>
-                <a href={`#${s.heading.en.toLowerCase()}`} className="transition-colors hover:text-fg">
-                  {s.heading[locale]}
-                </a>
+      <section className="grain relative">
+        <Container className="pt-12 pb-8">
+          <span className="font-mono text-[14px] text-acid-500">
+            {number} / {project.tags[locale][0]}
+          </span>
+          <h1 className="mt-2 max-w-[16ch] text-[clamp(44px,8vw,110px)] text-paper-100">{project.headline[locale]}</h1>
+          <ul className="mt-5 flex flex-wrap gap-2.5">
+            {project.tags[locale].map((tag, i) => (
+              <li key={tag}>
+                <Tag active={i === 0}>{tag}</Tag>
               </li>
             ))}
-          </ol>
-        </nav>
-        <div className="flex min-w-0 flex-col gap-14 lg:col-span-7 lg:col-start-5 lg:gap-18">
-          {project.sections.map((s) => (
-            <Reveal key={s.heading.en}>
-              <section id={s.heading.en.toLowerCase()} className="flex flex-col gap-4">
-                <h2 className="font-serif text-subtitle">{s.heading[locale]}</h2>
-                <p className="text-[17px] leading-[1.7] font-light text-fg-soft sm:text-lg">{s.body[locale]}</p>
-              </section>
-            </Reveal>
-          ))}
+            <li>
+              <Tag>{t(`status.${project.status}`)}</Tag>
+            </li>
+          </ul>
+        </Container>
+        <div className="absolute top-10 right-gutter hidden lg:block">
+          <Sticker color="acid" marker rotate={3}>
+            case {project.years}
+          </Sticker>
         </div>
-      </Container>
+      </section>
 
-      <section className="border-t border-line">
-        <Container className="flex flex-col gap-6 py-section sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex min-w-0 flex-col gap-4">
-            <Eyebrow>{t("next")}</Eyebrow>
-            <p className="font-serif text-display leading-none">{next.name}</p>
-            <p className="text-sm text-muted">{ts(`status.${next.status}`)}</p>
+      <section className="grid grid-cols-1 border-t-2 border-ink-700 lg:grid-cols-[2fr_1fr]">
+        <Photo src={cover} alt="" label={t("hero")} ratio="16/9" priority className="lg:aspect-auto lg:min-h-[420px] lg:border-r-2 lg:border-ink-700" />
+        <div className="flex min-w-0 flex-col gap-5 px-gutter py-9 lg:px-8">
+          <div>
+            <span className="label text-acid-500">{t("role")}</span>
+            <div className="text-[16px] font-extrabold">{project.role[locale]}</div>
           </div>
-          <Link href={`/work/${next.slug}`} className="inline-flex items-center gap-2 text-sm transition-colors hover:text-accent">
-            {t("read")}
-            <ArrowIcon />
-          </Link>
+          <div>
+            <span className="label text-acid-500">{t("year")}</span>
+            <div className="font-mono text-[15px]">{project.years}</div>
+          </div>
+          <div>
+            <span className="label text-acid-500">{t("stack")}</span>
+            <div className="text-[14px] text-ink-300">{project.stack.join(", ")}</div>
+          </div>
+          <div>
+            <span className="label text-acid-500">{t("surfaces")}</span>
+            <div className="text-[14px] text-ink-300">{project.surfaces[locale]}</div>
+          </div>
+          {link ? (
+            <div>
+              <span className="label text-acid-500">{link.label}</span>
+              <div className="font-mono text-[14px]">
+                <a href={link.href} target="_blank" rel="noopener" className="break-all text-paper-100 hover:text-acid-500">
+                  {hostOf(link.href)} ↗
+                </a>
+              </div>
+            </div>
+          ) : null}
+          <p className="text-[14px] text-ink-300">{project.lead[locale]}</p>
+          <ButtonLink href="/contact" className="self-start">
+            {t("cta")}
+          </ButtonLink>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 border-t-2 border-ink-700 md:grid-cols-3">
+        {project.sections.map((s) => (
+          <div key={s.heading.en} className="flex min-w-0 flex-col gap-3 border-ink-700 px-gutter py-8 not-last:border-b-2 md:not-last:border-r-2 md:not-last:border-b-0 md:px-7">
+            <h2 className="text-h3 text-acid-500">{s.heading[locale]}</h2>
+            <p className="text-[14px] leading-relaxed text-ink-300">{s.body[locale]}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="border-t-2 border-ink-700">
+        <Container className="flex items-center justify-between gap-4 py-7">
+          <ButtonLink href="/work" variant="ghost" size="sm">
+            {t("back")}
+          </ButtonLink>
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="label hidden text-ink-500 sm:inline">
+              {t("next")} {next.name}
+            </span>
+            <IconButtonLink href={`/work/${next.slug}`} label={`${t("nextLabel")}: ${next.name}`} />
+          </div>
         </Container>
       </section>
     </article>
