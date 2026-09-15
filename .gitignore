@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code worktrees (storage local, nunca versionar)
+.claude/worktrees/
+
+# graphify — grafo de conhecimento (o graph.json sozinho passa de 1 MB)
+graphify-out/
+
+# opennext
+/.open-next/
