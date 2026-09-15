@@ -28,8 +28,8 @@ export const experiments: Experiment[] = [
       en: "Frosted glass over a portrait, with a sharp window you drag or let follow the cursor. The window can be a rectangle, ellipse, diamond, triangle or a word.",
     },
     technique: {
-      pt: "feTurbulence → feDisplacementMap → feGaussianBlur num filtro SVG aplicado a uma cópia da imagem. A janela é um <svg> com uma cópia nítida sob mask: a máscara é a forma escolhida ou a palavra em <text>, e o contorno e o brilho reaproveitam a mesma forma. A foto nunca sai do navegador.",
-      en: "feTurbulence → feDisplacementMap → feGaussianBlur in an SVG filter applied to a copy of the image. The window is an <svg> with a sharp copy under a mask: the mask is the chosen shape or the word as <text>, and the outline and gloss reuse the same shape. The photo never leaves the browser.",
+      pt: "feTurbulence → feDisplacementMap → feGaussianBlur num filtro SVG aplicado a uma cópia da imagem. A janela é um <svg> com uma cópia nítida sob mask: a máscara é a forma escolhida ou a palavra em <text>, e a sombra de contorno e o brilho reaproveitam a mesma forma. A foto nunca sai do navegador.",
+      en: "feTurbulence → feDisplacementMap → feGaussianBlur in an SVG filter applied to a copy of the image. The window is an <svg> with a sharp copy under a mask: the mask is the chosen shape or the word as <text>, and the shadow contour and gloss reuse the same shape. The photo never leaves the browser.",
     },
     tags: ["SVG filter", "SVG mask", "Pointer Events"],
     height: 800,
