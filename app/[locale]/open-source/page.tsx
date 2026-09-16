@@ -44,7 +44,7 @@ export default async function OpenSourcePage() {
     empty: t("filters.empty"),
     open: t("open"),
     hover: t("hover"),
-    count: (n: number) => t("count", { count: n }),
+    count: t.raw("count"),
   };
 
   return (

@@ -35,7 +35,8 @@ export type GridLabels = {
   empty: string;
   open: string;
   hover: string;
-  count: (n: number) => string;
+  /** ICU-style template with a {count} placeholder; functions cannot cross to the client. */
+  count: string;
 };
 
 const SEG_BTN =
@@ -91,7 +92,7 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
             ))}
           </div>
           <span className="font-mono text-[12px] text-ink-500" aria-live="polite">
-            {labels.count(shown.length)}
+            {labels.count.replace("{count}", String(shown.length))}
           </span>
         </div>
       </div>

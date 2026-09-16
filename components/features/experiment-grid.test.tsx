@@ -15,7 +15,7 @@ const items: GridItem[] = [
 const labels: GridLabels = {
   category: "Categoria", sort: "Ordem", all: "Todos", filter: "Filtro", typography: "Tipografia", collage: "Colagem",
   az: "A → Z", za: "Z → A", newest: "Mais novos", oldest: "Mais antigos", empty: "Nada.", open: "Abrir", hover: "hover",
-  count: (n) => `${n} itens`,
+  count: "{count} itens",
 };
 
 const titles = () => screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
