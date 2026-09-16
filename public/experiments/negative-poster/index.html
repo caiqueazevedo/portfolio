@@ -21,7 +21,6 @@
   .stage .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; transform-origin: center; }
   /* A grey background makes `difference` land on pure black and white; colour would tint the letters. */
   .stage.bw .bg { filter: grayscale(1) contrast(1.1); }
-  .stage .band { position: absolute; top: 0; bottom: 0; left: var(--band-x, 42%); width: var(--band-w, 14%); background: var(--band-color, #c8102e); pointer-events: none; }
   .stage .grain { position: absolute; inset: 0; background: var(--noise); opacity: .09; pointer-events: none; }
   /* The headline: one colour, one blend mode. With `difference` and white text the letters
      invert against whatever is behind them: black over light areas, white over dark. */
@@ -29,14 +28,13 @@
     position: absolute; left: 0; right: 0; top: var(--y, 44%); margin: 0; padding: 0 3%;
     font-family: var(--font-display); font-size: var(--size, 38cqw); line-height: .84; letter-spacing: var(--tracking, 0em);
     text-transform: uppercase; text-align: center; white-space: nowrap; color: var(--color, #ffffff); mix-blend-mode: var(--blend, normal);
-    pointer-events: none;
+    cursor: ns-resize;
   }
   .stage .fg { position: absolute; width: var(--fg-w, 36%); cursor: grab; filter: drop-shadow(0 18px 30px rgba(0,0,0,.55)); }
   .stage .fg.dragging { cursor: grabbing; }
   .stage .fg img { display: block; width: 100%; height: auto; pointer-events: none; }
-  .stage .fg.framed img { border: 1.2cqw solid #f2efe8; }
   .stage .cap { position: absolute; margin: 0; font-family: var(--font-mono); font-size: clamp(7px, 2.6cqw, 13px); letter-spacing: .22em; text-transform: uppercase; line-height: 1.7; white-space: pre-line; color: var(--cap-color, #1a1a1a); pointer-events: none; }
-  .stage .cap::before { content: ""; display: block; width: 2.6em; height: 2px; background: var(--band-color, #c8102e); margin-bottom: .9em; }
+  .stage .cap::before { content: ""; display: block; width: 2.6em; height: 2px; background: currentColor; margin-bottom: .9em; }
   .stage .cap.tl { top: 4%; left: 6%; }
   .stage .cap.br { right: 6%; bottom: 5%; }
 
@@ -73,11 +71,10 @@
 <div class="wrap">
   <div class="stage bw" id="stage">
     <img class="bg" id="bg" src="photo.jpg" alt="Imagem de fundo do cartaz">
-    <div class="band" id="band"></div>
     <p class="cap tl" id="cap-tl">Some leave
 a trace.</p>
     <h1 class="headline" id="headline">Ghosted</h1>
-    <div class="fg framed" id="fg"><img id="fg-img" src="photo.jpg" alt="Imagem da frente"></div>
+    <div class="fg" id="fg"><img id="fg-img" src="photo.jpg" alt="Imagem da frente"></div>
     <p class="cap br" id="cap-br">No name.
 No trace.</p>
     <div class="grain" id="grain"></div>
@@ -86,7 +83,7 @@ No trace.</p>
   <aside class="panel">
     <div>
       <h1>Negative Poster</h1>
-      <p>Uma imagem de fundo, uma manchete que inverte contra o fundo, uma imagem menor na frente. Arraste a imagem da frente.</p>
+      <p>Uma imagem de fundo, uma manchete que inverte contra o fundo, uma imagem menor na frente. Arraste a manchete pra cima e pra baixo e a imagem da frente pra onde quiser.</p>
     </div>
 
     <div class="group">
@@ -109,8 +106,8 @@ No trace.</p>
       </div>
       <div class="row">
         <div class="field">
-          <label for="y">Altura <output id="y-out">44%</output></label>
-          <input type="range" id="y" min="0" max="80" step="1" value="44">
+          <label for="y">Altura (ou arraste o texto) <output id="y-out">44%</output></label>
+          <input type="range" id="y" min="0" max="90" step="1" value="44">
         </div>
         <div class="field">
           <label for="tracking">Espaço <output id="tracking-out">0.00</output></label>
@@ -131,14 +128,6 @@ No trace.</p>
           <input type="range" id="ox" min="-40" max="40" step="1" value="0">
         </div>
       </div>
-      <label class="check"><input type="checkbox" id="band-on" checked> Faixa de cor</label>
-      <div class="row">
-        <div class="field"><label for="band-color">Cor da faixa</label><input type="color" id="band-color" value="#c8102e"></div>
-        <div class="field">
-          <label for="band-x">Faixa X <output id="band-x-out">42%</output></label>
-          <input type="range" id="band-x" min="0" max="86" step="1" value="42">
-        </div>
-      </div>
       <label class="check"><input type="checkbox" id="bw" checked> Fundo em P&amp;B</label>
       <label class="check"><input type="checkbox" id="grain-on" checked> Grão</label>
       <label class="upload">Trocar fundo<input type="file" id="bg-file" accept="image/*"></label>
@@ -150,7 +139,6 @@ No trace.</p>
         <label for="fg-w">Largura <output id="fg-w-out">36%</output></label>
         <input type="range" id="fg-w" min="12" max="80" step="1" value="36">
       </div>
-      <label class="check"><input type="checkbox" id="framed" checked> Moldura branca</label>
       <label class="upload">Trocar imagem (PNG com fundo transparente funciona melhor)<input type="file" id="fg-file" accept="image/*"></label>
     </div>
 
@@ -166,7 +154,7 @@ No trace.</textarea></div>
       <button type="button" id="reset">Redefinir</button>
     </div>
 
-    <p class="note">O negativo é uma linha de CSS: a manchete tem uma cor e <code>mix-blend-mode: difference</code>. Sobre área clara ela escurece, sobre área escura clareia, letra por letra, sem máscara. <code>exclusion</code> faz o mesmo com menos contraste quando a cor não é branca; <code>sólido</code> desliga o efeito. Com o fundo em P&amp;B o negativo cai em preto e branco puros. O resto é imagem, uma faixa colorida, um <code>drop-shadow</code> e grão.</p>
+    <p class="note">O negativo é uma linha de CSS: a manchete tem uma cor e <code>mix-blend-mode: difference</code>. Sobre área clara ela escurece, sobre área escura clareia, letra por letra, sem máscara. <code>exclusion</code> faz o mesmo com menos contraste quando a cor não é branca; <code>sólido</code> desliga o efeito. Com o fundo em P&amp;B o negativo cai em preto e branco puros. O resto é imagem, um <code>drop-shadow</code> e grão.</p>
   </aside>
 </div>
 
@@ -176,13 +164,13 @@ No trace.</textarea></div>
   const stage = $('stage'), headline = $('headline'), bg = $('bg'), fg = $('fg');
   const ctl = {
     text: $('text'), color: $('color'), size: $('size'), y: $('y'), tracking: $('tracking'),
-    zoom: $('zoom'), ox: $('ox'), 'band-on': $('band-on'), 'band-color': $('band-color'), 'band-x': $('band-x'), 'grain-on': $('grain-on'),
-    'fg-w': $('fg-w'), framed: $('framed'), cap1: $('cap1'), cap2: $('cap2'), 'cap-color': $('cap-color'), bw: $('bw'),
+    zoom: $('zoom'), ox: $('ox'), 'grain-on': $('grain-on'),
+    'fg-w': $('fg-w'), cap1: $('cap1'), cap2: $('cap2'), 'cap-color': $('cap-color'), bw: $('bw'),
   };
   const defaults = {
     text: 'Ghosted', color: '#ffffff', size: 38, y: 44, tracking: 0, blend: 'difference',
-    zoom: 1, ox: 0, 'band-on': true, 'band-color': '#c8102e', 'band-x': 42, 'grain-on': true,
-    'fg-w': 36, framed: true, cap1: 'Some leave\na trace.', cap2: 'No name.\nNo trace.', 'cap-color': '#1a1a1a',
+    zoom: 1, ox: 0, 'grain-on': true,
+    'fg-w': 36, cap1: 'Some leave\na trace.', cap2: 'No name.\nNo trace.', 'cap-color': '#1a1a1a',
     fgLeft: 32, fgTop: 58,
   };
 
@@ -209,13 +197,9 @@ No trace.</textarea></div>
     stage.style.setProperty('--tracking', ctl.tracking.value + 'em');
     stage.style.setProperty('--blend', blend());
     bg.style.transform = `translateX(${ctl.ox.value}%) scale(${ctl.zoom.value})`;
-    $('band').hidden = !ctl['band-on'].checked;
-    stage.style.setProperty('--band-color', ctl['band-color'].value);
-    stage.style.setProperty('--band-x', ctl['band-x'].value + '%');
     $('grain').hidden = !ctl['grain-on'].checked;
     stage.classList.toggle('bw', ctl.bw.checked);
     stage.style.setProperty('--fg-w', ctl['fg-w'].value + '%');
-    fg.classList.toggle('framed', ctl.framed.checked);
     $('cap-tl').textContent = ctl.cap1.value;
     $('cap-br').textContent = ctl.cap2.value;
     stage.style.setProperty('--cap-color', ctl['cap-color'].value);
@@ -224,7 +208,6 @@ No trace.</textarea></div>
     $('tracking-out').textContent = Number(ctl.tracking.value).toFixed(2);
     $('zoom-out').textContent = Number(ctl.zoom.value).toFixed(2);
     $('ox-out').textContent = ctl.ox.value;
-    $('band-x-out').textContent = ctl['band-x'].value + '%';
     $('fg-w-out').textContent = ctl['fg-w'].value + '%';
   }
 
@@ -246,6 +229,23 @@ No trace.</textarea></div>
   const drop = () => { drag = null; fg.classList.remove('dragging'); };
   fg.addEventListener('pointerup', drop);
   fg.addEventListener('pointercancel', drop);
+
+  // Drag the headline vertically; the slider follows so both stay in sync.
+  let hdrag = null;
+  headline.addEventListener('pointerdown', (e) => {
+    const s = stage.getBoundingClientRect();
+    hdrag = { s, offset: e.clientY - headline.getBoundingClientRect().top };
+    headline.setPointerCapture(e.pointerId);
+  });
+  headline.addEventListener('pointermove', (e) => {
+    if (!hdrag) return;
+    const y = (e.clientY - hdrag.s.top - hdrag.offset) / hdrag.s.height * 100;
+    ctl.y.value = Math.round(Math.max(0, Math.min(90, y)));
+    apply();
+  });
+  const hdrop = () => { hdrag = null; };
+  headline.addEventListener('pointerup', hdrop);
+  headline.addEventListener('pointercancel', hdrop);
 
   function placeFg() { fg.style.left = defaults.fgLeft + '%'; fg.style.top = defaults.fgTop + '%'; }
 
