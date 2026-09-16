@@ -61,3 +61,38 @@ film grain, empty space on one side. Documentary still, 3:2.`
 - [ ] Nada de texto/logo/watermark nas imagens.
 - [ ] Tamanhos dentro do alvo (imagens ≤ 600 KB cada).
 - [ ] Nomes de arquivo exatamente como na tabela, e a flag correspondente ligada em `content/media.ts`.
+
+## 5. Fotos dos experimentos (página Código aberto)
+
+Cada demo lê `public/experiments/<slug>/photo.jpg`. Basta substituir o arquivo; nenhum código muda.
+O Negative Poster também lê `front.png` (recorte com fundo transparente) pra imagem da frente; se
+o arquivo não existir, ele usa `photo.jpg`. O site aplica o efeito por cima, então gere a foto
+"limpa": sem texto, sem logo, sem filtro.
+
+| Slug | Formato | O que o efeito precisa |
+| --- | --- | --- |
+| `frosted-reveal` | 4:5, 1600×2000 | Retrato em close, olhar direto, fundo neutro e liso. O vidro fosco esconde detalhe: o rosto tem que ser reconhecível mesmo borrado. |
+| `gaze-poster` | 9:16, 1080×1920 | Retrato editorial vertical, P&B, contraste alto, muito espaço vazio de um lado (a palavra vertical entra ali). |
+| `halftone-poster` | 4:5, 1600×2000 | Rosto com luz lateral dura e sombras fechadas. Meios-tons variados viram pontos de tamanhos diferentes. |
+| `split-tone-duotone` | 4:5, 1600×2000 | Cena com grande variação de luz: contraluz, cidade à noite, névoa. O duotone separa sombra e luz. |
+| `liquid-distortion` | 4:5, 1600×2000 | Superfície com linhas retas e repetição: fachada, grade, azulejos, piscina. A onda fica óbvia deformando linhas. |
+| `scanline-reveal` | 4:5, 1600×2000 | Cena escura e tecnológica: corredor de servidores, néon apagado, painel. Vai ficar em P&B escuro atrás do feixe. |
+| `knockout-marquee` | 16:9, 2400×1350 | Paisagem panorâmica colorida: praia ao pôr do sol, deserto, skyline. Aparece só dentro das letras, então cor e gradiente contam mais que detalhe. |
+| `torn-edge-collage` | 4:5, 1600×2000 | Rua, muro grafitado, textura urbana. Vira P&B; o recorte de papel colorido entra por cima. |
+| `pixel-sort` | 4:5, 1600×2000 | Céu com gradiente, skyline com luzes, água refletindo. O sort ordena as áreas claras: quanto mais brilho e gradiente, mais dramático. |
+| `negative-poster` (`photo.jpg`) | 9:16, 1080×1920 | Retrato dramático com metade clara e metade escura, ou fundo dividido em luz e sombra. O texto inverte contra cada lado. |
+| `negative-poster` (`front.png`) | PNG transparente, ~800×1200 | Figura de corpo inteiro recortada (pessoa de costas, silhueta caminhando), pra colar na frente. |
+
+Prompts (colar a direção comum da seção 1 antes de cada um):
+
+- **frosted-reveal** — "Tight portrait, subject looking straight into the lens, seamless mid-grey backdrop, soft frontal light, shallow depth of field. 4:5."
+- **gaze-poster** — "Editorial fashion portrait, three-quarter profile, black and white, hard side light, the right half of the frame empty and white. 9:16."
+- **halftone-poster** — "Portrait lit by one hard light from the side, deep black shadows, bright highlights on the cheekbone, plain dark background. 4:5."
+- **split-tone-duotone** — "Backlit figure in fog at dusk, strong rim light, city lights out of focus behind, wide tonal range from black to white. 4:5."
+- **liquid-distortion** — "Modernist building facade, repeating windows and straight concrete lines, shot straight on, even daylight. 4:5."
+- **scanline-reveal** — "Dark data-centre corridor, rows of server racks with small status lights, single cold light at the far end. 4:5."
+- **knockout-marquee** — "Wide coastal landscape at golden hour, saturated orange sky, dark sea, thin horizon line. 16:9."
+- **torn-edge-collage** — "Concrete wall covered in layered posters and graffiti, street level, flat daylight, gritty texture. 4:5."
+- **pixel-sort** — "City skyline at blue hour with lit windows, gradient sky from orange to deep blue, calm water reflecting the lights. 4:5."
+- **negative-poster / photo** — "Portrait with the face half in bright light and half in deep shadow, split exactly down the middle, plain background matching each side. 9:16."
+- **negative-poster / front** — "Full-body figure walking away from camera, hooded jacket, isolated on transparent background, subtle ground shadow. PNG."

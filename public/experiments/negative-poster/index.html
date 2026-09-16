@@ -81,7 +81,8 @@
     <p class="cap tl" id="cap-tl">Some leave
 a trace.</p>
     <h1 class="headline" id="headline">Ghosted</h1>
-    <div class="fg" id="fg"><img id="fg-img" src="photo.jpg" alt="Imagem da frente"></div>
+    <!-- front.png (transparent cutout) if present; falls back to the background photo. -->
+    <div class="fg" id="fg"><img id="fg-img" src="front.png" alt="Imagem da frente" onerror="this.onerror = null; this.src = 'photo.jpg';"></div>
     <p class="cap br" id="cap-br">No name.
 No trace.</p>
     <div class="grain" id="grain"></div>
