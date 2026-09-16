@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
-import { ExperimentCard } from "@/components/features/experiment-card";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ExperimentPreview } from "@/components/features/experiment-preview";
 import { Container } from "@/components/ui/container";
 import { Sticker } from "@/components/ui/sticker";
+import { Tag } from "@/components/ui/tag";
 import { experiments } from "@/content/experiments";
+import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
 
@@ -17,6 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/open-sou
 
 export default async function OpenSourcePage() {
   const t = await getTranslations("openSource");
+  const locale = await getLocale();
 
   return (
     <>
@@ -32,9 +35,42 @@ export default async function OpenSourcePage() {
           </Sticker>
         </div>
       </section>
-      {experiments.map((e, i) => (
-        <ExperimentCard key={e.slug} experiment={e} index={i} />
-      ))}
+
+      <section className="border-t-2 border-ink-700">
+        <Container className="grid grid-cols-1 gap-8 py-10 sm:grid-cols-2 lg:grid-cols-3">
+          {experiments.map((e, i) => {
+            const href = `/open-source/${e.slug}`;
+            return (
+              <article key={e.slug} className="flex min-w-0 flex-col gap-4">
+                <ExperimentPreview slug={e.slug} title={e.title} href={href} hint={t("hover")} />
+                <div className="flex min-w-0 flex-col gap-2">
+                  <span className="font-mono text-[13px] text-acid-500">
+                    {String(i + 1).padStart(2, "0")} / {e.tags[0]}
+                  </span>
+                  <h2 className="text-h2">
+                    <Link href={href} className="text-paper-100 transition-colors hover:text-acid-500">
+                      {e.title}
+                    </Link>
+                  </h2>
+                  <p className="text-[14px] text-ink-300">{e.summary[locale]}</p>
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <ul className="flex flex-wrap gap-1.5">
+                      {e.tags.slice(1).map((tag) => (
+                        <li key={tag}>
+                          <Tag className="px-2 py-1 text-[10px]">{tag}</Tag>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href={href} className="shrink-0 font-condensed text-[13px] font-bold tracking-[0.1em] text-acid-500 uppercase hover:text-white">
+                      {t("open")}
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </Container>
+      </section>
     </>
   );
 }

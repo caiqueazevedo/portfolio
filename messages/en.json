@@ -142,6 +142,11 @@
     "copy": "Copy",
     "copied": "Copied ✱",
     "lines": "lines",
-    "how": "How it works"
+    "how": "How it works",
+    "open": "Open →",
+    "back": "← All experiments",
+    "next": "Next experiment",
+    "count": "{count} experiments",
+    "hover": "Move the mouse. Click to open."
   }
 }
