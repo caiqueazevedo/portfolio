@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Negative Poster</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+    --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage (a 9:16 poster) ---------- */
+  .stage { position: relative; aspect-ratio: 9 / 16; width: 100%; max-width: min(100%, calc(84vh * 9 / 16)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; touch-action: none; user-select: none; container-type: inline-size; }
+  .stage .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; transform-origin: center; }
+  /* A grey background makes `difference` land on pure black and white; colour would tint the letters. */
+  .stage.bw .bg { filter: grayscale(1) contrast(1.1); }
+  .stage .band { position: absolute; top: 0; bottom: 0; left: var(--band-x, 42%); width: var(--band-w, 14%); background: var(--band-color, #c8102e); pointer-events: none; }
+  .stage .grain { position: absolute; inset: 0; background: var(--noise); opacity: .09; pointer-events: none; }
+  /* The headline: one colour, one blend mode. With `difference` and white text the letters
+     invert against whatever is behind them: black over light areas, white over dark. */
+  .stage .headline {
+    position: absolute; left: 0; right: 0; top: var(--y, 44%); margin: 0; padding: 0 3%;
+    font-family: var(--font-display); font-size: var(--size, 38cqw); line-height: .84; letter-spacing: var(--tracking, 0em);
+    text-transform: uppercase; text-align: center; white-space: nowrap; color: var(--color, #ffffff); mix-blend-mode: var(--blend, normal);
+    pointer-events: none;
+  }
+  .stage .fg { position: absolute; width: var(--fg-w, 36%); cursor: grab; filter: drop-shadow(0 18px 30px rgba(0,0,0,.55)); }
+  .stage .fg.dragging { cursor: grabbing; }
+  .stage .fg img { display: block; width: 100%; height: auto; pointer-events: none; }
+  .stage .fg.framed img { border: 1.2cqw solid #f2efe8; }
+  .stage .cap { position: absolute; margin: 0; font-family: var(--font-mono); font-size: clamp(7px, 2.6cqw, 13px); letter-spacing: .22em; text-transform: uppercase; line-height: 1.7; white-space: pre-line; color: var(--cap-color, #1a1a1a); pointer-events: none; }
+  .stage .cap::before { content: ""; display: block; width: 2.6em; height: 2px; background: var(--band-color, #c8102e); margin-bottom: .9em; }
+  .stage .cap.tl { top: 4%; left: 6%; }
+  .stage .cap.br { right: 6%; bottom: 5%; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel > div > p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .group { display: grid; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .group h2 { margin: 0; font-family: var(--font-mono); font-weight: 400; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="text"], textarea { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; }
+  input[type="text"] { text-transform: uppercase; }
+  textarea { resize: vertical; min-height: 56px; line-height: 1.4; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: var(--ground); }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, textarea, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; margin: 0; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <div class="stage bw" id="stage">
+    <img class="bg" id="bg" src="photo.jpg" alt="Imagem de fundo do cartaz">
+    <div class="band" id="band"></div>
+    <p class="cap tl" id="cap-tl">Some leave
+a trace.</p>
+    <h1 class="headline" id="headline">Ghosted</h1>
+    <div class="fg framed" id="fg"><img id="fg-img" src="photo.jpg" alt="Imagem da frente"></div>
+    <p class="cap br" id="cap-br">No name.
+No trace.</p>
+    <div class="grain" id="grain"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Negative Poster</h1>
+      <p>Uma imagem de fundo, uma manchete que inverte contra o fundo, uma imagem menor na frente. Arraste a imagem da frente.</p>
+    </div>
+
+    <div class="group">
+      <h2>Manchete</h2>
+      <div class="field">
+        <label for="text">Texto</label>
+        <input type="text" id="text" value="Ghosted" maxlength="24" autocomplete="off">
+      </div>
+      <div class="row">
+        <div class="field"><label for="color">Cor</label><input type="color" id="color" value="#ffffff"></div>
+        <div class="field">
+          <label for="size">Tamanho <output id="size-out">38</output></label>
+          <input type="range" id="size" min="10" max="60" step="1" value="38">
+        </div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Modo de mistura do texto">
+        <label title="Cor sólida"><input type="radio" name="blend" value="normal"><span>sólido</span></label>
+        <label title="Inverte contra o fundo"><input type="radio" name="blend" value="difference" checked><span>difference</span></label>
+        <label title="Inverte com menos contraste"><input type="radio" name="blend" value="exclusion"><span>exclusion</span></label>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="y">Altura <output id="y-out">44%</output></label>
+          <input type="range" id="y" min="0" max="80" step="1" value="44">
+        </div>
+        <div class="field">
+          <label for="tracking">Espaço <output id="tracking-out">0.00</output></label>
+          <input type="range" id="tracking" min="-0.06" max="0.3" step="0.01" value="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Fundo</h2>
+      <div class="row">
+        <div class="field">
+          <label for="zoom">Zoom <output id="zoom-out">1.00</output></label>
+          <input type="range" id="zoom" min="1" max="2.5" step="0.01" value="1">
+        </div>
+        <div class="field">
+          <label for="ox">Posição X <output id="ox-out">0</output></label>
+          <input type="range" id="ox" min="-40" max="40" step="1" value="0">
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="band-on" checked> Faixa de cor</label>
+      <div class="row">
+        <div class="field"><label for="band-color">Cor da faixa</label><input type="color" id="band-color" value="#c8102e"></div>
+        <div class="field">
+          <label for="band-x">Faixa X <output id="band-x-out">42%</output></label>
+          <input type="range" id="band-x" min="0" max="86" step="1" value="42">
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="bw" checked> Fundo em P&amp;B</label>
+      <label class="check"><input type="checkbox" id="grain-on" checked> Grão</label>
+      <label class="upload">Trocar fundo<input type="file" id="bg-file" accept="image/*"></label>
+    </div>
+
+    <div class="group">
+      <h2>Imagem da frente</h2>
+      <div class="field">
+        <label for="fg-w">Largura <output id="fg-w-out">36%</output></label>
+        <input type="range" id="fg-w" min="12" max="80" step="1" value="36">
+      </div>
+      <label class="check"><input type="checkbox" id="framed" checked> Moldura branca</label>
+      <label class="upload">Trocar imagem (PNG com fundo transparente funciona melhor)<input type="file" id="fg-file" accept="image/*"></label>
+    </div>
+
+    <div class="group">
+      <h2>Legendas</h2>
+      <div class="row">
+        <div class="field"><label for="cap1">Canto superior</label><textarea id="cap1">Some leave
+a trace.</textarea></div>
+        <div class="field"><label for="cap2">Canto inferior</label><textarea id="cap2">No name.
+No trace.</textarea></div>
+      </div>
+      <div class="field"><label for="cap-color">Cor das legendas</label><input type="color" id="cap-color" value="#1a1a1a"></div>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+
+    <p class="note">O negativo é uma linha de CSS: a manchete tem uma cor e <code>mix-blend-mode: difference</code>. Sobre área clara ela escurece, sobre área escura clareia, letra por letra, sem máscara. <code>exclusion</code> faz o mesmo com menos contraste quando a cor não é branca; <code>sólido</code> desliga o efeito. Com o fundo em P&amp;B o negativo cai em preto e branco puros. O resto é imagem, uma faixa colorida, um <code>drop-shadow</code> e grão.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), headline = $('headline'), bg = $('bg'), fg = $('fg');
+  const ctl = {
+    text: $('text'), color: $('color'), size: $('size'), y: $('y'), tracking: $('tracking'),
+    zoom: $('zoom'), ox: $('ox'), 'band-on': $('band-on'), 'band-color': $('band-color'), 'band-x': $('band-x'), 'grain-on': $('grain-on'),
+    'fg-w': $('fg-w'), framed: $('framed'), cap1: $('cap1'), cap2: $('cap2'), 'cap-color': $('cap-color'), bw: $('bw'),
+  };
+  const defaults = {
+    text: 'Ghosted', color: '#ffffff', size: 38, y: 44, tracking: 0, blend: 'difference',
+    zoom: 1, ox: 0, 'band-on': true, 'band-color': '#c8102e', 'band-x': 42, 'grain-on': true,
+    'fg-w': 36, framed: true, cap1: 'Some leave\na trace.', cap2: 'No name.\nNo trace.', 'cap-color': '#1a1a1a',
+    fgLeft: 32, fgTop: 58,
+  };
+
+  const blend = () => document.querySelector('input[name="blend"]:checked').value;
+
+  // The size slider is a ceiling: the word shrinks until it fits the poster width.
+  function fitHeadline(max) {
+    // Measure the glyphs themselves (a Range), not the block, which always spans the poster.
+    const textWidth = () => { const r = document.createRange(); r.selectNodeContents(headline); return r.getBoundingClientRect().width; };
+    let size = max;
+    stage.style.setProperty('--size', size + 'cqw');
+    const limit = stage.clientWidth * 0.94;
+    while (size > 6 && textWidth() > limit) {
+      size -= 1;
+      stage.style.setProperty('--size', size + 'cqw');
+    }
+  }
+
+  function apply() {
+    headline.textContent = ctl.text.value.trim() || defaults.text;
+    stage.style.setProperty('--color', ctl.color.value);
+    fitHeadline(Number(ctl.size.value));
+    stage.style.setProperty('--y', ctl.y.value + '%');
+    stage.style.setProperty('--tracking', ctl.tracking.value + 'em');
+    stage.style.setProperty('--blend', blend());
+    bg.style.transform = `translateX(${ctl.ox.value}%) scale(${ctl.zoom.value})`;
+    $('band').hidden = !ctl['band-on'].checked;
+    stage.style.setProperty('--band-color', ctl['band-color'].value);
+    stage.style.setProperty('--band-x', ctl['band-x'].value + '%');
+    $('grain').hidden = !ctl['grain-on'].checked;
+    stage.classList.toggle('bw', ctl.bw.checked);
+    stage.style.setProperty('--fg-w', ctl['fg-w'].value + '%');
+    fg.classList.toggle('framed', ctl.framed.checked);
+    $('cap-tl').textContent = ctl.cap1.value;
+    $('cap-br').textContent = ctl.cap2.value;
+    stage.style.setProperty('--cap-color', ctl['cap-color'].value);
+    $('size-out').textContent = ctl.size.value;
+    $('y-out').textContent = ctl.y.value + '%';
+    $('tracking-out').textContent = Number(ctl.tracking.value).toFixed(2);
+    $('zoom-out').textContent = Number(ctl.zoom.value).toFixed(2);
+    $('ox-out').textContent = ctl.ox.value;
+    $('band-x-out').textContent = ctl['band-x'].value + '%';
+    $('fg-w-out').textContent = ctl['fg-w'].value + '%';
+  }
+
+  // Drag the foreground image; keep the grab offset so it does not jump under the pointer.
+  let drag = null;
+  fg.addEventListener('pointerdown', (e) => {
+    const r = fg.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, s, w: r.width, h: r.height };
+    fg.classList.add('dragging');
+    fg.setPointerCapture(e.pointerId);
+  });
+  fg.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const x = (e.clientX - drag.s.left - drag.dx) / drag.s.width * 100;
+    const y = (e.clientY - drag.s.top - drag.dy) / drag.s.height * 100;
+    fg.style.left = Math.max(-20, Math.min(95, x)) + '%';
+    fg.style.top = Math.max(-20, Math.min(95, y)) + '%';
+  });
+  const drop = () => { drag = null; fg.classList.remove('dragging'); };
+  fg.addEventListener('pointerup', drop);
+  fg.addEventListener('pointercancel', drop);
+
+  function placeFg() { fg.style.left = defaults.fgLeft + '%'; fg.style.top = defaults.fgTop + '%'; }
+
+  Object.values(ctl).forEach(el => el.addEventListener('input', apply));
+  document.querySelectorAll('input[name="blend"]').forEach(r => r.addEventListener('change', apply));
+  $('reset').addEventListener('click', () => {
+    Object.entries(defaults).forEach(([k, v]) => {
+      const el = ctl[k]; if (!el) return;
+      if (el.type === 'checkbox') el.checked = v; else el.value = v;
+    });
+    document.querySelector(`input[name="blend"][value="${defaults.blend}"]`).checked = true;
+    placeFg(); apply();
+  });
+  const upload = (input, target, attr) => input.addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { target[attr] = reader.result; };
+    reader.readAsDataURL(f);
+  });
+  upload($('bg-file'), bg, 'src');
+  upload($('fg-file'), $('fg-img'), 'src');
+
+  placeFg(); apply();
+})();
+</script>
+</html>

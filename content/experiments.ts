@@ -164,4 +164,20 @@ export const experiments: Experiment[] = [
     background: "#0b0d10",
     sourceUrl: null,
   },
+  {
+    slug: "negative-poster",
+    title: "Negative Poster",
+    summary: {
+      pt: "Cartaz em três camadas: fundo inteiro, manchete que inverte contra o fundo, imagem menor na frente. Faixa de cor, legendas e grão opcionais.",
+      en: "A three-layer poster: full background, a headline that inverts against it, a smaller image in front. Optional colour band, captions and grain.",
+    },
+    technique: {
+      pt: "O negativo é uma linha de CSS: a manchete tem uma cor (você escolhe) e mix-blend-mode: difference. Sobre área clara escurece, sobre área escura clareia, letra por letra. exclusion faz o mesmo com menos contraste; sólido desliga. A imagem da frente arrasta com Pointer Events e usa drop-shadow.",
+      en: "The negative is one line of CSS: the headline has a colour (your pick) and mix-blend-mode: difference. It darkens over light areas and lightens over dark ones, letter by letter. exclusion does the same with less contrast; solid turns it off. The front image drags with Pointer Events and uses drop-shadow.",
+    },
+    tags: ["mix-blend-mode", "Poster", "Pointer Events"],
+    height: 900,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
 ];
