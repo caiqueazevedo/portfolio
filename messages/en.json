@@ -147,6 +147,19 @@
     "back": "← All experiments",
     "next": "Next experiment",
     "count": "{count} experiments",
-    "hover": "Move the mouse. Click to open."
+    "hover": "Move the mouse. Click to open.",
+    "filters": {
+      "category": "Category",
+      "all": "All",
+      "filter": "Filter",
+      "typography": "Typography",
+      "collage": "Collage",
+      "sort": "Sort",
+      "az": "A → Z",
+      "za": "Z → A",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "empty": "Nothing in this category."
+    }
   }
 }

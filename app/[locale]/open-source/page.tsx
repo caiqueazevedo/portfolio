@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ExperimentPreview } from "@/components/features/experiment-preview";
+import { ExperimentGrid, type GridItem } from "@/components/features/experiment-grid";
 import { Container } from "@/components/ui/container";
 import { Sticker } from "@/components/ui/sticker";
-import { Tag } from "@/components/ui/tag";
 import { experiments } from "@/content/experiments";
-import { Link } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
+import { LANG_TAG, routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/open-source">): Promise<Metadata> {
@@ -20,6 +18,34 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/open-sou
 export default async function OpenSourcePage() {
   const t = await getTranslations("openSource");
   const locale = await getLocale();
+  const fmt = new Intl.DateTimeFormat(LANG_TAG[locale], { day: "2-digit", month: "short", year: "numeric" });
+
+  const items: GridItem[] = experiments.map((e) => ({
+    slug: e.slug,
+    title: e.title,
+    summary: e.summary[locale],
+    tags: e.tags,
+    category: e.category,
+    createdAt: e.createdAt,
+    dateLabel: fmt.format(new Date(e.createdAt)),
+  }));
+
+  const labels = {
+    category: t("filters.category"),
+    sort: t("filters.sort"),
+    all: t("filters.all"),
+    filter: t("filters.filter"),
+    typography: t("filters.typography"),
+    collage: t("filters.collage"),
+    az: t("filters.az"),
+    za: t("filters.za"),
+    newest: t("filters.newest"),
+    oldest: t("filters.oldest"),
+    empty: t("filters.empty"),
+    open: t("open"),
+    hover: t("hover"),
+    count: (n: number) => t("count", { count: n }),
+  };
 
   return (
     <>
@@ -37,38 +63,8 @@ export default async function OpenSourcePage() {
       </section>
 
       <section className="border-t-2 border-ink-700">
-        <Container className="grid grid-cols-1 gap-5 py-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {experiments.map((e, i) => {
-            const href = `/open-source/${e.slug}`;
-            return (
-              <article key={e.slug} className="flex min-w-0 flex-col gap-4">
-                <ExperimentPreview slug={e.slug} title={e.title} href={href} hint={t("hover")} />
-                <div className="flex min-w-0 flex-col gap-2">
-                  <span className="font-mono text-[13px] text-acid-500">
-                    {String(i + 1).padStart(2, "0")} / {e.tags[0]}
-                  </span>
-                  <h2 className="text-[22px]">
-                    <Link href={href} className="text-paper-100 transition-colors hover:text-acid-500">
-                      {e.title}
-                    </Link>
-                  </h2>
-                  <p className="text-[13px] text-ink-300">{e.summary[locale]}</p>
-                  <div className="flex items-center justify-between gap-3 pt-1">
-                    <ul className="flex flex-wrap gap-1.5">
-                      {e.tags.slice(1).map((tag) => (
-                        <li key={tag}>
-                          <Tag className="px-2 py-1 text-[10px]">{tag}</Tag>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link href={href} className="shrink-0 font-condensed text-[13px] font-bold tracking-[0.1em] text-acid-500 uppercase hover:text-white">
-                      {t("open")}
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+        <Container>
+          <ExperimentGrid items={items} labels={labels} />
         </Container>
       </section>
     </>

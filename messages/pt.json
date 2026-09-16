@@ -147,6 +147,19 @@
     "back": "← Todos os experimentos",
     "next": "Próximo experimento",
     "count": "{count} experimentos",
-    "hover": "Passe o mouse. Clique pra abrir."
+    "hover": "Passe o mouse. Clique pra abrir.",
+    "filters": {
+      "category": "Categoria",
+      "all": "Todos",
+      "filter": "Filtro",
+      "typography": "Tipografia",
+      "collage": "Colagem",
+      "sort": "Ordem",
+      "az": "A → Z",
+      "za": "Z → A",
+      "newest": "Mais novos",
+      "oldest": "Mais antigos",
+      "empty": "Nada nessa categoria."
+    }
   }
 }

@@ -4,9 +4,14 @@ import type { Localized } from "./localized";
  * Open-source experiments: self-contained demo pages served from `public/experiments/<slug>/`
  * and embedded live on the open-source page, source shown beside them.
  */
+export type Category = "filter" | "typography" | "collage";
+
 export type Experiment = {
   slug: string;
   title: string;
+  category: Category;
+  /** ISO date; the listing sorts by it. */
+  createdAt: string;
   summary: Localized<string>;
   /** One line on the technique, shown under the code. */
   technique: Localized<string>;
@@ -22,6 +27,8 @@ export type Experiment = {
 export const experiments: Experiment[] = [
   {
     slug: "frosted-reveal",
+    category: "filter",
+    createdAt: "2026-09-14T10:00:00-03:00",
     title: "Frosted Reveal",
     summary: {
       pt: "Vidro fosco sobre um retrato, com uma janela nítida que você arrasta ou deixa seguir o cursor. A janela pode ser retângulo, elipse, losango, triângulo ou uma palavra.",
@@ -38,6 +45,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "gaze-poster",
+    category: "typography",
+    createdAt: "2026-09-14T12:00:00-03:00",
     title: "Gaze Poster",
     summary: {
       pt: "Uma palavra vertical recorta a foto: onde cai no branco mostra a imagem por dentro, onde cai na foto vira só contorno.",
@@ -54,6 +63,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "halftone-poster",
+    category: "filter",
+    createdAt: "2026-09-15T21:00:00-03:00",
     title: "Halftone Poster",
     summary: {
       pt: "A foto vira retícula de pontos, como jornal ou serigrafia. Tamanho do ponto, ângulo da trama e cores de tinta e papel.",
@@ -70,6 +81,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "split-tone-duotone",
+    category: "filter",
+    createdAt: "2026-09-15T21:05:00-03:00",
     title: "Split Tone Duotone",
     summary: {
       pt: "Sombras numa cor, luzes em outra, com o meio-tom onde você quiser. Pares prontos e mistura com a cor original.",
@@ -86,6 +99,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "liquid-distortion",
+    category: "filter",
+    createdAt: "2026-09-15T21:10:00-03:00",
     title: "Liquid Distortion",
     summary: {
       pt: "A foto ondula como água onde o cursor passa e se acalma quando ele para. Quanto mais rápido o movimento, mais forte a onda.",
@@ -102,6 +117,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "scanline-reveal",
+    category: "typography",
+    createdAt: "2026-09-15T21:15:00-03:00",
     title: "Scanline Reveal",
     summary: {
       pt: "Um feixe varre a foto de cima a baixo e a manchete acende linha a linha atrás dele. Texto, duração e cor do feixe editáveis.",
@@ -118,6 +135,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "knockout-marquee",
+    category: "typography",
+    createdAt: "2026-09-15T21:20:00-03:00",
     title: "Knockout Marquee",
     summary: {
       pt: "Um texto gigante corre em loop e mostra a foto por dentro das letras. A foto fica parada; só a máscara anda.",
@@ -134,6 +153,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "torn-edge-collage",
+    category: "collage",
+    createdAt: "2026-09-15T21:25:00-03:00",
     title: "Torn Edge Collage",
     summary: {
       pt: "Recortes de papel rasgado colados sobre a foto em P&B. Arraste, gire, troque a cor do papel; cada rasgo é sorteado na hora.",
@@ -150,6 +171,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "pixel-sort",
+    category: "filter",
+    createdAt: "2026-09-15T21:30:00-03:00",
     title: "Pixel Sort",
     summary: {
       pt: "Trechos da foto dentro de uma faixa de brilho são ordenados coluna a coluna. O glitch clássico, sem shader.",
@@ -166,6 +189,8 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "negative-poster",
+    category: "typography",
+    createdAt: "2026-09-15T23:00:00-03:00",
     title: "Negative Poster",
     summary: {
       pt: "Cartaz em três camadas: fundo inteiro, manchete que inverte contra o fundo, imagem menor na frente. Faixa de cor, legendas e grão opcionais.",
