@@ -4,7 +4,7 @@ import type { Localized } from "./localized";
  * Open-source experiments: self-contained demo pages served from `public/experiments/<slug>/`
  * and embedded live on the open-source page, source shown beside them.
  */
-export type Category = "filter" | "typography" | "collage";
+export type Category = "images" | "typography";
 
 export type Experiment = {
   slug: string;
@@ -27,7 +27,7 @@ export type Experiment = {
 export const experiments: Experiment[] = [
   {
     slug: "frosted-reveal",
-    category: "filter",
+    category: "images",
     createdAt: "2026-09-14T10:00:00-03:00",
     title: "Frosted Reveal",
     summary: {
@@ -63,7 +63,7 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "halftone-poster",
-    category: "filter",
+    category: "images",
     createdAt: "2026-09-15T21:00:00-03:00",
     title: "Halftone Poster",
     summary: {
@@ -81,7 +81,7 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "split-tone-duotone",
-    category: "filter",
+    category: "images",
     createdAt: "2026-09-15T21:05:00-03:00",
     title: "Split Tone Duotone",
     summary: {
@@ -99,7 +99,7 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "liquid-distortion",
-    category: "filter",
+    category: "images",
     createdAt: "2026-09-15T21:10:00-03:00",
     title: "Liquid Distortion",
     summary: {
@@ -153,7 +153,7 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "torn-edge-collage",
-    category: "collage",
+    category: "images",
     createdAt: "2026-09-15T21:25:00-03:00",
     title: "Torn Edge Collage",
     summary: {
@@ -171,7 +171,7 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "pixel-sort",
-    category: "filter",
+    category: "images",
     createdAt: "2026-09-15T21:30:00-03:00",
     title: "Pixel Sort",
     summary: {

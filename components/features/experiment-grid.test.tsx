@@ -7,13 +7,13 @@ vi.mock("./experiment-preview", () => ({ ExperimentPreview: ({ title }: { title:
 vi.mock("@/i18n/navigation", () => ({ Link: (p: React.ComponentProps<"a">) => <a {...p} /> }));
 
 const items: GridItem[] = [
-  { slug: "b", title: "Beta", summary: "", tags: ["x"], category: "filter", createdAt: "2026-09-15T10:00", dateLabel: "15 set" },
+  { slug: "b", title: "Beta", summary: "", tags: ["x"], category: "images", createdAt: "2026-09-15T10:00", dateLabel: "15 set" },
   { slug: "a", title: "Alpha", summary: "", tags: ["y"], category: "typography", createdAt: "2026-09-14T10:00", dateLabel: "14 set" },
-  { slug: "c", title: "Gamma", summary: "", tags: ["z"], category: "filter", createdAt: "2026-09-16T10:00", dateLabel: "16 set" },
+  { slug: "c", title: "Gamma", summary: "", tags: ["z"], category: "images", createdAt: "2026-09-16T10:00", dateLabel: "16 set" },
 ];
 
 const labels: GridLabels = {
-  category: "Categoria", sort: "Ordem", all: "Todos", filter: "Filtro", typography: "Tipografia", collage: "Colagem",
+  category: "Categoria", sort: "Ordem", all: "Todos", images: "Imagens & Filtros", typography: "Tipografia",
   az: "A → Z", za: "Z → A", newest: "Mais novos", oldest: "Mais antigos", empty: "Nada.", open: "Abrir", hover: "hover",
   count: "{count} itens",
 };
@@ -31,20 +31,17 @@ describe("ExperimentGrid", () => {
     expect(titles()).toEqual(["Alpha", "Beta", "Gamma"]);
   });
 
-  it("combines several categories, clears them, and shows count and empty state", async () => {
+  it("combines categories, narrows them and clears back to all", async () => {
     const user = userEvent.setup();
     render(<ExperimentGrid items={items} labels={labels} />);
     const cats = screen.getByRole("group", { name: "Categoria" });
-    await user.click(within(cats).getByRole("checkbox", { name: "Filtro" }));
+    await user.click(within(cats).getByRole("checkbox", { name: "Imagens & Filtros" }));
     expect(titles()).toEqual(["Gamma", "Beta"]);
     expect(screen.getByText("2 itens")).toBeInTheDocument();
     await user.click(within(cats).getByRole("checkbox", { name: "Tipografia" }));
     expect(titles()).toEqual(["Gamma", "Beta", "Alpha"]);
-    await user.click(within(cats).getByRole("checkbox", { name: "Filtro" }));
-    await user.click(within(cats).getByRole("checkbox", { name: "Tipografia" }));
-    await user.click(within(cats).getByRole("checkbox", { name: "Colagem" }));
-    expect(screen.queryAllByRole("heading", { level: 2 })).toHaveLength(0);
-    expect(screen.getByText("Nada.")).toBeInTheDocument();
+    await user.click(within(cats).getByRole("checkbox", { name: "Imagens & Filtros" }));
+    expect(titles()).toEqual(["Alpha"]);
     await user.click(within(cats).getByRole("button", { name: "Todos" }));
     expect(titles()).toHaveLength(3);
   });

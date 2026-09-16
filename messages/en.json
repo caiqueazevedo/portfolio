@@ -151,15 +151,14 @@
     "filters": {
       "category": "Category",
       "all": "All",
-      "filter": "Filter",
       "typography": "Typography",
-      "collage": "Collage",
       "sort": "Sort",
       "az": "A → Z",
       "za": "Z → A",
       "newest": "Newest",
       "oldest": "Oldest",
-      "empty": "Nothing in this category."
+      "empty": "Nothing in this category.",
+      "images": "Images & Filters"
     }
   }
 }

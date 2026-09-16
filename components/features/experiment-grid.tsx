@@ -19,15 +19,14 @@ export type GridItem = {
 
 type Sort = "az" | "za" | "newest" | "oldest";
 const SORTS: Sort[] = ["az", "za", "newest", "oldest"];
-const CATEGORIES: Category[] = ["filter", "typography", "collage"];
+const CATEGORIES: Category[] = ["images", "typography"];
 
 export type GridLabels = {
   category: string;
   sort: string;
   all: string;
-  filter: string;
+  images: string;
   typography: string;
-  collage: string;
   az: string;
   za: string;
   newest: string;
