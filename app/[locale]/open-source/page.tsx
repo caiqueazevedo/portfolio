@@ -37,7 +37,7 @@ export default async function OpenSourcePage() {
       </section>
 
       <section className="border-t-2 border-ink-700">
-        <Container className="grid grid-cols-1 gap-8 py-10 sm:grid-cols-2 lg:grid-cols-3">
+        <Container className="grid grid-cols-1 gap-6 py-10 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
           {experiments.map((e, i) => {
             const href = `/open-source/${e.slug}`;
             return (
@@ -47,12 +47,12 @@ export default async function OpenSourcePage() {
                   <span className="font-mono text-[13px] text-acid-500">
                     {String(i + 1).padStart(2, "0")} / {e.tags[0]}
                   </span>
-                  <h2 className="text-h2">
+                  <h2 className="text-[26px]">
                     <Link href={href} className="text-paper-100 transition-colors hover:text-acid-500">
                       {e.title}
                     </Link>
                   </h2>
-                  <p className="text-[14px] text-ink-300">{e.summary[locale]}</p>
+                  <p className="text-[13px] text-ink-300">{e.summary[locale]}</p>
                   <div className="flex items-center justify-between gap-3 pt-1">
                     <ul className="flex flex-wrap gap-1.5">
                       {e.tags.slice(1).map((tag) => (
