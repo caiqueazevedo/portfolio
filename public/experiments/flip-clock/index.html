@@ -17,7 +17,7 @@
 
   /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; display: grid; place-items: center; padding: 24px; container-type: inline-size; }
-  .clock { display: flex; gap: clamp(8px, 2cqw, 20px); align-items: flex-start; }
+  .clock { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(8px, 2cqw, 20px); align-items: flex-start; max-width: 100%; }
   .group { display: grid; justify-items: center; gap: 8px; }
   .group .label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
   .digits { display: flex; gap: 4px; }
@@ -29,7 +29,9 @@
   .card .bottom { bottom: 0; border-radius: 0 0 6px 6px; align-items: flex-start; }
   .card .top span { transform: translateY(50%); }
   .card .bottom span { transform: translateY(-50%); }
-  .card .leaf { z-index: 2; transform-origin: bottom; backface-visibility: hidden; }
+  /* Leaves exist only while a flip runs; at rest they would cover the halves with the old digit. */
+  .card .leaf { z-index: 2; transform-origin: bottom; backface-visibility: hidden; visibility: hidden; }
+  .card.flip .leaf { visibility: visible; }
   .card .leaf.back { transform: rotateX(180deg); align-items: flex-start; border-radius: 0 0 6px 6px; top: 50%; transform-origin: top; }
   .card .leaf.back span { transform: translateY(-50%); }
   .card.flip .leaf.front { animation: fold var(--speed, 600ms) ease-in forwards; }
@@ -37,7 +39,6 @@
   @keyframes fold { to { transform: rotateX(-180deg); } }
   @keyframes unfold { from { transform: rotateX(180deg); } to { transform: rotateX(0); } }
   .card::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #000; z-index: 3; }
-  @media (prefers-reduced-motion: reduce) { .card.flip .leaf { animation: none; } }
 
   /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
@@ -95,6 +96,7 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   const clock = $('clock');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const mode = () => document.querySelector('input[name="mode"]:checked').value;
   let cards = [];
 
@@ -117,10 +119,19 @@
   function setDigit(card, d) {
     if (card.dataset.d === d) return;
     const [top, bottom, front, back] = card.querySelectorAll('span');
-    front.textContent = card.dataset.d || d; top.textContent = d; back.textContent = d; bottom.textContent = card.dataset.d || d;
-    card.classList.remove('flip'); void card.offsetWidth; card.classList.add('flip');
-    card.addEventListener('animationend', () => { bottom.textContent = d; card.classList.remove('flip'); }, { once: true });
+    const old = card.dataset.d;
     card.dataset.d = d;
+    top.textContent = d; back.textContent = d;
+    if (!old || reduced.matches) { bottom.textContent = d; return; }
+    front.textContent = old; bottom.textContent = old;
+    card.classList.remove('flip'); void card.offsetWidth; card.classList.add('flip');
+    // One handler per card (a property, not a listener), so a flip interrupted by the next
+    // one never leaves a stale callback; it settles on whatever digit is current by then.
+    card.onanimationend = (e) => {
+      if (!e.target.classList.contains('back')) return;
+      bottom.textContent = card.dataset.d;
+      card.classList.remove('flip');
+    };
   }
 
   function tick() {
