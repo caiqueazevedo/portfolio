@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Image Compressor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage: a before/after wipe ---------- */
+  .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: 1fr auto; }
+  .view { position: relative; overflow: hidden; touch-action: none; cursor: ew-resize; }
+  .view img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; }
+  /* The compressed copy sits on top, clipped to the left of the handle. */
+  .view .after { clip-path: inset(0 calc(100% - var(--x, 50%)) 0 0); }
+  .view .tag { position: absolute; top: 12px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; background: rgba(0,0,0,.6); padding: 4px 9px; border-radius: 3px; pointer-events: none; }
+  .view .tag.l { left: 12px; color: var(--accent); }
+  .view .tag.r { right: 12px; color: var(--muted); }
+  .handle { position: absolute; top: 0; bottom: 0; left: var(--x, 50%); width: 2px; background: var(--accent); pointer-events: none; }
+  .handle::after { content: "↔"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #0e0e0c; display: grid; place-items: center; font-size: 15px; }
+  .bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
+  .bar div { background: #0a0d11; padding: 12px 14px; }
+  .bar span { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .bar b { font-family: var(--font-mono); font-weight: 400; font-size: 17px; }
+  .bar b.win { color: var(--accent); }
+  .drop { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11,13,16,.85); font-family: var(--font-mono); font-size: 13px; color: var(--accent); opacity: 0; pointer-events: none; transition: opacity 120ms; }
+  .stage.over .drop { opacity: 1; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .seg label.off { opacity: .35; cursor: not-allowed; }
+  button.plain, .upload { font: inherit; font-size: 13px; padding: 10px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; display: block; }
+  button.plain:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; grid-template-rows: 1fr auto; }
+  html.card .bar { grid-template-columns: repeat(2, 1fr); }
+  html.card .bar div { padding: 7px 10px; }
+  html.card .bar b { font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="view" id="view">
+      <img class="before" id="before" src="photo.jpg" alt="Original">
+      <img class="after" id="after" alt="Comprimida">
+      <span class="tag l" id="tag-l">comprimida</span>
+      <span class="tag r">original</span>
+      <div class="handle" id="handle"></div>
+    </div>
+    <div class="bar">
+      <div><span>original</span><b id="s-before">—</b></div>
+      <div><span>resultado</span><b id="s-after" class="win">—</b></div>
+      <div><span>economia</span><b id="s-save" class="win">—</b></div>
+      <div><span>dimensões</span><b id="s-dim">—</b></div>
+      <div><span>tempo</span><b id="s-ms">—</b></div>
+    </div>
+    <div class="drop">solte a imagem</div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Image Compressor</h1>
+      <p>Redimensiona e recomprime no próprio browser. Arraste a alça pra comparar. A imagem nunca sai da máquina.</p>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Formato">
+      <label><input type="radio" name="fmt" value="image/jpeg"><span>JPEG</span></label>
+      <label><input type="radio" name="fmt" value="image/webp" checked><span>WebP</span></label>
+      <label id="avif-l"><input type="radio" name="fmt" value="image/avif"><span>AVIF</span></label>
+    </div>
+    <div class="field">
+      <label for="q">Qualidade <output id="q-out">0,72</output></label>
+      <input type="range" id="q" min="0.2" max="1" step="0.02" value="0.72">
+    </div>
+    <div class="field">
+      <label for="w">Largura máxima <output id="w-out">1600 px</output></label>
+      <input type="range" id="w" min="320" max="2400" step="40" value="1600">
+    </div>
+    <label class="upload">Escolher imagem<input type="file" id="file" accept="image/*"></label>
+    <button type="button" class="plain" id="dl">Baixar resultado</button>
+    <p class="note">A imagem entra num <code>canvas</code> no tamanho de destino e sai por <code>canvas.toBlob(tipo, qualidade)</code> — o encoder do próprio browser faz o trabalho pesado. O redimensionamento é feito em etapas de no máximo 2× por vez, senão o <em>downscale</em> de uma tacada só serrilha as bordas. Nada é enviado a lugar nenhum: <code>createObjectURL</code> mantém tudo em memória.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), view = $('view');
+  let source = null, sourceBytes = 0, lastBlob = null, lastUrl = null;
+
+  const kb = (n) => n > 1024 * 1024 ? (n / 1048576).toFixed(2) + ' MB' : Math.round(n / 1024) + ' KB';
+
+  // AVIF encoding is not in every browser; disable the option when toBlob refuses it.
+  (async () => {
+    const c = document.createElement('canvas'); c.width = c.height = 4;
+    const blob = await new Promise(r => c.toBlob(r, 'image/avif', 0.5));
+    if (!blob || blob.type !== 'image/avif') { $('avif-l').classList.add('off'); $('avif-l').querySelector('input').disabled = true; }
+  })();
+
+  async function load(src) {
+    const img = new Image();
+    img.decoding = 'async'; img.src = src;
+    await img.decode();
+    source = img;
+    compress();
+  }
+
+  function draw(img, targetW) {
+    // Halve repeatedly: a single big downscale drops pixels instead of averaging them.
+    let w = img.naturalWidth, h = img.naturalHeight;
+    const scale = Math.min(1, targetW / w);
+    let canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    while (w * 0.5 > w * scale) {
+      const next = document.createElement('canvas');
+      next.width = Math.max(1, Math.round(w * 0.5)); next.height = Math.max(1, Math.round(h * 0.5));
+      const ctx = next.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(canvas, 0, 0, next.width, next.height);
+      canvas = next; w = next.width; h = next.height;
+    }
+    const out = document.createElement('canvas');
+    out.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    out.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = out.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(canvas, 0, 0, out.width, out.height);
+    return out;
+  }
+
+  let pending = false;
+  async function compress() {
+    if (!source || pending) return;
+    pending = true;
+    const t0 = performance.now();
+    const fmt = document.querySelector('input[name="fmt"]:checked').value;
+    const canvas = draw(source, Number($('w').value));
+    const blob = await new Promise(r => canvas.toBlob(r, fmt, Number($('q').value)));
+    const ms = performance.now() - t0;
+    if (lastUrl) URL.revokeObjectURL(lastUrl);
+    lastBlob = blob; lastUrl = URL.createObjectURL(blob);
+    $('after').src = lastUrl;
+    $('s-before').textContent = sourceBytes ? kb(sourceBytes) : '—';
+    $('s-after').textContent = kb(blob.size);
+    const save = sourceBytes ? 1 - blob.size / sourceBytes : 0;
+    $('s-save').textContent = sourceBytes ? (save * 100).toFixed(0) + '%' : '—';
+    $('s-save').className = save > 0 ? 'win' : '';
+    $('s-dim').textContent = canvas.width + '×' + canvas.height;
+    $('s-ms').textContent = ms.toFixed(0) + ' ms';
+    $('tag-l').textContent = fmt.split('/')[1].toUpperCase() + ' · ' + Number($('q').value).toFixed(2).replace('.', ',');
+    pending = false;
+  }
+
+  function setX(clientX) {
+    const r = view.getBoundingClientRect();
+    view.style.setProperty('--x', Math.min(100, Math.max(0, (clientX - r.left) / r.width * 100)) + '%');
+  }
+  let dragging = false;
+  view.addEventListener('pointerdown', (e) => { dragging = true; view.setPointerCapture(e.pointerId); setX(e.clientX); });
+  view.addEventListener('pointermove', (e) => { if (dragging) setX(e.clientX); });
+  view.addEventListener('pointerup', () => { dragging = false; });
+
+  $('q').addEventListener('input', () => { $('q-out').textContent = Number($('q').value).toFixed(2).replace('.', ','); compress(); });
+  $('w').addEventListener('input', () => { $('w-out').textContent = $('w').value + ' px'; compress(); });
+  document.querySelectorAll('input[name="fmt"]').forEach(r => r.addEventListener('change', compress));
+  $('dl').addEventListener('click', () => {
+    if (!lastBlob) return;
+    const a = document.createElement('a'); a.href = lastUrl;
+    a.download = 'comprimida.' + lastBlob.type.split('/')[1]; a.click();
+  });
+
+  function accept(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    sourceBytes = file.size;
+    const url = URL.createObjectURL(file);
+    $('before').src = url;
+    load(url);
+  }
+  $('file').addEventListener('change', (e) => accept(e.target.files[0]));
+  ['dragenter', 'dragover'].forEach(t => stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.remove('over'); }));
+  stage.addEventListener('drop', (e) => accept(e.dataTransfer.files[0]));
+
+  // Bundled photo: fetch it once so the "original" size is honest.
+  fetch('photo.jpg').then(r => r.blob()).then(b => { sourceBytes = b.size; return load(URL.createObjectURL(b)); });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Sweep the wipe and drop the quality, so the card shows the trade-off in motion.
+    let t = 0;
+    setInterval(() => {
+      t += 0.02;
+      view.style.setProperty('--x', (50 + Math.sin(t) * 42) + '%');
+      const q = 0.55 + Math.cos(t * 0.6) * 0.35;
+      $('q').value = q.toFixed(2); compress();
+    }, 90);
+  }
+})();
+</script>
+</html>

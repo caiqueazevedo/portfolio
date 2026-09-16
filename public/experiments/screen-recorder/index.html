@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Screen Recorder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --rec: #f23e2e;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 540px; background: #000; border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: 1fr auto; }
+  .screen { position: relative; display: grid; place-items: center; overflow: hidden; background:
+    radial-gradient(800px 400px at 30% 20%, #161c24, transparent), #0a0d11; }
+  .screen video, .screen canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+  .screen .idle { text-align: center; padding: 24px; display: grid; gap: 10px; justify-items: center; }
+  .screen .idle h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 6vw, 56px); margin: 0; letter-spacing: .03em; }
+  .screen .idle p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 34ch; }
+  .screen.live .idle { display: none; }
+  .rec { position: absolute; top: 14px; left: 16px; display: none; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; background: rgba(0,0,0,.6); padding: 6px 11px; border-radius: 999px; }
+  .rec i { width: 9px; height: 9px; border-radius: 50%; background: var(--rec); animation: pulse 1s steps(2) infinite; }
+  @keyframes pulse { 50% { opacity: .15; } }
+  .stage[data-rec] .rec { display: flex; }
+  .bar { display: flex; gap: 10px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); background: #0a0d11; flex-wrap: wrap; }
+  .bar button { font: inherit; font-size: 13px; padding: 9px 14px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  .bar button:hover:not(:disabled) { border-color: var(--accent); }
+  .bar button:disabled { opacity: .35; cursor: not-allowed; }
+  .bar button.go { background: var(--rec); border-color: var(--rec); color: #fff; font-weight: 600; }
+  .bar .grow { flex: 1; }
+  .bar .stat { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .bar .stat b { color: var(--accent); font-weight: 400; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  select { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink); width: 100%; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  :is(input, button, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; grid-template-rows: 1fr; }
+  html.card .bar, html.card .idle { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="screen" id="screen">
+      <canvas id="demo"></canvas>
+      <video id="preview" muted playsinline hidden></video>
+      <div class="idle">
+        <h2>Grave a tela</h2>
+        <p>Escolha uma janela, uma aba ou o monitor inteiro. O arquivo é montado na memória e baixado direto — nenhum byte sai do dispositivo.</p>
+      </div>
+      <span class="rec"><i></i><span id="clock">00:00</span></span>
+    </div>
+    <div class="bar">
+      <button type="button" class="go" id="start">Gravar tela</button>
+      <button type="button" id="stop" disabled>Parar</button>
+      <button type="button" id="save" disabled>Baixar</button>
+      <span class="grow"></span>
+      <span class="stat" id="stat">pronto</span>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Screen Recorder</h1>
+      <p>Captura de tela com <code>getDisplayMedia</code> + <code>MediaRecorder</code>, do jeito nativo. Sem extensão, sem upload, sem servidor.</p>
+    </div>
+    <div class="field">
+      <label for="fmt">Contêiner</label>
+      <select id="fmt"></select>
+    </div>
+    <div class="field">
+      <label for="bitrate">Bitrate <output id="bitrate-out">4,0 Mbps</output></label>
+      <input type="range" id="bitrate" min="0.5" max="16" step="0.5" value="4">
+    </div>
+    <div class="field">
+      <label for="fps">Quadros por segundo <output id="fps-out">30</output></label>
+      <input type="range" id="fps" min="10" max="60" step="5" value="30">
+    </div>
+    <label class="check"><input type="checkbox" id="audio"> Capturar áudio do sistema</label>
+    <label class="check"><input type="checkbox" id="mic"> Somar o microfone</label>
+    <p class="note"><code>getDisplayMedia</code> devolve um <code>MediaStream</code> que o <code>MediaRecorder</code> corta em pedaços a cada <code>ondataavailable</code>; os <code>Blob</code>s vão pra um array e viram um arquivo só no fim. Quando há microfone e som do sistema, os dois entram num <code>AudioContext</code> e saem misturados por um <code>MediaStreamDestination</code>. A escolha de contêiner é filtrada por <code>MediaRecorder.isTypeSupported</code> — WebM em todo lado, MP4 só em parte.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), screen = $('screen'), preview = $('preview');
+  let recorder = null, chunks = [], stream = null, blob = null, t0 = 0, timer = null;
+
+  const CANDIDATES = [
+    ['video/webm;codecs=vp9,opus', 'WebM · VP9'],
+    ['video/webm;codecs=vp8,opus', 'WebM · VP8'],
+    ['video/mp4;codecs=avc1', 'MP4 · H.264'],
+    ['video/webm', 'WebM'],
+  ];
+  const supported = CANDIDATES.filter(([t]) => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+  $('fmt').innerHTML = supported.map(([t, l]) => `<option value="${t}">${l}</option>`).join('') || '<option>indisponível</option>';
+  if (!supported.length) { $('start').disabled = true; $('stat').textContent = 'MediaRecorder indisponível neste browser'; }
+
+  async function start() {
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: Number($('fps').value) },
+        audio: $('audio').checked,
+      });
+    } catch { $('stat').textContent = 'captura cancelada'; return; }
+
+    if ($('mic').checked) {
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Two audio sources cannot both ride the same track, so mix them first.
+        const ac = new AudioContext(), dest = ac.createMediaStreamDestination();
+        if (stream.getAudioTracks().length) ac.createMediaStreamSource(new MediaStream(stream.getAudioTracks())).connect(dest);
+        ac.createMediaStreamSource(micStream).connect(dest);
+        stream = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+      } catch { /* no mic: record the screen anyway */ }
+    }
+
+    preview.hidden = false; preview.srcObject = stream; preview.play();
+    screen.classList.add('live'); stage.setAttribute('data-rec', '');
+    $('demo').hidden = true;
+
+    chunks = []; blob = null;
+    recorder = new MediaRecorder(stream, { mimeType: $('fmt').value, videoBitsPerSecond: Number($('bitrate').value) * 1e6 });
+    recorder.ondataavailable = (e) => { if (e.data.size) { chunks.push(e.data); tick(); } };
+    recorder.onstop = finish;
+    recorder.start(1000);
+
+    t0 = Date.now(); timer = setInterval(tick, 250);
+    $('start').disabled = true; $('stop').disabled = false; $('save').disabled = true;
+    // The browser's own "stop sharing" button ends the track, not the recorder.
+    stream.getVideoTracks()[0].addEventListener('ended', stop);
+  }
+
+  function tick() {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    $('clock').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    const size = chunks.reduce((a, c) => a + c.size, 0);
+    const track = stream && stream.getVideoTracks()[0];
+    const st = track ? track.getSettings() : {};
+    $('stat').innerHTML = `<b>${(size / 1048576).toFixed(1)} MB</b> · ${st.width || '—'}×${st.height || '—'} · ${Math.round(st.frameRate || 0)} fps`;
+  }
+
+  function stop() {
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    clearInterval(timer);
+    stage.removeAttribute('data-rec');
+    $('stop').disabled = true;
+  }
+
+  function finish() {
+    blob = new Blob(chunks, { type: $('fmt').value });
+    stream.getTracks().forEach(t => t.stop());
+    preview.srcObject = null; preview.src = URL.createObjectURL(blob); preview.controls = true; preview.muted = false;
+    $('start').disabled = false; $('save').disabled = false;
+    $('stat').innerHTML = `pronto · <b>${(blob.size / 1048576).toFixed(1)} MB</b>`;
+  }
+
+  $('start').addEventListener('click', start);
+  $('stop').addEventListener('click', stop);
+  $('save').addEventListener('click', () => {
+    if (!blob) return;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'gravacao.' + (blob.type.includes('mp4') ? 'mp4' : 'webm'); a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+  $('bitrate').addEventListener('input', () => { $('bitrate-out').textContent = Number($('bitrate').value).toFixed(1).replace('.', ',') + ' Mbps'; });
+  $('fps').addEventListener('input', () => { $('fps-out').textContent = $('fps').value; });
+
+  /* A fake desktop drawn on canvas: the card needs something to "record" without asking
+     for a real screen, and it doubles as the idle backdrop. */
+  const c = $('demo'), ctx = c.getContext('2d');
+  function sizeCanvas() {
+    const r = c.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    c.width = Math.max(1, r.width * dpr); c.height = Math.max(1, r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  new ResizeObserver(sizeCanvas).observe(c);
+  let t = 0;
+  function frame() {
+    requestAnimationFrame(frame);
+    if (c.hidden) return;
+    t += 0.016;
+    const w = c.clientWidth, h = c.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#0a0d11'; ctx.fillRect(0, 0, w, h);
+    // Two drifting "windows" and a cursor, enough to read as a desktop at card size.
+    const win = (x, y, ww, hh, title) => {
+      ctx.fillStyle = '#12171d'; ctx.fillRect(x, y, ww, hh);
+      ctx.strokeStyle = '#232a32'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, ww, hh);
+      ctx.fillStyle = '#1a2129'; ctx.fillRect(x, y, ww, 20);
+      ctx.fillStyle = '#c8f31d'; ctx.fillRect(x + 8, y + 8, 5, 5);
+      ctx.fillStyle = '#8a94a0'; ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillText(title, x + 20, y + 14);
+      for (let i = 0; i < Math.floor((hh - 30) / 12); i++) {
+        ctx.fillStyle = i % 4 === 1 ? '#c8f31d' : '#2a323c';
+        ctx.globalAlpha = 0.5 + 0.5 * Math.sin(t * 2 + i);
+        ctx.fillRect(x + 10, y + 30 + i * 12, (ww - 26) * (0.3 + 0.6 * Math.abs(Math.sin(i * 1.7 + t * 0.6))), 4);
+      }
+      ctx.globalAlpha = 1;
+    };
+    win(w * 0.06 + Math.sin(t * 0.5) * 8, h * 0.12 + Math.cos(t * 0.4) * 6, w * 0.46, h * 0.5, 'terminal');
+    win(w * 0.42 + Math.cos(t * 0.35) * 10, h * 0.4 + Math.sin(t * 0.55) * 8, w * 0.48, h * 0.46, 'editor.tsx');
+    const cx = w * (0.5 + 0.34 * Math.sin(t * 0.7)), cy = h * (0.5 + 0.3 * Math.cos(t * 0.9));
+    ctx.fillStyle = '#e8ecef'; ctx.beginPath();
+    ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + 15); ctx.lineTo(cx + 4, cy + 11); ctx.lineTo(cx + 9, cy + 9); ctx.closePath(); ctx.fill();
+  }
+  sizeCanvas(); frame();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Fake the recording chrome: getDisplayMedia would need a user gesture and a picker.
+    stage.setAttribute('data-rec', '');
+    const started = Date.now();
+    setInterval(() => {
+      const s = Math.floor((Date.now() - started) / 1000);
+      $('clock').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    }, 500);
+  }
+})();
+</script>
+</html>

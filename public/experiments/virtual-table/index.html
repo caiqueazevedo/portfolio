@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Virtual Table</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; height: 560px; background: #000; border-radius: 6px; display: grid; grid-template-rows: auto auto 1fr; overflow: hidden; }
+  .stats { display: flex; gap: 18px; padding: 12px 16px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .stats b { color: var(--accent); font-weight: 400; }
+  .thead { display: grid; grid-template-columns: 70px 1.4fr 1fr 110px 90px; gap: 12px; padding: 8px 16px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
+  .thead button { all: unset; cursor: pointer; text-align: left; }
+  .thead button:hover, .thead button[data-active] { color: var(--ink); }
+  .viewport { overflow-y: auto; position: relative; }
+  .spacer { position: relative; }
+  .rows { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
+  .row { display: grid; grid-template-columns: 70px 1.4fr 1fr 110px 90px; gap: 12px; padding: 0 16px; align-items: center; height: var(--row, 36px); font-size: 13px; border-bottom: 1px solid #14181d; white-space: nowrap; overflow: hidden; }
+  .row:nth-child(even) { background: #0d1014; }
+  .row .id { font-family: var(--font-mono); color: var(--muted); font-size: 12px; }
+  .row .amt { font-family: var(--font-mono); text-align: right; }
+  .row .amt.neg { color: #f23e2e; }
+  .row .st { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); justify-self: start; }
+  .row .st.ok { color: var(--accent); border-color: var(--accent); }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="search"] { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; }
+  html.card .thead, html.card .row { grid-template-columns: 50px 1fr 90px; }
+  html.card .thead > :nth-child(3), html.card .thead > :nth-child(5), html.card .row > :nth-child(3), html.card .row > :nth-child(5) { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="stats"><span>linhas: <b id="s-total"></b></span><span>nós no DOM: <b id="s-dom"></b></span><span>render: <b id="s-ms"></b> ms</span></div>
+    <div class="thead">
+      <button type="button" data-sort="id" data-active>#</button><button type="button" data-sort="name">Cliente</button><button type="button" data-sort="city">Cidade</button><button type="button" data-sort="amount">Valor</button><span>Status</span>
+    </div>
+    <div class="viewport" id="viewport"><div class="spacer" id="spacer"><div class="rows" id="rows"></div></div></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Virtual Table</h1>
+      <p>Cem mil linhas rolando liso. Só as visíveis existem no DOM; o resto é um espaçador com a altura certa.</p>
+    </div>
+    <div class="field">
+      <label for="total">Linhas <output id="total-out">100.000</output></label>
+      <input type="range" id="total" min="1000" max="500000" step="1000" value="100000">
+    </div>
+    <div class="field">
+      <label for="rowh">Altura da linha <output id="rowh-out">36 px</output></label>
+      <input type="range" id="rowh" min="28" max="56" step="2" value="36">
+    </div>
+    <div class="field">
+      <label for="q">Filtrar por nome</label>
+      <input type="search" id="q" placeholder="ana, souza…">
+    </div>
+    <p class="note">O scroller tem um filho com <code>height = linhas × altura</code>, então a barra de rolagem é honesta. A cada <code>scroll</code>, calcula-se <code>first = floor(scrollTop / altura)</code> e renderizam-se só as ~20 linhas visíveis mais uma folga, deslocadas com <code>transform: translateY(first × altura)</code>. Ordenar e filtrar mexem num índice, não no DOM.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const viewport = $('viewport'), spacer = $('spacer'), rowsEl = $('rows');
+  const FIRST = ['Ana', 'Bruno', 'Carla', 'Diego', 'Elisa', 'Fábio', 'Gabi', 'Heitor', 'Iara', 'João', 'Karen', 'Lucas', 'Marina', 'Nina', 'Otávio', 'Paula', 'Rafa', 'Sofia', 'Tiago', 'Vera'];
+  const LAST = ['Souza', 'Lima', 'Costa', 'Rocha', 'Alves', 'Nunes', 'Pires', 'Melo', 'Dias', 'Reis', 'Moura', 'Freitas'];
+  const CITY = ['São Paulo', 'Curitiba', 'Recife', 'Porto Alegre', 'Belo Horizonte', 'Salvador', 'Manaus', 'Florianópolis'];
+  let data = [], index = [], rowH = 36, sortKey = 'id', sortDir = 1, filter = '';
+
+  function build(n) {
+    const t0 = performance.now();
+    data = new Array(n);
+    let seed = 42; const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32; // deterministic
+    for (let i = 0; i < n; i++) data[i] = { id: i + 1, name: `${FIRST[(rnd() * FIRST.length) | 0]} ${LAST[(rnd() * LAST.length) | 0]}`, city: CITY[(rnd() * CITY.length) | 0], amount: Math.round((rnd() - 0.3) * 5000 * 100) / 100, ok: rnd() > 0.2 };
+    reindex(); $('s-ms').textContent = (performance.now() - t0).toFixed(0);
+  }
+
+  function reindex() {
+    const q = filter.toLowerCase();
+    index = [];
+    for (let i = 0; i < data.length; i++) if (!q || data[i].name.toLowerCase().includes(q)) index.push(i);
+    if (sortKey !== 'id' || sortDir < 0) index.sort((a, b) => { const x = data[a][sortKey], y = data[b][sortKey]; return (x > y ? 1 : x < y ? -1 : 0) * sortDir; });
+    spacer.style.height = index.length * rowH + 'px';
+    $('s-total').textContent = index.length.toLocaleString('pt-BR');
+    render();
+  }
+
+  function render() {
+    const t0 = performance.now();
+    const first = Math.max(0, Math.floor(viewport.scrollTop / rowH) - 4);
+    const count = Math.ceil(viewport.clientHeight / rowH) + 8;
+    const html = [];
+    for (let k = first; k < Math.min(index.length, first + count); k++) {
+      const r = data[index[k]];
+      html.push(`<div class="row"><span class="id">${r.id}</span><span>${r.name}</span><span>${r.city}</span><span class="amt${r.amount < 0 ? ' neg' : ''}">${r.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span><span class="st${r.ok ? ' ok' : ''}">${r.ok ? 'pago' : 'aberto'}</span></div>`);
+    }
+    rowsEl.style.transform = `translateY(${first * rowH}px)`;
+    rowsEl.innerHTML = html.join('');
+    $('s-dom').textContent = rowsEl.children.length;
+    $('s-ms').textContent = (performance.now() - t0).toFixed(1);
+  }
+
+  viewport.addEventListener('scroll', render, { passive: true });
+  window.addEventListener('resize', render);
+  document.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => {
+    if (sortKey === b.dataset.sort) sortDir *= -1; else { sortKey = b.dataset.sort; sortDir = 1; }
+    document.querySelectorAll('[data-sort]').forEach(x => x.removeAttribute('data-active')); b.setAttribute('data-active', '');
+    reindex();
+  }));
+  $('total').addEventListener('input', () => { $('total-out').textContent = Number($('total').value).toLocaleString('pt-BR'); build(Number($('total').value)); });
+  $('rowh').addEventListener('input', () => { rowH = Number($('rowh').value); $('stage').style.setProperty('--row', rowH + 'px'); $('rowh-out').textContent = rowH + ' px'; spacer.style.height = index.length * rowH + 'px'; render(); });
+  $('q').addEventListener('input', () => { filter = $('q').value.trim(); reindex(); });
+  build(100000);
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    setInterval(() => viewport.scrollBy({ top: rowH * 3 }), 120);
+  }
+})();
+</script>
+</html>

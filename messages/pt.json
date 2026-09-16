@@ -158,7 +158,11 @@
       "newest": "Mais novos",
       "oldest": "Mais antigos",
       "empty": "Nada nessa categoria.",
-      "images": "Imagens & Filtros"
+      "images": "Imagens & Filtros",
+      "interaction": "Interação & UI",
+      "data": "Dados & Visualização",
+      "security": "Segurança",
+      "media": "Mídia & Arquivos"
     }
   }
 }

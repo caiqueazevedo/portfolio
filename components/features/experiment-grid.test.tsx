@@ -14,6 +14,7 @@ const items: GridItem[] = [
 
 const labels: GridLabels = {
   category: "Categoria", sort: "Ordem", all: "Todos", images: "Imagens & Filtros", typography: "Tipografia",
+  interaction: "Interação & UI", data: "Dados & Visualização", security: "Segurança", media: "Mídia & Arquivos",
   az: "A → Z", za: "Z → A", newest: "Mais novos", oldest: "Mais antigos", empty: "Nada.", open: "Abrir", hover: "hover",
   count: "{count} itens",
 };

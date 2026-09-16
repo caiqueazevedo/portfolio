@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>SVG Sparklines</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage: a small dashboard ---------- */
+  .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; padding: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-content: start; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 8px; min-width: 0; }
+  .tile h3 { margin: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  .tile .value { font-family: var(--font-display); font-size: 34px; line-height: 1; letter-spacing: .02em; }
+  .tile .value small { font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-left: 8px; }
+  .tile svg { width: 100%; height: 64px; display: block; overflow: visible; }
+  .spark path, .spark polyline { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .spark .area { fill: var(--accent); fill-opacity: .12; stroke: none; }
+  .spark .bar { fill: var(--accent); fill-opacity: .8; }
+  .spark .bar.neg { fill: #f23e2e; }
+  .spark .dot { fill: var(--accent); r: 3; }
+  .spark .cursor { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0; }
+  .spark .draw { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 1.2s cubic-bezier(.2,.9,.2,1) forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: #0e0e0c; font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; border-radius: 4px; transform: translate(-50%, -140%); opacity: 0; white-space: nowrap; z-index: 2; }
+  @media (prefers-reduced-motion: reduce) { .spark .draw { animation: none; stroke-dashoffset: 0; } }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; grid-template-columns: 1fr; padding: 14px; gap: 10px; }
+  html.card .tile .value { font-size: 26px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="tile"><h3>Requisições</h3><div class="value" id="v-line"></div><svg class="spark" data-kind="line" data-series="req"></svg></div>
+    <div class="tile"><h3>Latência p95</h3><div class="value" id="v-area"></div><svg class="spark" data-kind="area" data-series="lat"></svg></div>
+    <div class="tile"><h3>Saldo diário</h3><div class="value" id="v-bars"></div><svg class="spark" data-kind="bars" data-series="bal"></svg></div>
+    <div class="tile"><h3>Erros</h3><div class="value" id="v-step"></div><svg class="spark" data-kind="step" data-series="err"></svg></div>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>SVG Sparklines</h1>
+      <p>Quatro mini-gráficos em SVG puro: linha, área, barras e degrau. Passe o mouse pra ver o valor.</p>
+    </div>
+    <div class="field">
+      <label for="n">Pontos <output id="n-out">30</output></label>
+      <input type="range" id="n" min="8" max="90" step="1" value="30">
+    </div>
+    <div class="field">
+      <label for="smooth">Suavidade da linha <output id="smooth-out">0.20</output></label>
+      <input type="range" id="smooth" min="0" max="0.5" step="0.05" value="0.2">
+    </div>
+    <label class="check"><input type="checkbox" id="anim" checked> Animar entrada</label>
+    <button type="button" class="plain" id="rand">Novos dados</button>
+    <p class="note">Cada gráfico é um <code>&lt;svg&gt;</code> com <code>viewBox</code> fixo: os pontos são mapeados pra 0–100 e o CSS estica. A linha suave é um <code>&lt;path&gt;</code> com curvas Bézier cúbicas calculadas dos vizinhos; a área é a mesma linha fechada até a base. A entrada anima <code>stroke-dashoffset</code>. O tooltip acha o ponto mais próximo do mouse pela coordenada X.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const NS = 'http://www.w3.org/2000/svg';
+  const W = 100, H = 40;
+  const series = {};
+
+  function gen(n) {
+    const walk = (start, step, min, max) => { let v = start; return Array.from({ length: n }, () => (v = Math.min(max, Math.max(min, v + (Math.random() - 0.5) * step)))); };
+    series.req = walk(1200, 300, 200, 3000).map(Math.round);
+    series.lat = walk(180, 60, 40, 600).map(Math.round);
+    series.bal = Array.from({ length: n }, () => Math.round((Math.random() - 0.45) * 900));
+    series.err = walk(4, 3, 0, 20).map(Math.round);
+  }
+
+  const el = (name, attrs) => { const e = document.createElementNS(NS, name); Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v)); return e; };
+  const scale = (data) => { const min = Math.min(0, ...data), max = Math.max(...data), span = max - min || 1; return { x: (i) => i / (data.length - 1) * W, y: (v) => H - (v - min) / span * H, zero: H - (0 - min) / span * H }; };
+
+  // Smooth path: for each point, control handles point along the direction of its neighbours.
+  function smoothPath(pts, t) {
+    if (!t) return 'M' + pts.map(p => p.join(',')).join('L');
+    let d = `M${pts[0][0]},${pts[0][1]}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      const c1 = [p1[0] + (p2[0] - p0[0]) * t, p1[1] + (p2[1] - p0[1]) * t];
+      const c2 = [p2[0] - (p3[0] - p1[0]) * t, p2[1] - (p3[1] - p1[1]) * t];
+      d += `C${c1[0].toFixed(2)},${c1[1].toFixed(2)} ${c2[0].toFixed(2)},${c2[1].toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`;
+    }
+    return d;
+  }
+
+  function draw(svg) {
+    const data = series[svg.dataset.series], kind = svg.dataset.kind, s = scale(data), anim = $('anim').checked, t = Number($('smooth').value);
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none');
+    svg.innerHTML = '';
+    const pts = data.map((v, i) => [s.x(i), s.y(v)]);
+    if (kind === 'bars') {
+      const bw = W / data.length * 0.7;
+      data.forEach((v, i) => svg.appendChild(el('rect', { class: 'bar' + (v < 0 ? ' neg' : ''), x: s.x(i) - bw / 2, y: Math.min(s.y(v), s.zero), width: bw, height: Math.abs(s.y(v) - s.zero) || 0.5 })));
+    } else {
+      let d = kind === 'step' ? 'M' + pts.map((p, i) => (i ? `H${p[0]}V${p[1]}` : `${p[0]},${p[1]}`)).join('') : smoothPath(pts, t);
+      if (kind === 'area') svg.appendChild(el('path', { class: 'area', d: `${d}V${H}H0Z` }));
+      svg.appendChild(el('path', { class: anim ? 'draw' : '', d }));
+      svg.appendChild(el('circle', { class: 'dot', cx: pts.at(-1)[0], cy: pts.at(-1)[1] }));
+    }
+    svg.appendChild(el('line', { class: 'cursor', x1: 0, x2: 0, y1: 0, y2: H }));
+    const last = data.at(-1), prev = data.at(-2) ?? last, delta = last - prev;
+    svg.parentElement.querySelector('.value').innerHTML = `${last.toLocaleString('pt-BR')}<small>${delta >= 0 ? '+' : ''}${delta.toLocaleString('pt-BR')}</small>`;
+
+    svg.onmousemove = (e) => {
+      const r = svg.getBoundingClientRect();
+      const i = Math.round((e.clientX - r.left) / r.width * (data.length - 1));
+      const cur = svg.querySelector('.cursor'); cur.setAttribute('x1', s.x(i)); cur.setAttribute('x2', s.x(i)); cur.style.opacity = 1;
+      const tip = $('tip'), st = $('stage').getBoundingClientRect();
+      tip.textContent = `#${i + 1}: ${data[i].toLocaleString('pt-BR')}`;
+      tip.style.left = (r.left - st.left + s.x(i) / W * r.width) + 'px'; tip.style.top = (r.top - st.top + s.y(data[i]) / H * r.height) + 'px'; tip.style.opacity = 1;
+    };
+    svg.onmouseleave = () => { svg.querySelector('.cursor').style.opacity = 0; $('tip').style.opacity = 0; };
+  }
+
+  function render() { document.querySelectorAll('.spark').forEach(draw); }
+  function regen() { gen(Number($('n').value)); $('n-out').textContent = $('n').value; render(); }
+  $('n').addEventListener('input', regen);
+  $('smooth').addEventListener('input', () => { $('smooth-out').textContent = Number($('smooth').value).toFixed(2); render(); });
+  $('anim').addEventListener('change', render);
+  $('rand').addEventListener('click', regen);
+  regen();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    setInterval(regen, 3000);
+  }
+})();
+</script>
+</html>

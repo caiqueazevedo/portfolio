@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Audio Visualizer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 540px; background: #000; border-radius: 6px; overflow: hidden; display: grid; }
+  canvas { display: block; width: 100%; height: 100%; }
+  .hud { position: absolute; left: 18px; top: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: grid; gap: 4px; pointer-events: none; }
+  .hud b { color: var(--accent); font-weight: 400; }
+  .src { position: absolute; right: 16px; top: 14px; display: flex; gap: 8px; }
+  .src button { font: inherit; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding: 7px 11px; background: rgba(0,0,0,.5); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; cursor: pointer; }
+  .src button:hover { color: var(--ink); border-color: var(--accent); }
+  .src button[data-on] { background: var(--accent); color: #0e0e0c; border-color: var(--accent); }
+  .hint { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-family: var(--font-mono); font-size: 12px; color: var(--muted); pointer-events: none; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 11px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .upload { font: inherit; font-size: 13px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; display: block; }
+  .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; }
+  html.card .src, html.card .hint { display: none; }
+  html.card .hud { left: 12px; top: 10px; font-size: 9px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><span>fonte <b id="h-src">sintetizada</b></span><span>fft <b id="h-fft">2048</b></span><span>pico <b id="h-peak">—</b></span></div>
+    <div class="src">
+      <button type="button" id="b-synth" data-on>sintetizada</button>
+      <button type="button" id="b-mic">microfone</button>
+    </div>
+    <p class="hint" id="hint">o áudio sintetizado toca em silêncio — só os números são reais</p>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Audio Visualizer</h1>
+      <p>Espectro, forma de onda e anel radial saindo do <code>AnalyserNode</code>. Roda com um sinal sintetizado, com o microfone ou com um arquivo seu.</p>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Modo">
+      <label><input type="radio" name="mode" value="bars" checked><span>barras</span></label>
+      <label><input type="radio" name="mode" value="wave"><span>onda</span></label>
+      <label><input type="radio" name="mode" value="ring"><span>anel</span></label>
+    </div>
+    <div class="field">
+      <label for="fft">Resolução FFT <output id="fft-out">2048</output></label>
+      <input type="range" id="fft" min="5" max="12" step="1" value="11">
+    </div>
+    <div class="field">
+      <label for="smooth">Suavização <output id="smooth-out">0,80</output></label>
+      <input type="range" id="smooth" min="0" max="0.95" step="0.05" value="0.8">
+    </div>
+    <div class="field"><label for="color">Cor</label><input type="color" id="color" value="#c8f31d"></div>
+    <label class="upload">Tocar um arquivo<input type="file" id="file" accept="audio/*"></label>
+    <p class="note">Um <code>AnalyserNode</code> entrega, a cada quadro, <code>getByteFrequencyData</code> (o espectro já em dB normalizados) e <code>getByteTimeDomainData</code> (a forma de onda crua). O eixo das barras é logarítmico porque a audição também é: em escala linear metade da tela seria grave. A suavização é média com o quadro anterior, feita pelo próprio nó. Sem fonte externa, um par de osciladores com LFO alimenta o analisador por um ganho zerado — mede, mas não toca.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const canvas = $('c'), ctx = canvas.getContext('2d');
+  let ac = null, analyser = null, current = null, freq = null, time = null;
+
+  function sizeCanvas() {
+    const r = canvas.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    canvas.width = Math.max(1, r.width * dpr); canvas.height = Math.max(1, r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  new ResizeObserver(sizeCanvas).observe(canvas);
+
+  function ensure() {
+    if (ac) return ac;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = ac.createAnalyser();
+    analyser.fftSize = 2048; analyser.smoothingTimeConstant = 0.8;
+    freq = new Uint8Array(analyser.frequencyBinCount);
+    time = new Uint8Array(analyser.fftSize);
+    return ac;
+  }
+
+  function disconnect() {
+    if (current && current.stop) try { current.stop(); } catch {}
+    if (current && current.tracks) current.tracks.forEach(t => t.stop());
+    if (current && current.el) { current.el.pause(); current.el.src = ''; }
+    current = null;
+  }
+
+  /* A pair of detuned oscillators through a sweeping filter: a real signal for the analyser,
+     routed to a zero gain so nothing is heard. */
+  function synth() {
+    disconnect(); ensure();
+    const gain = ac.createGain(); gain.gain.value = 0;
+    const filter = ac.createBiquadFilter(); filter.type = 'bandpass'; filter.Q.value = 6;
+    const lfo = ac.createOscillator(); lfo.frequency.value = 0.12;
+    const lfoGain = ac.createGain(); lfoGain.gain.value = 1400;
+    lfo.connect(lfoGain).connect(filter.frequency); filter.frequency.value = 1600;
+    const noise = ac.createBufferSource();
+    const buf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.6;
+    noise.buffer = buf; noise.loop = true;
+    const oscs = [110, 164.81, 220, 329.63].map((f, i) => {
+      const o = ac.createOscillator(); o.type = i % 2 ? 'sawtooth' : 'triangle'; o.frequency.value = f;
+      const g = ac.createGain(); g.gain.value = 0.25 / (i + 1);
+      const trem = ac.createOscillator(); trem.frequency.value = 0.3 + i * 0.17;
+      const tg = ac.createGain(); tg.gain.value = 0.2 / (i + 1);
+      trem.connect(tg).connect(g.gain); trem.start();
+      o.connect(g).connect(filter); o.start();
+      return o;
+    });
+    noise.connect(filter); noise.start(); lfo.start();
+    filter.connect(analyser); analyser.connect(gain).connect(ac.destination);
+    current = { stop: () => { oscs.forEach(o => o.stop()); noise.stop(); lfo.stop(); } };
+    $('h-src').textContent = 'sintetizada';
+    $('hint').textContent = 'o áudio sintetizado toca em silêncio — só os números são reais';
+    ac.resume();
+  }
+
+  async function mic() {
+    ensure();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } });
+      disconnect();
+      ac.createMediaStreamSource(stream).connect(analyser);
+      current = { tracks: stream.getTracks() };
+      $('h-src').textContent = 'microfone';
+      $('hint').textContent = 'entrada ao vivo · nada é gravado nem enviado';
+      ac.resume();
+    } catch {
+      $('hint').textContent = 'microfone recusado — seguindo com o sinal sintetizado';
+      $('b-mic').removeAttribute('data-on'); $('b-synth').setAttribute('data-on', '');
+    }
+  }
+
+  function playFile(file) {
+    ensure(); disconnect();
+    const el = new Audio(URL.createObjectURL(file));
+    el.loop = true; el.crossOrigin = 'anonymous';
+    ac.createMediaElementSource(el).connect(analyser);
+    analyser.connect(ac.destination);
+    el.play();
+    current = { el };
+    $('h-src').textContent = file.name.slice(0, 18);
+    $('hint').textContent = 'tocando o arquivo local, em loop';
+    ac.resume();
+  }
+
+  const mode = () => document.querySelector('input[name="mode"]:checked').value;
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!analyser) return;
+    const w = canvas.clientWidth, h = canvas.clientHeight, colour = $('color').value;
+    analyser.getByteFrequencyData(freq); analyser.getByteTimeDomainData(time);
+    ctx.clearRect(0, 0, w, h);
+
+    let peak = 0, peakBin = 0;
+    for (let i = 0; i < freq.length; i++) if (freq[i] > peak) { peak = freq[i]; peakBin = i; }
+    $('h-peak').textContent = peak ? Math.round(peakBin * ac.sampleRate / analyser.fftSize) + ' Hz' : '—';
+
+    if (mode() === 'bars') {
+      const bars = Math.min(96, Math.floor(w / 8));
+      const gap = 2, bw = (w - gap * (bars - 1)) / bars;
+      for (let i = 0; i < bars; i++) {
+        // Logarithmic bin mapping: linear would crush everything above 2 kHz into a sliver.
+        const lo = Math.floor(freq.length ** (i / bars)) - 1, hi = Math.max(lo + 1, Math.floor(freq.length ** ((i + 1) / bars)) - 1);
+        let sum = 0; for (let k = lo; k < hi; k++) sum += freq[Math.max(0, k)];
+        const v = (sum / (hi - lo)) / 255;
+        const bh = Math.max(2, v * h * 0.86);
+        ctx.fillStyle = colour;
+        ctx.globalAlpha = 0.25 + v * 0.75;
+        ctx.fillRect(i * (bw + gap), h - bh, bw, bh);
+      }
+      ctx.globalAlpha = 1;
+    } else if (mode() === 'wave') {
+      ctx.lineWidth = 2; ctx.strokeStyle = colour; ctx.beginPath();
+      for (let i = 0; i < time.length; i++) {
+        const x = i / (time.length - 1) * w, y = h / 2 + (time[i] - 128) / 128 * h * 0.42;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 0.18; ctx.lineWidth = 10; ctx.stroke(); ctx.globalAlpha = 1;
+    } else {
+      const cx = w / 2, cy = h / 2, r0 = Math.min(w, h) * 0.2;
+      const n = Math.min(180, freq.length);
+      ctx.strokeStyle = colour; ctx.lineWidth = Math.max(1.5, Math.min(w, h) / 220);
+      for (let i = 0; i < n; i++) {
+        const a = i / n * Math.PI * 2 - Math.PI / 2;
+        const lo = Math.floor(freq.length ** (i / n)) - 1;
+        const v = freq[Math.max(0, Math.min(freq.length - 1, lo))] / 255;
+        const r1 = r0 + v * Math.min(w, h) * 0.28;
+        ctx.globalAlpha = 0.3 + v * 0.7;
+        ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+        ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      for (let i = 0; i < time.length; i += 2) {
+        const a = i / time.length * Math.PI * 2, rr = r0 * 0.82 + (time[i] - 128) / 128 * r0 * 0.3;
+        const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+  }
+
+  $('fft').addEventListener('input', () => {
+    const size = 2 ** Number($('fft').value);
+    $('fft-out').textContent = size; $('h-fft').textContent = size;
+    if (!analyser) return;
+    analyser.fftSize = size;
+    freq = new Uint8Array(analyser.frequencyBinCount); time = new Uint8Array(analyser.fftSize);
+  });
+  $('smooth').addEventListener('input', () => {
+    $('smooth-out').textContent = Number($('smooth').value).toFixed(2).replace('.', ',');
+    if (analyser) analyser.smoothingTimeConstant = Number($('smooth').value);
+  });
+  $('b-synth').addEventListener('click', () => { $('b-synth').setAttribute('data-on', ''); $('b-mic').removeAttribute('data-on'); synth(); });
+  $('b-mic').addEventListener('click', () => { $('b-mic').setAttribute('data-on', ''); $('b-synth').removeAttribute('data-on'); mic(); });
+  $('file').addEventListener('change', (e) => { if (e.target.files[0]) playFile(e.target.files[0]); });
+  // Browsers only start an AudioContext after a gesture; the first click here is it.
+  document.addEventListener('pointerdown', () => ac && ac.resume(), { once: true });
+
+  sizeCanvas(); synth(); frame();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    const MODES = ['bars', 'ring', 'wave'];
+    let i = 0;
+    setInterval(() => { document.querySelector(`input[name="mode"][value="${MODES[i = (i + 1) % 3]}"]`).checked = true; }, 4000);
+  }
+})();
+</script>
+</html>

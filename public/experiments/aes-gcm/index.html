@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>AES-GCM</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --bad: #f23e2e;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; padding: 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 16px; overflow: hidden; }
+  .io { display: grid; gap: 8px; }
+  .io label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+  .io label b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); letter-spacing: 0; text-transform: none; }
+  textarea.plain { font: inherit; font-size: 15px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; background: #0f1319; color: var(--ink); width: 100%; min-height: 84px; resize: vertical; outline: none; }
+  textarea.plain:focus { border-color: var(--accent); }
+  .cipher { font-family: var(--font-mono); font-size: 12px; line-height: 1.6; word-break: break-all; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; background: #0f1319; min-height: 84px; overflow: auto; color: var(--muted); }
+  .cipher .iv { color: var(--accent); }
+  .cipher .tag { color: #6ea8ff; }
+  .cipher .body { color: var(--ink); }
+  .cipher .flip { background: var(--bad); color: #000; cursor: pointer; }
+  .bytes { display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; overflow: hidden; }
+  .bytes i { width: 11px; height: 11px; border-radius: 1px; background: var(--b, #1a1f26); transition: background 200ms; }
+  .out { font-family: var(--font-mono); font-size: 13px; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--line); min-height: 44px; }
+  .out.ok { color: var(--accent); border-color: var(--accent); }
+  .out.bad { color: var(--bad); border-color: var(--bad); }
+  .legend { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"], input[type="password"] { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  button.plain { font: inherit; font-size: 13px; padding: 10px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, textarea, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 14px; gap: 10px; grid-template-rows: auto 1fr auto; }
+  html.card .io.src, html.card .legend { display: none; }
+  html.card .cipher { font-size: 10.5px; min-height: 0; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="io src">
+      <label for="msg">Mensagem <b id="len">0 bytes</b></label>
+      <textarea class="plain" id="msg" spellcheck="false">Chave derivada no browser. O servidor guarda bytes que não sabe ler.</textarea>
+    </div>
+    <div class="io">
+      <label>Cifra <b id="alg">AES-256-GCM</b></label>
+      <div class="cipher" id="cipher"></div>
+    </div>
+    <div class="bytes" id="bytes" aria-hidden="true"></div>
+    <div class="out" id="out">—</div>
+    <div class="legend">
+      <span><i style="background: var(--accent)"></i>IV (12 bytes)</span>
+      <span><i style="background: var(--ink)"></i>texto cifrado</span>
+      <span><i style="background: #6ea8ff"></i>tag de autenticação (16 bytes)</span>
+      <span>clique num byte pra corrompê-lo</span>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>AES-GCM</h1>
+      <p>Cifra autenticada no browser, com WebCrypto nativo. Mexa em um único byte e veja a decifragem recusar em vez de devolver lixo.</p>
+    </div>
+    <div class="field">
+      <label for="pass">Senha</label>
+      <input type="text" id="pass" value="correr atrás do prejuízo" spellcheck="false">
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Tamanho da chave">
+      <label><input type="radio" name="bits" value="128"><span>AES-128</span></label>
+      <label><input type="radio" name="bits" value="256" checked><span>AES-256</span></label>
+    </div>
+    <button type="button" class="plain" id="reroll">Novo IV</button>
+    <button type="button" class="plain" id="corrupt">Corromper 1 byte</button>
+    <p class="note">A senha vira chave com <code>PBKDF2</code> (210 mil iterações, SHA-256, sal aleatório) e a cifra é <code>crypto.subtle.encrypt({name:'AES-GCM', iv})</code>. GCM é <em>autenticado</em>: os 16 bytes finais são uma tag que cobre todo o texto cifrado. Um bit trocado e <code>decrypt</code> lança <code>OperationError</code> — nunca devolve texto adulterado. O IV é único por mensagem; repetir IV com a mesma chave quebra o esquema inteiro.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const hex = (b) => [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+
+  let salt = crypto.getRandomValues(new Uint8Array(16));
+  let iv = crypto.getRandomValues(new Uint8Array(12));
+  let packet = new Uint8Array(0);  // iv || ciphertext || tag
+  let busy = false, queued = false;
+
+  async function deriveKey() {
+    const bits = Number(document.querySelector('input[name="bits"]:checked').value);
+    const material = await crypto.subtle.importKey('raw', enc.encode($('pass').value), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 210000, hash: 'SHA-256' },
+      material, { name: 'AES-GCM', length: bits }, false, ['encrypt', 'decrypt']
+    );
+  }
+
+  async function run() {
+    if (busy) { queued = true; return; }
+    busy = true;
+    const key = await deriveKey();
+    const body = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode($('msg').value)));
+    packet = new Uint8Array(iv.length + body.length);
+    packet.set(iv, 0); packet.set(body, iv.length);
+    $('len').textContent = enc.encode($('msg').value).length + ' bytes';
+    $('alg').textContent = 'AES-' + document.querySelector('input[name="bits"]:checked').value + '-GCM';
+    paint(); await verify();
+    busy = false;
+    if (queued) { queued = false; run(); }
+  }
+
+  function paint(flipped = -1) {
+    const tagStart = packet.length - 16;
+    let html = '';
+    for (let i = 0; i < packet.length; i++) {
+      const cls = i === flipped ? 'flip' : i < 12 ? 'iv' : i >= tagStart ? 'tag' : 'body';
+      html += `<span class="${cls}" data-i="${i}">${packet[i].toString(16).padStart(2, '0')}</span>`;
+    }
+    $('cipher').innerHTML = html;
+    // The byte strip is a coarse fingerprint: one changed byte visibly repaints the whole tail.
+    $('bytes').innerHTML = [...packet].slice(0, 220).map(b =>
+      `<i style="--b: color-mix(in oklab, var(--accent) ${Math.round(b / 255 * 100)}%, #12161c)"></i>`).join('');
+  }
+
+  async function verify() {
+    const key = await deriveKey();
+    try {
+      const out = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: packet.slice(0, 12) }, key, packet.slice(12));
+      $('out').className = 'out ok';
+      $('out').textContent = 'decrypt OK · ' + dec.decode(out);
+    } catch {
+      $('out').className = 'out bad';
+      $('out').textContent = 'OperationError · a tag não bate, decifragem recusada';
+    }
+  }
+
+  function corrupt(i) {
+    if (!packet.length) return;
+    const at = i ?? 12 + Math.floor(Math.random() * Math.max(1, packet.length - 12));
+    packet[at] ^= 1 << Math.floor(Math.random() * 8);
+    paint(at); verify();
+  }
+
+  $('cipher').addEventListener('click', (e) => { const s = e.target.closest('[data-i]'); if (s) corrupt(Number(s.dataset.i)); });
+  $('msg').addEventListener('input', run);
+  $('pass').addEventListener('input', run);
+  document.querySelectorAll('input[name="bits"]').forEach(r => r.addEventListener('change', run));
+  $('reroll').addEventListener('click', () => { iv = crypto.getRandomValues(new Uint8Array(12)); salt = crypto.getRandomValues(new Uint8Array(16)); run(); });
+  $('corrupt').addEventListener('click', () => corrupt());
+  run();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    let n = 0;
+    setInterval(() => { if (++n % 3) corrupt(); else { iv = crypto.getRandomValues(new Uint8Array(12)); run(); } }, 1600);
+  }
+})();
+</script>
+</html>

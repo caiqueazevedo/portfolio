@@ -158,7 +158,11 @@
       "newest": "Newest",
       "oldest": "Oldest",
       "empty": "Nothing in this category.",
-      "images": "Images & Filters"
+      "images": "Images & Filters",
+      "interaction": "Interaction & UI",
+      "data": "Data & Charts",
+      "security": "Security",
+      "media": "Media & Files"
     }
   }
 }

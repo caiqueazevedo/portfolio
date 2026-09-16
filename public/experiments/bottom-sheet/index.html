@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Bottom Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage: a phone frame ---------- */
+  .stage { position: relative; min-height: 640px; background: #000; border-radius: 6px; display: grid; place-items: center; padding: 24px; }
+  .phone { position: relative; width: 320px; height: 600px; border-radius: 34px; border: 3px solid #2a2f37; background: #0f1115; overflow: hidden; }
+  .map { position: absolute; inset: 0; background:
+    linear-gradient(90deg, transparent 49%, #1d232b 50%, transparent 51%) 0 0 / 60px 60px,
+    linear-gradient(0deg, transparent 49%, #1d232b 50%, transparent 51%) 0 0 / 60px 60px, #141920; }
+  .pin { position: absolute; left: 50%; top: 38%; width: 18px; height: 18px; border-radius: 50% 50% 50% 0; background: var(--accent); transform: translate(-50%, -100%) rotate(-45deg); box-shadow: 0 6px 16px rgba(0,0,0,.5); }
+  /* The sheet is a scroll container with three snap stops. Its content is taller than the frame
+     by design: the "dead" spacer at the top is what lets you drag the sheet down. */
+  .sheet-scroll { position: absolute; inset: 0; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; overscroll-behavior: contain; }
+  .sheet-scroll::-webkit-scrollbar { display: none; }
+  .stop { scroll-snap-align: start; height: var(--h); pointer-events: none; }
+  .sheet { pointer-events: auto; background: var(--panel); border-radius: 20px 20px 0 0; border-top: 1px solid #2a2f37; box-shadow: 0 -20px 50px rgba(0,0,0,.5); min-height: 100%; padding: 12px 18px 24px; }
+  .handle { width: 40px; height: 4px; border-radius: 999px; background: #3a414b; margin: 0 auto 14px; }
+  .sheet h2 { font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: .03em; margin: 0 0 4px; }
+  .sheet .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .sheet .row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .sheet .chip { flex: 1; text-align: center; padding: 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
+  .sheet .chip.on { background: var(--accent); color: #0e0e0c; border-color: var(--accent); font-weight: 600; }
+  .sheet ul { list-style: none; margin: 0; padding: 0; }
+  .sheet li { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .sheet li span:last-child { font-family: var(--font-mono); color: var(--muted); font-size: 12px; }
+  .state { position: absolute; left: 24px; bottom: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 12px; }
+  html.card .phone { width: 100%; height: 100%; border-radius: 22px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="phone">
+      <div class="map" aria-hidden="true"><div class="pin"></div></div>
+      <div class="sheet-scroll" id="scroller">
+        <div class="stop" style="--h: 88%" data-name="fechada"></div>
+        <div class="stop" style="--h: 0" data-name="meia"></div>
+        <div class="sheet" id="sheet">
+          <div class="handle" aria-hidden="true"></div>
+          <h2>Rua Augusta, 1200</h2>
+          <p class="sub">12 min · 3,4 km · trânsito leve</p>
+          <div class="row"><div class="chip on">Carro</div><div class="chip">Moto</div><div class="chip">A pé</div></div>
+          <ul>
+            <li><span>Siga pela Consolação</span><span>800 m</span></li>
+            <li><span>Vire à direita na Augusta</span><span>1,2 km</span></li>
+            <li><span>Continue por 1,4 km</span><span>1,4 km</span></li>
+            <li><span>Destino à esquerda</span><span>—</span></li>
+            <li><span>Compartilhar rota</span><span>↗</span></li>
+            <li><span>Salvar endereço</span><span>☆</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="state" id="state">estado: fechada</div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Bottom Sheet</h1>
+      <p>O painel que sobe de baixo, com três pontos de encaixe. Arraste ou role dentro do celular.</p>
+    </div>
+    <div class="btns">
+      <button type="button" class="plain" data-go="0">Fechada</button>
+      <button type="button" class="plain" data-go="1">Meia</button>
+      <button type="button" class="plain" data-go="2">Aberta</button>
+    </div>
+    <p class="note">Sem drag handler. A folha vive num scroller com <code>scroll-snap-type: y mandatory</code>; dois espaçadores invisíveis no topo definem os encaixes "fechada" e "meia", e a própria folha é o terceiro. O gesto de arrastar já é o scroll nativo, com inércia e frenagem do sistema. <code>overscroll-behavior: contain</code> impede que o arraste vaze pra página.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const scroller = $('scroller'), stops = [...scroller.querySelectorAll('.stop'), $('sheet')];
+  const names = ['fechada', 'meia', 'aberta'];
+
+  function go(i) { scroller.scrollTo({ top: stops[i].offsetTop, behavior: 'smooth' }); }
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(Number(b.dataset.go))));
+  scroller.addEventListener('scroll', () => {
+    const y = scroller.scrollTop;
+    let i = 0; stops.forEach((s, k) => { if (Math.abs(s.offsetTop - y) < Math.abs(stops[i].offsetTop - y)) i = k; });
+    $('state').textContent = 'estado: ' + names[i];
+  }, { passive: true });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    let i = 1; go(1); setInterval(() => { i = (i + 1) % 3; go(i); }, 2200);
+  }
+})();
+</script>
+</html>

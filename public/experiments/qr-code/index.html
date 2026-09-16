@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>QR Code</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; padding: 28px; display: grid; place-items: center; gap: 18px; align-content: center; }
+  .code { display: block; width: min(100%, 380px); height: auto; image-rendering: pixelated; border-radius: 4px; }
+  .meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+  .meta b { color: var(--accent); font-weight: 400; }
+  .err { color: #f23e2e; font-family: var(--font-mono); font-size: 13px; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  textarea { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; min-height: 70px; resize: vertical; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .seg { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  button.plain { font: inherit; font-size: 13px; padding: 10px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, textarea, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 16px; }
+  html.card .meta { display: none; }
+  html.card .code { width: min(100%, 100cqmin); }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <svg class="code" id="code" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="QR code"></svg>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>QR Code</h1>
+      <p>Gerador de QR escrito do zero — Reed–Solomon, máscaras e tudo. Sem biblioteca, sem rede: 6 KB de JavaScript.</p>
+    </div>
+    <div class="field">
+      <label for="text">Conteúdo</label>
+      <textarea id="text" spellcheck="false">https://www.caiqueazevedo.com.br</textarea>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Correção de erro">
+      <label><input type="radio" name="ec" value="L"><span>L</span></label>
+      <label><input type="radio" name="ec" value="M" checked><span>M</span></label>
+      <label><input type="radio" name="ec" value="Q"><span>Q</span></label>
+      <label><input type="radio" name="ec" value="H"><span>H</span></label>
+    </div>
+    <div class="row">
+      <div class="field"><label for="fg">Módulo</label><input type="color" id="fg" value="#e8ecef"></div>
+      <div class="field"><label for="bg">Fundo</label><input type="color" id="bg" value="#000000"></div>
+    </div>
+    <div class="field">
+      <label for="quiet">Margem <output id="quiet-out">4 módulos</output></label>
+      <input type="range" id="quiet" min="0" max="8" step="1" value="4">
+    </div>
+    <label class="check"><input type="checkbox" id="round"> Cantos arredondados</label>
+    <button type="button" class="plain" id="dl">Baixar SVG</button>
+    <p class="note">O texto vira bits em modo byte, ganha paridade Reed–Solomon sobre GF(256) (o mesmo campo do CD), é costurado em zigue-zague pela matriz e então testado contra as 8 máscaras — vence a de menor penalidade, pelas 4 regras da norma. Os três olhos são os padrões de localização; o nível <code>H</code> reconstrói o código com 30% dele coberto.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  /* ---------- GF(256) arithmetic, generator polynomial 0x11d ---------- */
+  const EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  for (let i = 0, x = 1; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11d; }
+  for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  const mul = (a, b) => (a && b) ? EXP[LOG[a] + LOG[b]] : 0;
+
+  // Product of (x - a^i) for i in 0..n-1, coefficients highest degree first.
+  function rsGenerator(n) {
+    let poly = [1];
+    for (let i = 0; i < n; i++) {
+      const next = new Array(poly.length + 1).fill(0);
+      for (let j = 0; j < poly.length; j++) { next[j] ^= poly[j]; next[j + 1] ^= mul(poly[j], EXP[i]); }
+      poly = next;
+    }
+    return poly;
+  }
+  function rsEncode(data, n) {
+    const gen = rsGenerator(n), res = new Uint8Array(n);
+    for (const byte of data) {
+      const factor = byte ^ res[0];
+      res.copyWithin(0, 1); res[n - 1] = 0;
+      for (let j = 0; j < n; j++) res[j] ^= mul(gen[j + 1], factor);
+    }
+    return res;
+  }
+
+  /* ---------- Capacity tables (versions 1..10, byte mode) ---------- */
+  // [total codewords, ecc per block, [blocks in group1, blocks in group2]]
+  const EC_LEVELS = { L: 0, M: 1, Q: 2, H: 3 };
+  const TABLE = {
+    1: [26, [7, 10, 13, 17], [[1], [1], [1], [1]]],
+    2: [44, [10, 16, 22, 28], [[1], [1], [1], [1]]],
+    3: [70, [15, 26, 18, 22], [[1], [1], [2], [2]]],
+    4: [100, [20, 18, 26, 16], [[1], [2], [2], [4]]],
+    5: [134, [26, 24, 18, 22], [[1], [2], [2, 2], [2, 2]]],
+    6: [172, [18, 16, 24, 28], [[2], [4], [4], [4]]],
+    7: [196, [20, 18, 18, 26], [[2], [4], [2, 4], [4, 1]]],
+    8: [242, [24, 22, 22, 26], [[2], [2, 2], [4, 2], [4, 2]]],
+    9: [292, [30, 22, 20, 24], [[2], [3, 2], [4, 4], [4, 4]]],
+    10: [346, [18, 26, 24, 28], [[2, 2], [4, 1], [6, 2], [6, 2]]],
+  };
+  const ALIGN = { 1: [], 2: [6, 18], 3: [6, 22], 4: [6, 26], 5: [6, 30], 6: [6, 34], 7: [6, 22, 38], 8: [6, 24, 42], 9: [6, 26, 46], 10: [6, 28, 50] };
+
+  function capacity(version, ec) {
+    const [total, eccs, groups] = TABLE[version];
+    const lvl = EC_LEVELS[ec], blocks = groups[lvl].reduce((a, b) => a + b, 0);
+    return total - eccs[lvl] * blocks;
+  }
+
+  function encode(text, ec) {
+    const bytes = new TextEncoder().encode(text);
+    let version = 0;
+    for (let v = 1; v <= 10; v++) {
+      const head = 4 + (v < 10 ? 8 : 16);
+      if (bytes.length + Math.ceil(head / 8) <= capacity(v, ec)) { version = v; break; }
+    }
+    if (!version) throw new Error('texto longo demais para a versão 10 — encurte ou baixe a correção');
+
+    const bits = [];
+    const push = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+    push(0b0100, 4);                       // byte mode
+    push(bytes.length, version < 10 ? 8 : 16);
+    for (const b of bytes) push(b, 8);
+
+    const cap = capacity(version, ec) * 8;
+    push(0, Math.min(4, cap - bits.length)); // terminator
+    while (bits.length % 8) bits.push(0);
+    const data = [];
+    for (let i = 0; i < bits.length; i += 8) data.push(parseInt(bits.slice(i, i + 8).join(''), 2));
+    const PAD = [0xec, 0x11];
+    for (let i = 0; data.length < capacity(version, ec); i++) data.push(PAD[i % 2]);
+
+    /* Split into blocks, compute ECC, then interleave — that is what makes a burst
+       of damage spread thin across blocks instead of killing one of them. */
+    const [, eccs, groups] = TABLE[version];
+    const lvl = EC_LEVELS[ec], ecLen = eccs[lvl], counts = groups[lvl];
+    const blockCount = counts.reduce((a, b) => a + b, 0);
+    const short = Math.floor(data.length / blockCount), extra = data.length % blockCount;
+    const blocks = [], eccBlocks = [];
+    let at = 0;
+    for (let i = 0; i < blockCount; i++) {
+      const size = short + (i >= blockCount - extra ? 1 : 0);
+      const block = data.slice(at, at + size); at += size;
+      blocks.push(block); eccBlocks.push(rsEncode(block, ecLen));
+    }
+    const out = [];
+    for (let i = 0; i < Math.max(...blocks.map(b => b.length)); i++) for (const b of blocks) if (i < b.length) out.push(b[i]);
+    for (let i = 0; i < ecLen; i++) for (const b of eccBlocks) out.push(b[i]);
+    return { version, codewords: out, ec, bytes: bytes.length };
+  }
+
+  /* ---------- Matrix ---------- */
+  function build({ version, codewords, ec }) {
+    const size = version * 4 + 17;
+    const m = Array.from({ length: size }, () => new Uint8Array(size));
+    // Function modules are everything the data must step over — and never get masked.
+    const fn = Array.from({ length: size }, () => new Uint8Array(size));
+    const set = (r, c, v) => { if (r >= 0 && c >= 0 && r < size && c < size) { m[r][c] = v; fn[r][c] = 1; } };
+
+    const finder = (r, c) => {
+      for (let i = -1; i <= 7; i++) for (let j = -1; j <= 7; j++) {
+        const on = i >= 0 && i <= 6 && j >= 0 && j <= 6 && (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4));
+        set(r + i, c + j, on ? 1 : 0);
+      }
+    };
+    finder(0, 0); finder(0, size - 7); finder(size - 7, 0);
+
+    for (const r of ALIGN[version]) for (const c of ALIGN[version]) {
+      if (fn[r][c]) continue; // the three centres that fall on the finders
+      for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++)
+        set(r + i, c + j, (Math.abs(i) === 2 || Math.abs(j) === 2 || (!i && !j)) ? 1 : 0);
+    }
+    for (let i = 8; i < size - 8; i++) { set(6, i, i % 2 ? 0 : 1); set(i, 6, i % 2 ? 0 : 1); }
+
+    // Reserve both format strips and the dark module before any data is placed.
+    for (let i = 0; i <= 8; i++) { if (!fn[8][i]) set(8, i, 0); if (!fn[i][8]) set(i, 8, 0); }
+    for (let i = 0; i < 8; i++) { set(8, size - 1 - i, 0); set(size - 1 - i, 8, 0); }
+    set(size - 8, 8, 1);
+
+    // From version 7 on, the version itself is written twice, with its own BCH(18,6).
+    if (version >= 7) {
+      let rem = version;
+      for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1f25);
+      const vbits = (version << 12) | rem;
+      for (let i = 0; i < 18; i++) {
+        const b = (vbits >> i) & 1, a = size - 11 + i % 3, d = Math.floor(i / 3);
+        set(a, d, b); set(d, a, b);
+      }
+    }
+
+    // Zig-zag placement, two columns at a time, skipping the vertical timing line.
+    const bits = [];
+    for (const cw of codewords) for (let i = 7; i >= 0; i--) bits.push((cw >> i) & 1);
+    let bit = 0, up = true;
+    for (let col = size - 1; col > 0; col -= 2) {
+      if (col === 6) col--;
+      for (let k = 0; k < size; k++) {
+        const row = up ? size - 1 - k : k;
+        for (const c of [col, col - 1]) if (!fn[row][c]) m[row][c] = bit < bits.length ? bits[bit++] : 0;
+      }
+      up = !up;
+    }
+
+    const MASKS = [
+      (r, c) => (r + c) % 2 === 0, (r) => r % 2 === 0, (r, c) => c % 3 === 0, (r, c) => (r + c) % 3 === 0,
+      (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0, (r, c) => (r * c) % 2 + (r * c) % 3 === 0,
+      (r, c) => ((r * c) % 2 + (r * c) % 3) % 2 === 0, (r, c) => ((r + c) % 2 + (r * c) % 3) % 2 === 0,
+    ];
+    let best = null;
+    for (let k = 0; k < 8; k++) {
+      const t = m.map(row => row.slice());
+      for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) if (!fn[r][c] && MASKS[k](r, c)) t[r][c] ^= 1;
+      writeFormat(t, ec, k, size);
+      const p = penalty(t, size);
+      if (!best || p < best.p) best = { p, matrix: t };
+    }
+    return { size, matrix: best.matrix };
+  }
+
+  function writeFormat(m, ec, mask, size) {
+    const BITS = { L: 1, M: 0, Q: 3, H: 2 };
+    const v = (BITS[ec] << 3) | mask;
+    let d = v << 10;
+    for (let i = 4; i >= 0; i--) if (d & (1 << (i + 10))) d ^= 0x537 << i;
+    const fmt = ((v << 10) | d) ^ 0x5412;
+    const bit = (i) => (fmt >> i) & 1;
+    // First copy wraps the top-left finder; second copy sits under the other two.
+    for (let i = 0; i <= 5; i++) m[i][8] = bit(i);
+    m[7][8] = bit(6); m[8][8] = bit(7); m[8][7] = bit(8);
+    for (let i = 9; i <= 14; i++) m[8][14 - i] = bit(i);
+    for (let i = 0; i <= 7; i++) m[8][size - 1 - i] = bit(i);
+    for (let i = 8; i <= 14; i++) m[size - 15 + i][8] = bit(i);
+    m[size - 8][8] = 1;
+  }
+
+  function penalty(m, size) {
+    let p = 0;
+    const line = (get) => {
+      for (let a = 0; a < size; a++) {
+        let run = 1;
+        for (let b = 1; b < size; b++) {
+          if (get(a, b) === get(a, b - 1)) { run++; if (run === 5) p += 3; else if (run > 5) p++; }
+          else run = 1;
+        }
+      }
+    };
+    line((r, c) => m[r][c]); line((c, r) => m[r][c]);
+    for (let r = 0; r < size - 1; r++) for (let c = 0; c < size - 1; c++)
+      if (m[r][c] === m[r][c + 1] && m[r][c] === m[r + 1][c] && m[r][c] === m[r + 1][c + 1]) p += 3;
+    const PATS = [[1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1]];
+    const scan = (get) => {
+      for (let a = 0; a < size; a++) for (let b = 0; b + 11 <= size; b++) for (const PAT of PATS) {
+        let ok = true; for (let i = 0; i < 11; i++) if (get(a, b + i) !== PAT[i]) { ok = false; break; }
+        if (ok) p += 40;
+      }
+    };
+    scan((r, c) => m[r][c]); scan((c, r) => m[r][c]);
+    let dark = 0; for (const row of m) for (const v of row) dark += v;
+    p += Math.floor(Math.abs(dark * 100 / (size * size) - 50) / 5) * 10;
+    return p;
+  }
+
+  /* ---------- Render ---------- */
+  function render() {
+    const quiet = Number($('quiet').value);
+    $('quiet-out').textContent = quiet + ' módulos';
+    let res;
+    try { res = encode($('text').value || ' ', document.querySelector('input[name="ec"]:checked').value); }
+    catch (e) { $('meta').innerHTML = `<span class="err">${e.message}</span>`; return; }
+    const { size, matrix } = build(res);
+    const dim = size + quiet * 2, r = $('round').checked ? 0.32 : 0;
+    let path = '';
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (matrix[y][x] & 1)
+      path += `M${x + quiet} ${y + quiet}h1v1h-1z`;
+    const svg = $('code');
+    svg.setAttribute('viewBox', `0 0 ${dim} ${dim}`);
+    svg.innerHTML = `<rect width="${dim}" height="${dim}" fill="${$('bg').value}"/>` +
+      (r ? [...Array(size)].flatMap((_, y) => [...Array(size)].map((_, x) => matrix[y][x] & 1
+        ? `<rect x="${x + quiet}" y="${y + quiet}" width="1" height="1" rx="${r}" fill="${$('fg').value}"/>` : '')).join('')
+        : `<path d="${path}" fill="${$('fg').value}"/>`);
+    $('meta').innerHTML = `<span>versão <b>${res.version}</b></span><span>módulos <b>${size}×${size}</b></span><span>correção <b>${res.ec}</b></span><span>payload <b>${res.bytes} bytes</b></span>`;
+  }
+
+  ['text', 'fg', 'bg', 'quiet'].forEach(id => $(id).addEventListener('input', render));
+  $('round').addEventListener('change', render);
+  document.querySelectorAll('input[name="ec"]').forEach(r => r.addEventListener('change', render));
+  $('dl').addEventListener('click', () => {
+    const blob = new Blob([$('code').outerHTML], { type: 'image/svg+xml' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'qrcode.svg'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  render();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    const PAYLOADS = ['https://www.caiqueazevedo.com.br', 'WIFI:T:WPA;S:cafe;P:expresso;;', 'mailto:oi@caiqueazevedo.com.br', 'BEGIN:VCARD\nFN:Caique\nEND:VCARD'];
+    let i = 0;
+    setInterval(() => { $('text').value = PAYLOADS[i = (i + 1) % PAYLOADS.length]; render(); }, 1800);
+    stage.addEventListener('pointermove', (e) => {
+      const r = stage.getBoundingClientRect();
+      $('quiet').value = Math.round((e.clientX - r.left) / r.width * 6) + 1;
+      $('round').checked = (e.clientY - r.top) / r.height > 0.5;
+      render();
+    });
+  }
+})();
+</script>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Drag &amp; Drop List</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; padding: 28px; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; }
+  .list { width: min(100%, 420px); display: flex; flex-direction: column; gap: 10px; position: relative; }
+  .item {
+    display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 14px;
+    padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; cursor: grab;
+    transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 160ms;
+  }
+  .item .grip { color: var(--muted); font-family: var(--font-mono); letter-spacing: -2px; }
+  .item .title { font-weight: 600; }
+  .item .meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .item .pos { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+  .item.dragging { transition: none; z-index: 2; cursor: grabbing; box-shadow: 0 18px 40px rgba(0,0,0,.6); border-color: var(--accent); position: relative; }
+  .item.settling { transition: transform 320ms cubic-bezier(.2,.9,.2,1); }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .log { font-family: var(--font-mono); font-size: 12px; color: var(--muted); min-height: 1.5em; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 16px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <ul class="list" id="list" aria-label="Lista reordenável"></ul>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Drag &amp; Drop List</h1>
+      <p>Segure um item e arraste. Os outros abrem espaço com animação e o item solto encaixa no lugar.</p>
+    </div>
+    <div class="field">
+      <label for="count">Itens <output id="count-out">6</output></label>
+      <input type="range" id="count" min="3" max="10" step="1" value="6">
+    </div>
+    <div class="row">
+      <button type="button" id="shuffle">Embaralhar</button>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <p class="note">Pointer Events com <code>setPointerCapture</code>: o item arrastado segue o ponteiro por <code>transform</code>; a cada movimento a lista calcula em que posição ele cairia e os vizinhos deslizam com <code>transition</code>. Ao soltar, uma técnica FLIP anima do lugar atual pro final. Zero dependências.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const list = $('list'), log = $('log');
+  const NAMES = ['Login com ZenID', 'Upload pra R2', 'Fila de e-mails', 'Cache no KV', 'Deploy no Worker', 'Alerta no Watchtower', 'Backup noturno', 'Relatório mensal', 'Onboarding', 'Limpeza de sessões'];
+  let items = [];
+
+  function render() {
+    list.innerHTML = '';
+    items.forEach((name, i) => {
+      const li = document.createElement('li');
+      li.className = 'item'; li.dataset.name = name;
+      li.innerHTML = `<span class="grip" aria-hidden="true">⋮⋮</span><span><div class="title">${name}</div><div class="meta">tarefa #${String(i + 1).padStart(2, '0')}</div></span><span class="pos">${i + 1}</span>`;
+      list.appendChild(li);
+    });
+  }
+
+  function setCount(n) {
+    items = NAMES.slice(0, n);
+    render();
+    $('count-out').textContent = n;
+  }
+
+  // Drag state: which item, where the pointer grabbed it, and the slot it currently occupies.
+  let drag = null;
+  list.addEventListener('pointerdown', (e) => {
+    const el = e.target.closest('.item');
+    if (!el) return;
+    const rows = [...list.children];
+    const rects = rows.map(r => r.getBoundingClientRect());
+    const from = rows.indexOf(el);
+    drag = { el, from, to: from, startY: e.clientY, rects, gap: rects[1] ? rects[1].top - rects[0].bottom : 10 };
+    el.classList.add('dragging');
+    el.setPointerCapture(e.pointerId);
+  });
+
+  list.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const dy = e.clientY - drag.startY;
+    drag.el.style.transform = `translateY(${dy}px) scale(1.02)`;
+    // Which slot is the dragged item's centre over?
+    const centre = drag.rects[drag.from].top + drag.rects[drag.from].height / 2 + dy;
+    let to = drag.rects.findIndex(r => centre < r.top + r.height / 2);
+    if (to < 0) to = drag.rects.length - 1;
+    if (to === drag.to) return;
+    drag.to = to;
+    const h = drag.rects[drag.from].height + drag.gap;
+    [...list.children].forEach((row, i) => {
+      if (row === drag.el) return;
+      let shift = 0;
+      if (drag.from < to && i > drag.from && i <= to) shift = -h;
+      if (drag.from > to && i >= to && i < drag.from) shift = h;
+      row.style.transform = shift ? `translateY(${shift}px)` : '';
+    });
+  });
+
+  function drop(e) {
+    if (!drag) return;
+    const { el, from, to } = drag;
+    const rows = [...list.children];
+    // FLIP: remember where the dragged item is on screen, move it in the DOM, then animate the delta away.
+    const before = el.getBoundingClientRect();
+    const moved = items.splice(from, 1)[0]; items.splice(to, 0, moved);
+    rows.forEach(r => { r.style.transform = ''; });
+    el.classList.remove('dragging');
+    render();
+    const fresh = list.children[to];
+    const after = fresh.getBoundingClientRect();
+    fresh.style.transform = `translateY(${before.top - after.top}px) scale(1.02)`;
+    fresh.classList.add('settling');
+    requestAnimationFrame(() => requestAnimationFrame(() => { fresh.style.transform = ''; }));
+    fresh.addEventListener('transitionend', () => fresh.classList.remove('settling'), { once: true });
+    if (from !== to) log.textContent = `"${moved}" foi de ${from + 1} pra ${to + 1}.`;
+    drag = null;
+  }
+  list.addEventListener('pointerup', drop);
+  list.addEventListener('pointercancel', drop);
+
+  $('count').addEventListener('input', (e) => setCount(Number(e.target.value)));
+  $('shuffle').addEventListener('click', () => { items.sort(() => Math.random() - 0.5); render(); log.textContent = 'Embaralhado.'; });
+  $('reset').addEventListener('click', () => { $('count').value = 6; setCount(6); log.textContent = ''; });
+  setCount(6);
+
+  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const target = $('stage');
+    let down = null;
+    target.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    target.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    setCount(5);
+  }
+})();
+</script>
+</html>

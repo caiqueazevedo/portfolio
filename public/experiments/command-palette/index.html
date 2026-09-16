@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Command Palette</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage: a fake app screen with the palette on top ---------- */
+  .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; overflow: hidden; display: grid; place-items: center; }
+  .app { position: absolute; inset: 0; padding: 24px; opacity: .45; }
+  .app h2 { font-family: var(--font-display); font-weight: 400; font-size: 44px; margin: 0 0 12px; letter-spacing: .02em; }
+  .app .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .app .tile { height: 80px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+  .open { position: relative; z-index: 1; font: inherit; padding: 12px 18px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; cursor: pointer; display: inline-flex; gap: 12px; align-items: center; }
+  .open kbd { font-family: var(--font-mono); font-size: 11px; padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
+
+  /* The palette is a native <dialog>: the browser handles focus trap, Escape and the backdrop. */
+  dialog.palette { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); padding: 0; width: min(92vw, 520px); box-shadow: 0 30px 80px rgba(0,0,0,.6); margin: 14vh auto 0; }
+  dialog.palette::backdrop { background: rgba(0,0,0,.55); backdrop-filter: blur(2px); }
+  .palette input { width: 100%; font: inherit; font-size: 16px; padding: 14px 16px; background: transparent; color: var(--ink); border: 0; border-bottom: 1px solid var(--line); outline: none; }
+  .palette ul { list-style: none; margin: 0; padding: 6px; max-height: 320px; overflow: auto; }
+  .palette .group { font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); padding: 10px 10px 4px; }
+  .palette li[role="option"] { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 5px; cursor: pointer; }
+  .palette li[aria-selected="true"] { background: var(--accent); color: #0e0e0c; }
+  .palette li mark { background: transparent; color: inherit; font-weight: 700; text-decoration: underline; text-decoration-color: currentColor; }
+  .palette li kbd { font-family: var(--font-mono); font-size: 11px; opacity: .7; }
+  .palette .empty { padding: 18px 12px; color: var(--muted); font-size: 13px; }
+  .toast { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--accent); color: #0e0e0c; font-weight: 600; font-size: 13px; padding: 10px 16px; border-radius: 6px; opacity: 0; transition: opacity 120ms; pointer-events: none; z-index: 2; }
+  .toast.on { opacity: 1; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; }
+  html.card dialog.palette { margin-top: 6vh; width: 92%; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="app" aria-hidden="true"><h2>Painel</h2><div class="grid"><div class="tile"></div><div class="tile"></div><div class="tile"></div><div class="tile"></div><div class="tile"></div><div class="tile"></div></div></div>
+    <button type="button" class="open" id="open">Abrir paleta <kbd>Ctrl</kbd><kbd>K</kbd></button>
+    <dialog class="palette" id="palette" aria-label="Paleta de comandos">
+      <input id="q" type="text" placeholder="Digite um comando…" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="results" aria-autocomplete="list">
+      <ul id="results" role="listbox"></ul>
+    </dialog>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Command Palette</h1>
+      <p>Ctrl+K (ou ⌘K) abre. Busca difusa, grupos, setas e Enter. Tudo num <code>&lt;dialog&gt;</code> nativo.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="fuzzy" checked> Busca difusa (letras fora de ordem contam)</label>
+    <button type="button" class="plain" id="open2">Abrir paleta</button>
+    <p class="note">O <code>&lt;dialog&gt;</code> com <code>showModal()</code> dá foco preso, Escape e backdrop de graça. A busca pontua cada comando: bônus por prefixo, por início de palavra e por letras em sequência; o melhor sobe. Setas mudam <code>aria-selected</code>, Enter executa, e o item selecionado é rolado pra vista com <code>scrollIntoView</code>.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const dlg = $('palette'), q = $('q'), results = $('results'), toast = $('toast');
+  const COMMANDS = [
+    ['Navegar', 'Ir para Início', 'G I'], ['Navegar', 'Ir para Cases', 'G C'], ['Navegar', 'Ir para Contato', 'G T'],
+    ['Ações', 'Novo projeto', 'N'], ['Ações', 'Publicar deploy', 'D'], ['Ações', 'Rodar testes', 'T'], ['Ações', 'Abrir terminal', '`'],
+    ['Preferências', 'Alternar tema', ''], ['Preferências', 'Mudar idioma para inglês', ''], ['Preferências', 'Tamanho da fonte', ''],
+    ['Conta', 'Entrar com ZenID', ''], ['Conta', 'Revogar sessões', ''], ['Conta', 'Sair', 'Q'],
+  ].map(([group, label, keys]) => ({ group, label, keys }));
+  let selected = 0, shown = [];
+
+  // Score: 0 = no match. Prefix and word-start hits beat scattered letters; consecutive letters add up.
+  function score(text, query, fuzzy) {
+    const t = text.toLowerCase(), qq = query.toLowerCase();
+    if (!qq) return 1;
+    if (t.startsWith(qq)) return 100;
+    const wordStart = t.split(' ').some(w => w.startsWith(qq));
+    if (wordStart) return 80;
+    if (t.includes(qq)) return 60;
+    if (!fuzzy) return 0;
+    let ti = 0, run = 0, best = 0, hits = 0;
+    for (const ch of qq) {
+      const idx = t.indexOf(ch, ti);
+      if (idx < 0) return 0;
+      run = idx === ti ? run + 1 : 1; best = Math.max(best, run); ti = idx + 1; hits++;
+    }
+    return 10 + best * 4 + Math.max(0, 20 - (ti - hits));
+  }
+
+  function highlight(label, query) {
+    if (!query) return label;
+    let out = '', qi = 0; const qq = query.toLowerCase();
+    for (const ch of label) {
+      if (qi < qq.length && ch.toLowerCase() === qq[qi]) { out += `<mark>${ch}</mark>`; qi++; } else out += ch;
+    }
+    return out;
+  }
+
+  function search() {
+    const query = q.value.trim(), fuzzy = $('fuzzy').checked;
+    shown = COMMANDS.map(c => ({ ...c, s: score(c.label, query, fuzzy) })).filter(c => c.s > 0).sort((a, b) => b.s - a.s || a.label.localeCompare(b.label));
+    selected = 0;
+    results.innerHTML = '';
+    if (!shown.length) { results.innerHTML = '<li class="empty">Nenhum comando. Tente "deploy" ou "zen".</li>'; return; }
+    let lastGroup = null;
+    shown.forEach((c, i) => {
+      if (!query && c.group !== lastGroup) { const g = document.createElement('li'); g.className = 'group'; g.textContent = c.group; results.appendChild(g); lastGroup = c.group; }
+      const li = document.createElement('li');
+      li.role = 'option'; li.id = 'opt-' + i; li.setAttribute('aria-selected', i === 0);
+      li.innerHTML = `<span>${highlight(c.label, query)}</span>${c.keys ? `<kbd>${c.keys}</kbd>` : ''}`;
+      li.addEventListener('mousemove', () => select(i));
+      li.addEventListener('click', () => run(i));
+      results.appendChild(li);
+    });
+    q.setAttribute('aria-activedescendant', 'opt-0');
+  }
+
+  function select(i) {
+    selected = (i + shown.length) % shown.length;
+    results.querySelectorAll('[role="option"]').forEach((li, k) => li.setAttribute('aria-selected', k === selected));
+    q.setAttribute('aria-activedescendant', 'opt-' + selected);
+    results.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+  }
+
+  function run(i) {
+    const c = shown[i]; if (!c) return;
+    dlg.close();
+    toast.textContent = `${c.group} → ${c.label}`;
+    toast.classList.add('on');
+    setTimeout(() => toast.classList.remove('on'), 1800);
+  }
+
+  function open() { q.value = ''; search(); dlg.showModal(); q.focus(); }
+  q.addEventListener('input', search);
+  q.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); select(selected + 1); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); select(selected - 1); }
+    if (e.key === 'Enter') { e.preventDefault(); run(selected); }
+  });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); dlg.open ? dlg.close() : open(); } });
+  $('open').addEventListener('click', open);
+  $('open2').addEventListener('click', open);
+  $('fuzzy').addEventListener('change', search);
+
+  // Card mode: palette already open, showing the list; click on the stage opens the full page.
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const target = $('stage');
+    let down = null;
+    target.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    target.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // A non-modal open keeps the host page scrollable; the preview just needs the look.
+    q.value = ''; search(); dlg.show();
+    q.addEventListener('focus', () => q.blur());
+    let i = 0; setInterval(() => select(++i), 1400);
+  }
+})();
+</script>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Commit Heatmap</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; padding: 28px; display: grid; align-content: center; gap: 18px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; }
+  .head h2 { font-family: var(--font-display); font-weight: 400; font-size: 30px; margin: 0; letter-spacing: .03em; }
+  .head .sum { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(53, 1fr); grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 3px; width: 100%; }
+  .cell { aspect-ratio: 1; border-radius: 2px; background: var(--c, #161a20); transition: transform 120ms; }
+  .cell:hover { transform: scale(1.35); outline: 1px solid var(--ink); z-index: 1; }
+  .months { display: grid; grid-template-columns: repeat(12, 1fr); font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .legend { display: flex; align-items: center; gap: 6px; justify-content: flex-end; font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+  .legend i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: #0e0e0c; font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; border-radius: 4px; transform: translate(-50%, -140%); opacity: 0; white-space: nowrap; z-index: 2; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  textarea { font-family: var(--font-mono); font-size: 11px; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; min-height: 80px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, textarea, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 16px; }
+  html.card .grid { grid-template-columns: repeat(7, 1fr); grid-auto-flow: row; grid-template-rows: none; }
+  html.card .months, html.card .legend { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="head"><h2>Últimos 12 meses</h2><span class="sum" id="sum"></span></div>
+    <div class="months" id="months"></div>
+    <div class="grid" id="grid" role="img" aria-label="Mapa de calor de contribuições"></div>
+    <div class="legend" id="legend">menos <i></i><i></i><i></i><i></i><i></i> mais</div>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Commit Heatmap</h1>
+      <p>O calendário de contribuições: 53 semanas × 7 dias, cor por intensidade. Cole seus dados ou gere aleatórios.</p>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="activity">Atividade <output id="activity-out">0.45</output></label>
+        <input type="range" id="activity" min="0.05" max="1" step="0.05" value="0.45">
+      </div>
+      <div class="field"><label for="color">Cor</label><input type="color" id="color" value="#c8f31d"></div>
+    </div>
+    <div class="field">
+      <label for="json">JSON: {"AAAA-MM-DD": n}</label>
+      <textarea id="json" spellcheck="false" placeholder='{"2026-09-01": 3, "2026-09-02": 7}'></textarea>
+    </div>
+    <div class="row">
+      <button type="button" class="plain" id="apply">Aplicar JSON</button>
+      <button type="button" class="plain" id="rand">Aleatório</button>
+    </div>
+    <p class="note">Um <code>grid</code> CSS com <code>grid-auto-flow: column</code> e 7 linhas empilha os dias em colunas de semanas, igual ao GitHub. A cor é a mesma base com <code>color-mix()</code> em 5 níveis, calculados pelo quantil do valor. O tooltip é uma <code>div</code> posicionada pelo <code>getBoundingClientRect</code> da célula.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid'), tip = $('tip');
+  const DAY = 864e5, MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  let data = {};
+
+  // Start on the Sunday 52 weeks before this week's Sunday, so the grid ends on today's column.
+  function range() {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const start = new Date(today); start.setDate(today.getDate() - today.getDay() - 52 * 7);
+    return { start, today };
+  }
+  const key = (d) => d.toISOString().slice(0, 10);
+
+  function random(activity) {
+    const { start, today } = range(); data = {};
+    for (let d = new Date(start); d <= today; d = new Date(d.getTime() + DAY)) {
+      const weekday = d.getDay() > 0 && d.getDay() < 6;
+      if (Math.random() < activity * (weekday ? 1 : 0.35)) data[key(d)] = Math.ceil(Math.random() ** 2 * 12);
+    }
+  }
+
+  function render() {
+    const { start, today } = range(), base = $('color').value;
+    const values = Object.values(data).filter(Boolean).sort((a, b) => a - b);
+    const q = (p) => values[Math.floor(p * (values.length - 1))] || 1;
+    const level = (v) => !v ? 0 : v <= q(0.25) ? 1 : v <= q(0.5) ? 2 : v <= q(0.75) ? 3 : 4;
+    const colour = (l) => l ? `color-mix(in oklab, ${base} ${[0, 30, 55, 80, 100][l]}%, #161a20)` : '#161a20';
+    grid.innerHTML = ''; let total = 0, streak = 0, best = 0;
+    for (let d = new Date(start); d <= today; d = new Date(d.getTime() + DAY)) {
+      const k = key(d), v = data[k] || 0; total += v; streak = v ? streak + 1 : 0; best = Math.max(best, streak);
+      const c = document.createElement('div'); c.className = 'cell'; c.style.setProperty('--c', colour(level(v)));
+      c.dataset.k = k; c.dataset.v = v; grid.appendChild(c);
+    }
+    $('sum').textContent = `${total} contribuições · melhor sequência ${best} dias`;
+    $('months').innerHTML = Array.from({ length: 12 }, (_, i) => `<span>${MONTHS[(start.getMonth() + i) % 12]}</span>`).join('');
+    [...$('legend').querySelectorAll('i')].forEach((i, l) => { i.style.background = colour(l); });
+  }
+
+  grid.addEventListener('mousemove', (e) => {
+    const c = e.target.closest('.cell'); if (!c) return;
+    const r = c.getBoundingClientRect(), s = $('stage').getBoundingClientRect();
+    tip.textContent = `${c.dataset.k}: ${c.dataset.v} ${c.dataset.v === '1' ? 'contribuição' : 'contribuições'}`;
+    tip.style.left = (r.left - s.left + r.width / 2) + 'px'; tip.style.top = (r.top - s.top) + 'px'; tip.style.opacity = 1;
+  });
+  grid.addEventListener('mouseleave', () => { tip.style.opacity = 0; });
+
+  $('activity').addEventListener('input', () => { $('activity-out').textContent = Number($('activity').value).toFixed(2); random(Number($('activity').value)); render(); });
+  $('color').addEventListener('input', render);
+  $('rand').addEventListener('click', () => { random(Number($('activity').value)); render(); });
+  $('apply').addEventListener('click', () => {
+    try { data = JSON.parse($('json').value || '{}'); render(); } catch { $('json').value = '// JSON inválido'; }
+  });
+  random(0.45); render();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    stage.addEventListener('pointermove', (e) => { const r = stage.getBoundingClientRect(); random(0.1 + (e.clientX - r.left) / r.width * 0.8); render(); });
+  }
+})();
+</script>
+</html>

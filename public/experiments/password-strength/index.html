@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Password Strength</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --bad: #f23e2e; --mid: #f2a52e;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; padding: 32px; display: grid; align-content: center; gap: 22px; container-type: inline-size; }
+  .pw { display: grid; gap: 10px; }
+  .pw label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .pw .box { display: flex; border: 1px solid var(--line); border-radius: 6px; background: #0f1319; }
+  .pw input { flex: 1; min-width: 0; font: inherit; font-family: var(--font-mono); font-size: clamp(16px, 3cqw, 22px); padding: 14px 16px; border: 0; background: transparent; color: var(--ink); outline: none; }
+  .pw .eye { all: unset; padding: 0 16px; cursor: pointer; color: var(--muted); font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; }
+  .pw .eye:hover { color: var(--ink); }
+  .bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .bars i { height: 6px; border-radius: 999px; background: #1a1f26; transition: background 200ms; }
+  .verdict { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .verdict .word { font-family: var(--font-display); font-size: clamp(30px, 7cqw, 58px); line-height: 1; letter-spacing: .03em; color: var(--c, var(--muted)); }
+  .verdict .crack { font-family: var(--font-mono); font-size: 13px; color: var(--muted); text-align: right; }
+  .verdict .crack b { display: block; color: var(--ink); font-weight: 400; font-size: 15px; }
+  .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+  .meta div { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  .meta span { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .meta b { font-family: var(--font-mono); font-weight: 400; font-size: 16px; }
+  .flags { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .flags li { font-size: 13px; color: var(--muted); display: flex; gap: 8px; }
+  .flags li::before { content: "!"; font-family: var(--font-mono); color: var(--bad); }
+  .flags li.ok { color: var(--accent); }
+  .flags li.ok::before { content: "✓"; color: var(--accent); }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .try { display: grid; gap: 6px; }
+  .try button { all: unset; cursor: pointer; font-family: var(--font-mono); font-size: 12px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
+  .try button:hover { border-color: var(--accent); color: var(--ink); }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 18px; gap: 14px; }
+  html.card .meta, html.card .flags, html.card .pw .eye { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="pw">
+      <label for="pw">Senha</label>
+      <div class="box">
+        <input type="password" id="pw" value="verao2026!" autocomplete="off" spellcheck="false" placeholder="digite…">
+        <button type="button" class="eye" id="eye">ver</button>
+      </div>
+    </div>
+    <div class="bars" id="bars"><i></i><i></i><i></i><i></i></div>
+    <div class="verdict" id="verdict">
+      <span class="word" id="word">—</span>
+      <span class="crack">quebra por força bruta em<b id="crack">—</b></span>
+    </div>
+    <div class="meta">
+      <div><span>entropia</span><b id="bits">—</b></div>
+      <div><span>alfabeto</span><b id="pool">—</b></div>
+      <div><span>tamanho</span><b id="len">—</b></div>
+      <div><span>combinações</span><b id="space">—</b></div>
+    </div>
+    <ul class="flags" id="flags"></ul>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Password Strength</h1>
+      <p>Medidor de senha que conta entropia de verdade e desconta os padrões óbvios, em vez de exigir um caractere especial e dar "forte".</p>
+    </div>
+    <div class="field">
+      <label for="rate">Tentativas por segundo <output id="rate-out">10 bi</output></label>
+      <input type="range" id="rate" min="3" max="14" step="1" value="10">
+    </div>
+    <div class="try">
+      <button type="button" data-pw="123456">123456</button>
+      <button type="button" data-pw="Caique@1990">Caique@1990</button>
+      <button type="button" data-pw="P@ssw0rd!">P@ssw0rd!</button>
+      <button type="button" data-pw="cavalo bateria grampo correto">quatro palavras</button>
+    </div>
+    <p class="note">A base é <code>log2(alfabeto^tamanho)</code>: cada classe de caractere presente soma ao alfabeto. Em cima disso entram descontos por padrão — sequências (<code>abcd</code>, <code>1234</code>), repetições, anos, teclado (<code>qwerty</code>) e palavras comuns valem bem menos bits do que o comprimento sugere. O tempo de quebra é <code>2^(bits-1) / tentativas</code>, com o atacante offline no slider.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const COMMON = ['senha', 'password', 'admin', 'qwerty', 'letmein', 'dragon', 'master', 'monkey', 'welcome', 'login', 'iloveyou', 'sunshine', 'princess', 'futebol', 'brasil', 'flamengo', 'corinthians', 'caique'];
+  const KEYS = ['qwerty', 'asdf', 'zxcv', 'qwertz', '1qaz', '!@#$'];
+
+  function analyse(pw) {
+    const flags = [];
+    if (!pw) return { bits: 0, pool: 0, flags: [] };
+    let pool = 0;
+    if (/[a-z]/.test(pw)) pool += 26;
+    if (/[A-Z]/.test(pw)) pool += 26;
+    if (/[0-9]/.test(pw)) pool += 10;
+    if (/[^A-Za-z0-9]/.test(pw)) pool += 33;
+    if (/\s/.test(pw)) pool += 1;
+    let bits = pw.length * Math.log2(pool || 1);
+
+    const low = pw.toLowerCase();
+    // Each pattern below is something a real cracker's dictionary already covers,
+    // so it does not buy the bits its length claims.
+    const hit = COMMON.find(w => low.includes(w));
+    if (hit) { bits -= hit.length * Math.log2(pool) * 0.85; flags.push(['contém "' + hit + '", palavra de dicionário', false]); }
+    if (KEYS.some(k => low.includes(k))) { bits -= 10; flags.push(['sequência de teclado', false]); }
+
+    let runs = 0;
+    for (let i = 2; i < pw.length; i++) {
+      const a = pw.charCodeAt(i - 2), b = pw.charCodeAt(i - 1), c = pw.charCodeAt(i);
+      if ((b - a === c - b) && Math.abs(b - a) <= 1) runs++;
+    }
+    if (runs) { bits -= runs * 2.5; flags.push([runs + ' caracteres em sequência ou repetidos', false]); }
+
+    const year = low.match(/(19|20)\d\d/);
+    if (year) { bits -= 8; flags.push(['ano "' + year[0] + '" no meio', false]); }
+
+    // Leet is a substitution a cracker applies for free.
+    if (/[4@3018$]/.test(pw) && /[a-z]/i.test(pw.replace(/[4@3018$]/g, ''))) { bits -= 4; flags.push(['troca leet (@ por a, 0 por o) é prevista', false]); }
+
+    if (pw.length >= 16) flags.push(['comprimento longo é o que mais pesa', true]);
+    if (/\s/.test(pw.trim()) && pw.split(/\s+/).length >= 4) flags.push(['frase com várias palavras: fácil de lembrar, cara de quebrar', true]);
+    if (!flags.length) flags.push(['nenhum padrão previsível encontrado', true]);
+
+    return { bits: Math.max(0, bits), pool, flags };
+  }
+
+  const LEVELS = [
+    { max: 28, word: 'frágil', c: 'var(--bad)' },
+    { max: 50, word: 'fraca', c: 'var(--bad)' },
+    { max: 70, word: 'razoável', c: 'var(--mid)' },
+    { max: 95, word: 'forte', c: 'var(--accent)' },
+    { max: Infinity, word: 'absurda', c: 'var(--accent)' },
+  ];
+
+  const UNITS = [[1, 'segundos'], [60, 'minutos'], [3600, 'horas'], [86400, 'dias'], [31557600, 'anos'], [31557600e3, 'mil anos'], [31557600e6, 'milhões de anos'], [31557600e9, 'bilhões de anos']];
+  function human(seconds) {
+    if (seconds < 1) return 'instantâneo';
+    let u = UNITS[0];
+    for (const cand of UNITS) if (seconds >= cand[0]) u = cand;
+    const n = seconds / u[0];
+    if (n > 1e6) return n.toExponential(1).replace('e+', '×10^') + ' ' + u[1];
+    return (n < 10 ? n.toFixed(1) : Math.round(n).toLocaleString('pt-BR')) + ' ' + u[1];
+  }
+
+  function render() {
+    const pw = $('pw').value;
+    const { bits, pool, flags } = analyse(pw);
+    const level = LEVELS.findIndex(l => bits < l.max);
+    const L = LEVELS[level < 0 ? LEVELS.length - 1 : level];
+    const rate = 10 ** Number($('rate').value);
+
+    $('word').textContent = pw ? L.word : '—';
+    $('verdict').style.setProperty('--c', pw ? L.c : 'var(--muted)');
+    $('crack').textContent = pw ? human(2 ** (bits - 1) / rate) : '—';
+    $('bits').textContent = pw ? bits.toFixed(0) + ' bits' : '—';
+    $('pool').textContent = pool ? pool + ' chars' : '—';
+    $('len').textContent = pw.length || '—';
+    $('space').textContent = pw ? '2^' + bits.toFixed(0) : '—';
+    [...$('bars').children].forEach((b, i) => { b.style.background = pw && i <= Math.min(3, level < 0 ? 3 : level) ? L.c : '#1a1f26'; });
+    $('flags').innerHTML = flags.map(([t, ok]) => `<li class="${ok ? 'ok' : ''}">${t}</li>`).join('');
+  }
+
+  $('pw').addEventListener('input', render);
+  $('rate').addEventListener('input', () => {
+    const e = Number($('rate').value);
+    const names = { 3: 'mil', 6: 'milhão', 9: 'bilhão', 12: 'trilhão' };
+    $('rate-out').textContent = (10 ** (e % 3)) + ' ' + (names[e - e % 3] || '10^' + e);
+    render();
+  });
+  $('eye').addEventListener('click', () => {
+    const on = $('pw').type === 'password';
+    $('pw').type = on ? 'text' : 'password'; $('eye').textContent = on ? 'ocultar' : 'ver';
+  });
+  document.querySelectorAll('[data-pw]').forEach(b => b.addEventListener('click', () => { $('pw').value = b.dataset.pw; render(); }));
+  $('rate').dispatchEvent(new Event('input'));
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Type a weak password, then grow it into a strong one, on a loop.
+    const script = ['senha', 'senha1', 'senha123', 'S3nha123', 'S3nha123!', 'cavalo', 'cavalo bateria', 'cavalo bateria grampo', 'cavalo bateria grampo correto'];
+    let i = 0, j = 0;
+    setInterval(() => {
+      const target = script[i];
+      $('pw').value = target.slice(0, ++j);
+      render();
+      if (j >= target.length) { j = 0; i = (i + 1) % script.length; }
+    }, 130);
+  }
+})();
+</script>
+</html>

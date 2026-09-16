@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Scroll Story</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage: its own scroll container, so the story scrolls without the page ---------- */
+  .stage { position: relative; height: 560px; background: #000; border-radius: 6px; overflow-y: auto; overflow-x: hidden; scroll-timeline: --story block; }
+  .progress { position: sticky; top: 0; height: 4px; background: var(--accent); transform-origin: left; transform: scaleX(0); z-index: 2;
+    animation: grow linear both; animation-timeline: --story; }
+  @keyframes grow { to { transform: scaleX(1); } }
+  .chapter { min-height: 100%; display: grid; place-items: center; padding: 40px 32px; position: relative; }
+  .chapter .num { position: absolute; top: 24px; left: 28px; font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+  .chapter h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 9cqw, 96px); line-height: .9; letter-spacing: .01em; margin: 0 0 14px; text-transform: uppercase; }
+  .chapter p { margin: 0; max-width: 40ch; color: var(--muted); }
+  .chapter .card { max-width: 520px; }
+  /* Each chapter's content plays its own timeline as it crosses the viewport of the scroller. */
+  .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry 10% entry 60%; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(40px) scale(.96); } to { opacity: 1; transform: none; } }
+  .bar { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; margin-top: 18px; }
+  .bar i { display: block; height: 100%; background: var(--accent); transform-origin: left; animation: fill linear both; animation-timeline: view(); animation-range: entry 30% contain 20%; }
+  @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .chapter:nth-child(odd) { background: #000; } .chapter:nth-child(even) { background: #0f1115; }
+  .fallback { display: none; }
+  @supports not (animation-timeline: view()) { .reveal, .bar i { animation: none; } .fallback { display: block; } }
+  .stage { container-type: inline-size; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="progress" aria-hidden="true"></div>
+    <section class="chapter"><span class="num">01 / 04</span><div class="card reveal"><h2>Role pra descer</h2><p>Cada capítulo entra quando cruza a tela. Nenhuma linha de JavaScript decide quando: é o scroll que dirige a animação.</p><div class="bar"><i></i></div></div></section>
+    <section class="chapter"><span class="num">02 / 04</span><div class="card reveal"><h2>Sem observer</h2><p><code>animation-timeline: view()</code> liga o keyframe à posição do elemento dentro do scroller. A barra de progresso no topo usa <code>scroll()</code>.</p><div class="bar"><i></i></div></div></section>
+    <section class="chapter"><span class="num">03 / 04</span><div class="card reveal"><h2>Roda no compositor</h2><p>Como não passa pelo JS, continua liso mesmo com a thread principal ocupada. <code>animation-range</code> diz onde começa e termina.</p><div class="bar"><i></i></div></div></section>
+    <section class="chapter"><span class="num">04 / 04</span><div class="card reveal"><h2>Fim.</h2><p>Em navegadores sem suporte, o conteúdo aparece direto, sem animação. Nada some.</p><p class="fallback">Seu navegador não suporta scroll-driven animations; o conteúdo está visível sem o efeito.</p><div class="bar"><i></i></div></div></section>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Scroll Story</h1>
+      <p>Capítulos que se revelam conforme você rola, com barra de progresso, só em CSS.</p>
+    </div>
+    <div class="field">
+      <label for="h">Altura do palco <output id="h-out">560 px</output></label>
+      <input type="range" id="h" min="360" max="800" step="10" value="560">
+    </div>
+    <button type="button" class="plain" id="top">Voltar ao topo</button>
+    <p class="note">Duas timelines: <code>scroll-timeline: --story</code> no scroller alimenta a barra de progresso; <code>view()</code> em cada capítulo alimenta a entrada. <code>@supports not (animation-timeline: view())</code> desliga o efeito onde não existe. Zero JavaScript no efeito; o JS aqui só serve aos controles.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage');
+  $('h').addEventListener('input', (e) => { stage.style.height = e.target.value + 'px'; $('h-out').textContent = e.target.value + ' px'; });
+  $('top').addEventListener('click', () => stage.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Idle preview: drift down and back so the card shows the reveal without a wheel.
+    let dir = 1;
+    setInterval(() => { const max = stage.scrollHeight - stage.clientHeight; if (stage.scrollTop >= max - 2) dir = -1; if (stage.scrollTop <= 2) dir = 1; stage.scrollBy({ top: dir * 2 }); }, 30);
+  }
+})();
+</script>
+</html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Flip Clock</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; display: grid; place-items: center; padding: 24px; container-type: inline-size; }
+  .clock { display: flex; gap: clamp(8px, 2cqw, 20px); align-items: flex-start; }
+  .group { display: grid; justify-items: center; gap: 8px; }
+  .group .label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .digits { display: flex; gap: 4px; }
+  .colon { font-family: var(--font-display); font-size: clamp(40px, 10cqw, 110px); line-height: 1; color: var(--accent); padding-top: .18em; }
+  /* A flip card: top half shows the current digit, bottom half the same; on change, a "leaf" folds over. */
+  .card { position: relative; width: clamp(40px, 9cqw, 96px); height: clamp(60px, 13cqw, 140px); perspective: 500px; font-family: var(--font-display); font-size: clamp(46px, 10.5cqw, 116px); line-height: 1; }
+  .card .half { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); display: flex; justify-content: center; }
+  .card .top { top: 0; border-radius: 6px 6px 0 0; align-items: flex-end; }
+  .card .bottom { bottom: 0; border-radius: 0 0 6px 6px; align-items: flex-start; }
+  .card .top span { transform: translateY(50%); }
+  .card .bottom span { transform: translateY(-50%); }
+  .card .leaf { z-index: 2; transform-origin: bottom; backface-visibility: hidden; }
+  .card .leaf.back { transform: rotateX(180deg); align-items: flex-start; border-radius: 0 0 6px 6px; top: 50%; transform-origin: top; }
+  .card .leaf.back span { transform: translateY(-50%); }
+  .card.flip .leaf.front { animation: fold var(--speed, 600ms) ease-in forwards; }
+  .card.flip .leaf.back { animation: unfold var(--speed, 600ms) ease-out forwards; }
+  @keyframes fold { to { transform: rotateX(-180deg); } }
+  @keyframes unfold { from { transform: rotateX(180deg); } to { transform: rotateX(0); } }
+  .card::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #000; z-index: 3; }
+  @media (prefers-reduced-motion: reduce) { .card.flip .leaf { animation: none; } }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="datetime-local"] { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; color-scheme: dark; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 12px; }
+  html.card .clock { flex-wrap: wrap; justify-content: center; gap: 10px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="clock" id="clock" role="timer" aria-live="off"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Flip Clock</h1>
+      <p>Relógio ou contagem regressiva com dígitos que viram, como painel de aeroporto.</p>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Modo">
+      <label><input type="radio" name="mode" value="clock" checked><span>relógio</span></label>
+      <label><input type="radio" name="mode" value="countdown"><span>contagem</span></label>
+    </div>
+    <div class="field">
+      <label for="target">Alvo da contagem</label>
+      <input type="datetime-local" id="target">
+    </div>
+    <div class="field">
+      <label for="speed">Velocidade do flip <output id="speed-out">600 ms</output></label>
+      <input type="range" id="speed" min="150" max="1200" step="50" value="600">
+    </div>
+    <p class="note">Cada dígito é um cartão dividido em duas metades. Quando muda, uma "folha" com o dígito antigo dobra por cima (<code>rotateX</code> com <code>perspective</code>) enquanto outra, já com o novo, desdobra por baixo. Só os dígitos que mudam animam. O relógio usa <code>setInterval</code> alinhado ao segundo; a contagem calcula dias, horas, minutos e segundos até a data.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const clock = $('clock');
+  const mode = () => document.querySelector('input[name="mode"]:checked').value;
+  let cards = [];
+
+  function build(groups) {
+    clock.innerHTML = ''; cards = [];
+    groups.forEach((g, gi) => {
+      if (gi) { const c = document.createElement('div'); c.className = 'colon'; c.textContent = ':'; clock.appendChild(c); }
+      const wrap = document.createElement('div'); wrap.className = 'group';
+      const digits = document.createElement('div'); digits.className = 'digits';
+      for (let i = 0; i < g.width; i++) {
+        const card = document.createElement('div'); card.className = 'card'; card.dataset.d = '';
+        card.innerHTML = '<div class="half top"><span></span></div><div class="half bottom"><span></span></div><div class="half top leaf front"><span></span></div><div class="half leaf back"><span></span></div>';
+        digits.appendChild(card); cards.push(card);
+      }
+      const label = document.createElement('div'); label.className = 'label'; label.textContent = g.label;
+      wrap.append(digits, label); clock.appendChild(wrap);
+    });
+  }
+
+  function setDigit(card, d) {
+    if (card.dataset.d === d) return;
+    const [top, bottom, front, back] = card.querySelectorAll('span');
+    front.textContent = card.dataset.d || d; top.textContent = d; back.textContent = d; bottom.textContent = card.dataset.d || d;
+    card.classList.remove('flip'); void card.offsetWidth; card.classList.add('flip');
+    card.addEventListener('animationend', () => { bottom.textContent = d; card.classList.remove('flip'); }, { once: true });
+    card.dataset.d = d;
+  }
+
+  function tick() {
+    const now = new Date();
+    let parts;
+    if (mode() === 'clock') {
+      parts = [now.getHours(), now.getMinutes(), now.getSeconds()].map(n => String(n).padStart(2, '0'));
+    } else {
+      const target = new Date($('target').value || Date.now());
+      let s = Math.max(0, Math.floor((target - now) / 1000));
+      const d = Math.floor(s / 86400); s -= d * 86400; const h = Math.floor(s / 3600); s -= h * 3600; const m = Math.floor(s / 60); s -= m * 60;
+      parts = [String(Math.min(d, 999)).padStart(3, '0'), String(h).padStart(2, '0'), String(m).padStart(2, '0'), String(s).padStart(2, '0')];
+    }
+    parts.join('').split('').forEach((ch, i) => cards[i] && setDigit(cards[i], ch));
+  }
+
+  function setup() {
+    build(mode() === 'clock' ? [{ width: 2, label: 'horas' }, { width: 2, label: 'min' }, { width: 2, label: 'seg' }] : [{ width: 3, label: 'dias' }, { width: 2, label: 'horas' }, { width: 2, label: 'min' }, { width: 2, label: 'seg' }]);
+    tick();
+  }
+
+  const soon = new Date(Date.now() + 3 * 86400e3 + 7200e3); soon.setSeconds(0, 0);
+  $('target').value = new Date(soon - soon.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', setup));
+  $('target').addEventListener('input', tick);
+  $('speed').addEventListener('input', () => { $('stage').style.setProperty('--speed', $('speed').value + 'ms'); $('speed-out').textContent = $('speed').value + ' ms'; });
+  setup();
+  setTimeout(() => { tick(); setInterval(tick, 1000); }, 1000 - Date.now() % 1000);
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+  }
+})();
+</script>
+</html>
