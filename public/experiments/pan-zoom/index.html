@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Pan & Zoom</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; height: 560px; background: #000; border-radius: 6px; overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
+  .stage.grabbing { cursor: grabbing; }
+  .stage img.main { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; -webkit-user-drag: none; pointer-events: none; max-width: none; }
+  .hud { position: absolute; right: 12px; top: 12px; display: flex; gap: 6px; }
+  .hud button { font: inherit; font-family: var(--font-mono); font-size: 13px; min-width: 34px; height: 34px; padding: 0 10px; background: rgba(11,13,16,.8); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  .hud button:hover { border-color: var(--accent); }
+  .zoom { position: absolute; left: 12px; top: 12px; font-family: var(--font-mono); font-size: 12px; background: rgba(11,13,16,.8); padding: 6px 10px; border-radius: 4px; color: var(--accent); pointer-events: none; }
+  .mini { position: absolute; right: 12px; bottom: 12px; width: 140px; border: 1px solid var(--line); background: #000; cursor: pointer; line-height: 0; }
+  .mini img { width: 100%; display: block; opacity: .55; pointer-events: none; }
+  .mini i { position: absolute; border: 2px solid var(--accent); pointer-events: none; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .keys { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); }
+  .keys kbd { font-family: var(--font-mono); font-size: 11px; color: var(--ink); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; }
+  .upload { font: inherit; font-size: 13px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; display: block; }
+  .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; cursor: pointer; }
+  html.card .hud { display: none; }
+  html.card .mini { width: 34%; right: 8px; bottom: 8px; }
+  html.card .zoom { font-size: 10px; left: 8px; top: 8px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage" aria-label="Visualizador com zoom">
+    <img class="main" id="img" src="photo.jpg" alt="Imagem ampliável" draggable="false">
+    <span class="zoom" id="zoom">100%</span>
+    <div class="hud">
+      <button type="button" id="out" aria-label="Diminuir zoom">−</button>
+      <button type="button" id="in" aria-label="Aumentar zoom">+</button>
+      <button type="button" id="fit">ajustar</button>
+      <button type="button" id="one">1:1</button>
+    </div>
+    <div class="mini" id="mini"><img id="mini-img" src="photo.jpg" alt=""><i id="mini-box"></i></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Pan &amp; Zoom</h1>
+      <p>Visualizador de imagem com zoom ancorado no cursor, pinça no toque, arrasto com inércia e minimapa.</p>
+    </div>
+    <ul class="keys">
+      <li><kbd>roda</kbd> zoom no ponto do cursor</li>
+      <li><kbd>arrastar</kbd> mover, com inércia ao soltar</li>
+      <li><kbd>dois dedos</kbd> pinça e arrasto juntos</li>
+      <li><kbd>duplo clique</kbd> aproxima 2× ali</li>
+      <li><kbd>minimapa</kbd> clique para ir até o ponto</li>
+    </ul>
+    <div class="field">
+      <label for="max">Zoom máximo <output id="max-out">8×</output></label>
+      <input type="range" id="max" min="2" max="20" step="1" value="8">
+    </div>
+    <div class="field">
+      <label for="friction">Atrito da inércia <output id="friction-out">0,92</output></label>
+      <input type="range" id="friction" min="0" max="0.98" step="0.01" value="0.92">
+    </div>
+    <label class="check"><input type="checkbox" id="pixel"> Pixels nítidos ao ampliar</label>
+    <label class="upload">Outra imagem<input type="file" id="file" accept="image/*"></label>
+    <p class="note">Todo o estado é uma escala <code>s</code> e um deslocamento <code>(x, y)</code>, aplicados como <code>transform</code>. Para ampliar mantendo o ponto sob o cursor parado: <code>x' = p − (p − x) × s'/s</code>. A pinça faz o mesmo com o ponto médio dos dois dedos e a razão entre as distâncias. Ao soltar, a velocidade dos últimos quadros continua e decai pelo atrito. As bordas são limitadas para a imagem nunca sumir.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), img = $('img');
+  const isCard = new URLSearchParams(location.search).has('card');
+  let s = 1, x = 0, y = 0, fitScale = 1, anim = null, vel = null;
+  const pointers = new Map();
+
+  const size = () => ({ w: stage.clientWidth, h: stage.clientHeight, iw: img.naturalWidth, ih: img.naturalHeight });
+
+  function clamp() {
+    const { w, h, iw, ih } = size();
+    const sw = iw * s, sh = ih * s;
+    x = sw <= w ? (w - sw) / 2 : Math.min(0, Math.max(w - sw, x));
+    y = sh <= h ? (h - sh) / 2 : Math.min(0, Math.max(h - sh, y));
+  }
+
+  function apply() {
+    if (!img.naturalWidth) return;
+    clamp();
+    img.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+    $('zoom').textContent = Math.round(s * 100) + '%';
+    img.style.imageRendering = $('pixel').checked && s > 1 ? 'pixelated' : 'auto';
+    // Minimap box: the visible viewport in image coordinates.
+    const { w, h, iw, ih } = size(), mw = $('mini').clientWidth, k = mw / iw;
+    const box = $('mini-box');
+    const left = Math.max(0, -x / s), top = Math.max(0, -y / s);
+    box.style.left = left * k + 'px'; box.style.top = top * k + 'px';
+    box.style.width = Math.min(iw - left, w / s) * k + 'px';
+    box.style.height = Math.min(ih - top, h / s) * k + 'px';
+  }
+
+  const maxScale = () => fitScale * Number($('max').value);
+  function zoomAt(px, py, next) {
+    next = Math.min(maxScale(), Math.max(fitScale, next));
+    x = px - (px - x) * next / s;
+    y = py - (py - y) * next / s;
+    s = next;
+    apply();
+  }
+
+  // Tween to a target state; used by buttons, double click and the minimap.
+  function animateTo(ts, tx, ty, ms = 320) {
+    cancelAnimationFrame(anim); vel = null;
+    const s0 = s, x0 = x, y0 = y, t0 = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - t0) / ms), e = 1 - (1 - t) ** 3;
+      s = s0 + (ts - s0) * e; x = x0 + (tx - x0) * e; y = y0 + (ty - y0) * e;
+      apply();
+      if (t < 1) anim = requestAnimationFrame(step);
+    };
+    anim = requestAnimationFrame(step);
+  }
+  function zoomAnimated(px, py, next) {
+    next = Math.min(maxScale(), Math.max(fitScale, next));
+    animateTo(next, px - (px - x) * next / s, py - (py - y) * next / s);
+  }
+
+  function fit(animated) {
+    const { w, h, iw, ih } = size();
+    if (!iw) return; // not decoded yet; the load handler fits again
+    fitScale = Math.min(w / iw, h / ih);
+    const tx = (w - iw * fitScale) / 2, ty = (h - ih * fitScale) / 2;
+    if (animated) animateTo(fitScale, tx, ty); else { s = fitScale; x = tx; y = ty; apply(); }
+  }
+
+  const local = (e) => { const r = stage.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+
+  // Wheel only on the full page: inside the card it would swallow the host page's scroll.
+  if (!isCard) stage.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    cancelAnimationFrame(anim); vel = null;
+    const p = local(e);
+    zoomAt(p.x, p.y, s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)));
+  }, { passive: false });
+
+  let last = null, pinch = null;
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.hud, .mini')) return;
+    stage.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, local(e));
+    cancelAnimationFrame(anim); vel = null;
+    stage.classList.add('grabbing');
+    last = { ...local(e), t: performance.now(), vx: 0, vy: 0 };
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+    }
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, local(e));
+    if (pointers.size === 2 && pinch) {
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      x += mx - pinch.mx; y += my - pinch.my;
+      zoomAt(mx, my, s * d / pinch.d);
+      pinch = { d, mx, my };
+      return;
+    }
+    const p = local(e), now = performance.now(), dt = Math.max(1, now - last.t);
+    x += p.x - last.x; y += p.y - last.y;
+    // Smoothed velocity in px per frame, for the throw.
+    last = { ...p, t: now, vx: last.vx * 0.6 + (p.x - last.x) / dt * 16.7 * 0.4, vy: last.vy * 0.6 + (p.y - last.y) / dt * 16.7 * 0.4 };
+    apply();
+  });
+  const release = (e) => {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (pointers.size) { last = { ...[...pointers.values()][0], t: performance.now(), vx: 0, vy: 0 }; return; }
+    stage.classList.remove('grabbing');
+    if (last && performance.now() - last.t < 80) throwFrom(last.vx, last.vy);
+  };
+  stage.addEventListener('pointerup', release);
+  stage.addEventListener('pointercancel', release);
+
+  function throwFrom(vx, vy) {
+    vel = { vx, vy };
+    const friction = Number($('friction').value);
+    const step = () => {
+      if (!vel) return;
+      x += vel.vx; y += vel.vy;
+      vel.vx *= friction; vel.vy *= friction;
+      const bx = x, by = y;
+      apply();
+      if (x !== bx) vel.vx = 0;
+      if (y !== by) vel.vy = 0;
+      if (Math.abs(vel.vx) + Math.abs(vel.vy) > 0.2) requestAnimationFrame(step); else vel = null;
+    };
+    requestAnimationFrame(step);
+  }
+
+  stage.addEventListener('dblclick', (e) => {
+    if (e.target.closest('.hud, .mini')) return;
+    const p = local(e);
+    zoomAnimated(p.x, p.y, s * 2 > maxScale() + 1e-6 ? fitScale : s * 2);
+  });
+
+  const centre = () => ({ x: stage.clientWidth / 2, y: stage.clientHeight / 2 });
+  $('in').addEventListener('click', () => { const c = centre(); zoomAnimated(c.x, c.y, s * 1.6); });
+  $('out').addEventListener('click', () => { const c = centre(); zoomAnimated(c.x, c.y, s / 1.6); });
+  $('fit').addEventListener('click', () => fit(true));
+  $('one').addEventListener('click', () => { const c = centre(); zoomAnimated(c.x, c.y, Math.max(fitScale, Math.min(maxScale(), 1))); });
+
+  $('mini').addEventListener('click', (e) => {
+    const r = $('mini').getBoundingClientRect(), { w, h, iw } = size();
+    const ix = (e.clientX - r.left) / r.width * iw, iy = (e.clientY - r.top) / r.width * iw;
+    animateTo(s, w / 2 - ix * s, h / 2 - iy * s);
+  });
+
+  $('max').addEventListener('input', () => { $('max-out').textContent = $('max').value + '×'; if (s > maxScale()) fit(true); });
+  $('friction').addEventListener('input', () => { $('friction-out').textContent = Number($('friction').value).toFixed(2).replace('.', ','); });
+  $('pixel').addEventListener('change', apply);
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const url = URL.createObjectURL(f);
+    img.src = url; $('mini-img').src = url;
+  });
+
+  img.addEventListener('load', () => fit(false));
+  if (img.complete && img.naturalWidth) fit(false);
+  new ResizeObserver(() => { const was = s <= fitScale + 1e-6; const old = fitScale; fit(false); if (!was) { s = Math.max(fitScale, s * fitScale / old); apply(); } }).observe(stage);
+
+  if (isCard) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // A slow tour: zoom into a random spot, pull back, repeat.
+    let near = false;
+    setInterval(() => {
+      if (pointers.size) return;
+      const { w, h } = size();
+      if (near) fit(true);
+      else zoomAnimated(w * (0.25 + Math.random() * 0.5), h * (0.25 + Math.random() * 0.5), fitScale * 3);
+      near = !near;
+    }, 2200);
+  }
+})();
+</script>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Variable Type</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 540px; background: #000; border-radius: 6px; display: grid; place-items: center; padding: 24px; overflow: hidden; touch-action: none; container-type: inline-size; cursor: crosshair; }
+  .word { margin: 0; font-family: "Roboto Flex", var(--font-body); font-size: clamp(44px, var(--size, 16cqw), 220px); line-height: .95; text-align: center; text-transform: uppercase; color: var(--ink); white-space: nowrap; font-optical-sizing: none; }
+  .word span { display: inline-block; font-variation-settings: "wght" var(--wght, 400), "wdth" var(--wdth, 100), "opsz" 144; color: color-mix(in oklab, var(--accent) var(--hot, 0%), var(--ink)); will-change: font-variation-settings; }
+  .axes { position: absolute; left: 16px; bottom: 14px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: .08em; pointer-events: none; }
+  .axes b { color: var(--accent); font-weight: 400; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="text"] { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; text-transform: uppercase; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  :is(input):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 8px; }
+  html.card .axes { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <h2 class="word" id="word" aria-label="Variável"></h2>
+    <div class="axes" id="axes">wght <b id="a-wght">—</b> · wdth <b id="a-wdth">—</b></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Variable Type</h1>
+      <p>Uma única fonte variável; cada letra ganha peso e largura conforme o cursor se aproxima. Sem trocar de arquivo, sem imagem.</p>
+    </div>
+    <div class="field">
+      <label for="text">Texto</label>
+      <input type="text" id="text" value="Variável" maxlength="14" spellcheck="false">
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Eixos">
+      <label><input type="radio" name="axis" value="wght"><span>peso</span></label>
+      <label><input type="radio" name="axis" value="wdth"><span>largura</span></label>
+      <label><input type="radio" name="axis" value="both" checked><span>ambos</span></label>
+    </div>
+    <div class="field">
+      <label for="radius">Raio de influência <output id="radius-out">260 px</output></label>
+      <input type="range" id="radius" min="60" max="600" step="10" value="260">
+    </div>
+    <div class="field">
+      <label for="ease">Inércia <output id="ease-out">0,18</output></label>
+      <input type="range" id="ease" min="0.04" max="1" step="0.02" value="0.18">
+    </div>
+    <label class="check"><input type="checkbox" id="invert"> Inverter (perto = fino)</label>
+    <p class="note">O Roboto Flex expõe os eixos <code>wght</code> (100–1000) e <code>wdth</code> (25–151) num só arquivo. Cada letra é um <code>span</code> com <code>font-variation-settings</code> alimentado por variáveis CSS. A distância do ponteiro ao centro da letra passa por uma curva cosseno até o raio escolhido; o valor aplicado persegue o alvo com uma interpolação por quadro, daí a inércia. As posições dos centros são medidas de novo a cada quadro porque a própria largura muda.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), word = $('word');
+  let letters = [], pointer = null;
+
+  function build() {
+    const text = $('text').value.trim() || 'Flex';
+    word.setAttribute('aria-label', text);
+    word.innerHTML = [...text].map(ch => `<span aria-hidden="true">${ch === ' ' ? '&nbsp;' : ch.replace(/[<&]/g, '')}</span>`).join('');
+    // Shrink long words so the widest state still fits.
+    word.style.setProperty('--size', Math.min(16, 118 / Math.max(4, text.length)) + 'cqw');
+    letters = [...word.children].map(el => ({ el, w: 400, d: 100, h: 0 }));
+  }
+
+  function frame() {
+    requestAnimationFrame(frame);
+    const radius = Number($('radius').value), ease = Number($('ease').value);
+    const axis = document.querySelector('input[name="axis"]:checked').value, invert = $('invert').checked;
+    let sumW = 0, sumD = 0;
+    for (const L of letters) {
+      let t = 0;
+      if (pointer) {
+        const r = L.el.getBoundingClientRect();
+        const dist = Math.hypot(pointer.x - (r.left + r.width / 2), pointer.y - (r.top + r.height / 2));
+        t = dist >= radius ? 0 : (1 + Math.cos(Math.PI * dist / radius)) / 2;
+      }
+      if (invert) t = pointer ? 1 - t : 0;
+      const targetW = axis === 'wdth' ? 400 : 200 + t * 800;
+      const targetD = axis === 'wght' ? 100 : 60 + t * 91;
+      L.w += (targetW - L.w) * ease;
+      L.d += (targetD - L.d) * ease;
+      L.h += (t * 100 - L.h) * ease;
+      L.el.style.setProperty('--wght', L.w.toFixed(1));
+      L.el.style.setProperty('--wdth', L.d.toFixed(1));
+      L.el.style.setProperty('--hot', L.h.toFixed(0) + '%');
+      sumW += L.w; sumD += L.d;
+    }
+    if (letters.length) {
+      $('a-wght').textContent = Math.round(sumW / letters.length);
+      $('a-wdth').textContent = Math.round(sumD / letters.length);
+    }
+  }
+
+  stage.addEventListener('pointermove', (e) => { pointer = { x: e.clientX, y: e.clientY }; });
+  stage.addEventListener('pointerleave', () => { pointer = null; });
+  $('text').addEventListener('input', build);
+  $('radius').addEventListener('input', () => { $('radius-out').textContent = $('radius').value + ' px'; });
+  $('ease').addEventListener('input', () => { $('ease-out').textContent = Number($('ease').value).toFixed(2).replace('.', ','); });
+  build(); frame();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    $('radius').value = 140;
+    // Idle: a virtual pointer sweeps across the word; a real one takes over on hover.
+    let hovering = false, t = 0;
+    stage.addEventListener('pointerenter', () => { hovering = true; });
+    stage.addEventListener('pointerleave', () => { hovering = false; });
+    (function sweep() {
+      requestAnimationFrame(sweep);
+      if (hovering) return;
+      t += 0.012;
+      const r = word.getBoundingClientRect();
+      pointer = { x: r.left + r.width * (0.5 + 0.55 * Math.sin(t)), y: r.top + r.height / 2 };
+    })();
+  }
+})();
+</script>
+</html>

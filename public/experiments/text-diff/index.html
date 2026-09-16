@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Text Diff</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --add: #c8f31d; --add-bg: rgba(200, 243, 29, .09); --add-hi: rgba(200, 243, 29, .3);
+    --del: #f23e2e; --del-bg: rgba(242, 62, 46, .1); --del-hi: rgba(242, 62, 46, .35);
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 600px; background: #000; border-radius: 6px; padding: 16px; display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 12px; }
+  .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .inputs { grid-template-columns: 1fr; } }
+  .inputs label { display: grid; gap: 4px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .inputs textarea { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: #0f1319; color: var(--ink); height: 150px; resize: vertical; white-space: pre; overflow: auto; tab-size: 2; }
+  .inputs textarea:focus { outline: none; border-color: var(--accent); }
+  .stats { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .stats .a { color: var(--add); } .stats .d { color: var(--del); }
+  .out { border: 1px solid var(--line); border-radius: 4px; overflow: auto; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; min-height: 0; max-height: 380px; }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 0 8px; vertical-align: top; white-space: pre-wrap; word-break: break-word; }
+  td.n { width: 1%; color: #4a535e; text-align: right; user-select: none; white-space: nowrap; border-right: 1px solid #1a1f26; }
+  td.s { width: 1%; user-select: none; padding: 0 4px; }
+  tr.add td:not(.n) { background: var(--add-bg); } tr.add td.s { color: var(--add); }
+  tr.del td:not(.n) { background: var(--del-bg); } tr.del td.s { color: var(--del); }
+  td.add-c { background: var(--add-bg); } td.del-c { background: var(--del-bg); }
+  td.empty { background: repeating-linear-gradient(135deg, transparent 0 4px, #0f1319 4px 8px); }
+  ins, del { text-decoration: none; border-radius: 2px; }
+  ins { background: var(--add-hi); } del { background: var(--del-hi); }
+  .same { color: var(--muted); padding: 8px; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, button, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel, html.card .inputs { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 10px; grid-template-rows: auto minmax(0, 1fr); gap: 8px; }
+  html.card .out { max-height: none; font-size: 10.5px; overflow: hidden; }
+  html.card td { white-space: pre; }
+  html.card td.n { display: none; }
+  html.card .stats { font-size: 10px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="inputs">
+      <label>Antes<textarea id="a" spellcheck="false"></textarea></label>
+      <label>Depois<textarea id="b" spellcheck="false"></textarea></label>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="out" id="out"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Text Diff</h1>
+      <p>O diff do Git, no browser: linhas adicionadas e removidas e, dentro delas, as palavras que mudaram.</p>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Visualização">
+      <label><input type="radio" name="view" value="unified" checked><span>unificado</span></label>
+      <label><input type="radio" name="view" value="split"><span>lado a lado</span></label>
+    </div>
+    <label class="check"><input type="checkbox" id="words" checked> Destacar palavras</label>
+    <label class="check"><input type="checkbox" id="ws"> Ignorar espaços nas pontas</label>
+    <div class="row">
+      <button type="button" class="plain" data-preset="code">Exemplo: código</button>
+      <button type="button" class="plain" data-preset="prose">Exemplo: texto</button>
+    </div>
+    <button type="button" class="plain" id="swap">Inverter lados</button>
+    <p class="note">O algoritmo é o de <code>Myers</code> (1986), o mesmo do <code>git diff</code>: procura o caminho com menos edições numa grade de "antes × depois", avançando por diagonais — que são as linhas iguais — e guarda cada fronteira para reconstruir o caminho de trás para frente. Roda duas vezes: nas linhas e, para cada bloco de linhas removidas seguido de adicionadas, nas palavras de cada par.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+
+  const PRESETS = {
+    code: [
+`export async function login(req) {
+  const { email, password } = req.body;
+  const user = await db.users.find(email);
+  if (!user) return error(401);
+  if (user.password !== password) return error(401);
+  return session.create(user.id);
+}`,
+`export async function login(req) {
+  const { email, password } = await parse(req);
+  const user = await db.users.findByEmail(email);
+  if (!user) return error(401, 'invalid_credentials');
+  const ok = await argon2.verify(user.passwordHash, password);
+  if (!ok) return error(401, 'invalid_credentials');
+  await audit.log('login', user.id);
+  return session.create(user.id, { ttl: '12h' });
+}`],
+    prose: [
+`O prazo de entrega é de 30 dias corridos.
+O pagamento será feito em duas parcelas.
+Alterações de escopo serão cobradas à parte.
+Este contrato vale por um ano.`,
+`O prazo de entrega é de 45 dias úteis.
+O pagamento será feito em três parcelas iguais.
+Alterações de escopo serão cobradas à parte.
+Suporte incluso por 90 dias após a entrega.
+Este contrato vale por um ano, renovável.`],
+  };
+
+  // Myers O(ND): returns [{t: '=', '-' or '+', a, b}] in order.
+  function diff(a, b, eq = (x, y) => x === y) {
+    const n = a.length, m = b.length, max = n + m, off = max + 1;
+    // The trace costs O(D × (n + m)) memory; past this size, show a full replace instead.
+    if (max > 4000) return [...a.map((x, i) => ({ t: '-', a: x, ai: i })), ...b.map((y, i) => ({ t: '+', b: y, bi: i }))];
+    const v = new Int32Array(2 * max + 3), trace = [];
+    let found = false;
+    for (let d = 0; d <= max && !found; d++) {
+      trace.push(v.slice());
+      for (let k = -d; k <= d; k += 2) {
+        let x = (k === -d || (k !== d && v[off + k - 1] < v[off + k + 1])) ? v[off + k + 1] : v[off + k - 1] + 1;
+        let y = x - k;
+        while (x < n && y < m && eq(a[x], b[y])) { x++; y++; }
+        v[off + k] = x;
+        if (x >= n && y >= m) { found = true; break; }
+      }
+    }
+    const ops = [];
+    let x = n, y = m;
+    for (let d = trace.length - 1; d >= 0; d--) {
+      const t = trace[d], k = x - y;
+      const prevK = (k === -d || (k !== d && t[off + k - 1] < t[off + k + 1])) ? k + 1 : k - 1;
+      const px = t[off + prevK], py = px - prevK;
+      while (x > px && y > py) { ops.push({ t: '=', a: a[x - 1], b: b[y - 1], ai: x - 1, bi: y - 1 }); x--; y--; }
+      if (d > 0) {
+        if (x === px) ops.push({ t: '+', b: b[y - 1], bi: y - 1 });
+        else ops.push({ t: '-', a: a[x - 1], ai: x - 1 });
+      }
+      x = px; y = py;
+    }
+    return ops.reverse();
+  }
+
+  const tokens = (s) => s.split(/(\s+|[.,;:!?()[\]{}"'`<>=+\-*/])/).filter(Boolean);
+
+  // Word-level diff of one changed pair; returns the two sides as HTML.
+  function inline(before, after) {
+    if (!$('words').checked) return [esc(before), esc(after)];
+    const ops = diff(tokens(before), tokens(after));
+    let l = '', r = '';
+    for (const o of ops) {
+      if (o.t === '=') { l += esc(o.a); r += esc(o.b); }
+      else if (o.t === '-') l += `<del>${esc(o.a)}</del>`;
+      else r += `<ins>${esc(o.b)}</ins>`;
+    }
+    return [l, r];
+  }
+
+  // Collapse the op list into rows, pairing each run of '-' with the '+' run after it.
+  function rows(ops) {
+    const out = [];
+    for (let i = 0; i < ops.length;) {
+      if (ops[i].t === '=') { out.push({ kind: 'same', a: ops[i].a, b: ops[i].b, ai: ops[i].ai, bi: ops[i].bi }); i++; continue; }
+      const dels = [], adds = [];
+      while (i < ops.length && ops[i].t === '-') dels.push(ops[i++]);
+      while (i < ops.length && ops[i].t === '+') adds.push(ops[i++]);
+      const pairs = Math.max(dels.length, adds.length);
+      for (let k = 0; k < pairs; k++) out.push({ kind: 'change', del: dels[k], add: adds[k] });
+    }
+    return out;
+  }
+
+  function render() {
+    const A = $('a').value.split('\n'), B = $('b').value.split('\n');
+    const trim = $('ws').checked;
+    const ops = diff(A, B, trim ? (x, y) => x.trim() === y.trim() : undefined);
+    const added = ops.filter(o => o.t === '+').length, removed = ops.filter(o => o.t === '-').length;
+    $('stats').innerHTML = `<span class="a">+${added}</span><span class="d">−${removed}</span><span>${A.length} → ${B.length} linhas</span>`;
+    if (!added && !removed) { $('out').innerHTML = '<div class="same">Sem diferenças.</div>'; return; }
+
+    const split = document.querySelector('input[name="view"]:checked').value === 'split';
+    let html = '<table>';
+    for (const r of rows(ops)) {
+      if (r.kind === 'same') {
+        html += split
+          ? `<tr><td class="n">${r.ai + 1}</td><td>${esc(r.a)}</td><td class="n">${r.bi + 1}</td><td>${esc(r.b)}</td></tr>`
+          : `<tr><td class="n">${r.ai + 1}</td><td class="n">${r.bi + 1}</td><td class="s"> </td><td>${esc(r.a)}</td></tr>`;
+        continue;
+      }
+      const [l, rr] = r.del && r.add ? inline(r.del.a, r.add.b) : [r.del ? esc(r.del.a) : '', r.add ? esc(r.add.b) : ''];
+      if (split) {
+        html += '<tr>' +
+          (r.del ? `<td class="n">${r.del.ai + 1}</td><td class="del-c">${l}</td>` : '<td class="n"></td><td class="empty"></td>') +
+          (r.add ? `<td class="n">${r.add.bi + 1}</td><td class="add-c">${rr}</td>` : '<td class="n"></td><td class="empty"></td>') +
+          '</tr>';
+      } else {
+        if (r.del) html += `<tr class="del"><td class="n">${r.del.ai + 1}</td><td class="n"></td><td class="s">−</td><td>${l}</td></tr>`;
+        if (r.add) html += `<tr class="add"><td class="n"></td><td class="n">${r.add.bi + 1}</td><td class="s">+</td><td>${rr}</td></tr>`;
+      }
+    }
+    // Unified view lists all deletions of a block before its additions, like git.
+    if (!split) html = regroup(html);
+    $('out').innerHTML = html + '</table>';
+  }
+
+  function regroup(html) {
+    return html.replace(/((?:<tr class="(?:del|add)">.*?<\/tr>)+)/g, (block) => {
+      const trs = block.match(/<tr class="(?:del|add)">.*?<\/tr>/g);
+      return trs.filter(t => t.startsWith('<tr class="del"')).join('') + trs.filter(t => t.startsWith('<tr class="add"')).join('');
+    });
+  }
+
+  function preset(name) { [$('a').value, $('b').value] = PRESETS[name]; render(); }
+
+  $('a').addEventListener('input', render);
+  $('b').addEventListener('input', render);
+  document.querySelectorAll('input[name="view"]').forEach(r => r.addEventListener('change', render));
+  $('words').addEventListener('change', render);
+  $('ws').addEventListener('change', render);
+  document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => preset(b.dataset.preset)));
+  $('swap').addEventListener('click', () => { [$('a').value, $('b').value] = [$('b').value, $('a').value]; render(); });
+  preset('code');
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Replay the edit: the "after" text grows line by line from the "before" one.
+    const [from, to] = PRESETS.code, target = to.split('\n');
+    let step = 0;
+    setInterval(() => {
+      step = (step + 1) % (target.length + 4);
+      const lines = from.split('\n');
+      const partial = step > target.length ? to : [...target.slice(0, step), ...lines.slice(step)].join('\n');
+      $('a').value = from; $('b').value = partial;
+      render();
+    }, 700);
+  }
+})();
+</script>
+</html>

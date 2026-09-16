@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Force Graph</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; height: 580px; background: #000; border-radius: 6px; overflow: hidden; touch-action: none; }
+  canvas { display: block; width: 100%; height: 100%; }
+  .info { position: absolute; left: 14px; top: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; display: grid; gap: 3px; }
+  .info b { color: var(--accent); font-weight: 400; }
+  .legend { position: absolute; left: 14px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; }
+  html.card .info, html.card .legend { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="c" aria-label="Grafo de dependências"></canvas>
+    <div class="info"><span>nós <b id="i-n">—</b> · arestas <b id="i-e">—</b></span><span>energia <b id="i-alpha">—</b></span><span id="i-hover">&nbsp;</span></div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Force Graph</h1>
+      <p>Um grafo de dependências que se organiza sozinho. Arraste os nós, passe o mouse para ver as ligações de cada um.</p>
+    </div>
+    <div class="field">
+      <label for="nodes">Nós <output id="nodes-out">60</output></label>
+      <input type="range" id="nodes" min="10" max="200" step="5" value="60">
+    </div>
+    <div class="field">
+      <label for="dist">Comprimento das arestas <output id="dist-out">46</output></label>
+      <input type="range" id="dist" min="15" max="120" step="1" value="46">
+    </div>
+    <div class="field">
+      <label for="charge">Repulsão <output id="charge-out">900</output></label>
+      <input type="range" id="charge" min="100" max="4000" step="50" value="900">
+    </div>
+    <div class="field">
+      <label for="gravity">Gravidade ao centro <output id="gravity-out">0,03</output></label>
+      <input type="range" id="gravity" min="0" max="0.2" step="0.005" value="0.03">
+    </div>
+    <label class="check"><input type="checkbox" id="labels" checked> Rótulos</label>
+    <div class="row">
+      <button type="button" class="plain" id="shake">Agitar</button>
+      <button type="button" class="plain" id="regen">Novo grafo</button>
+    </div>
+    <p class="note">Uma simulação por passos, como a do <code>d3-force</code>: cada nó repele todos os outros (lei do inverso do quadrado), cada aresta é uma mola com comprimento de repouso, e uma gravidade fraca puxa tudo ao centro. A velocidade é integrada com amortecimento, e uma "energia" <code>alpha</code> esfria a cada passo até o grafo parar — arrastar um nó reaquece. A repulsão é O(n²), suficiente até algumas centenas de nós; acima disso entraria uma quadtree (Barnes–Hut).</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), canvas = $('c'), ctx = canvas.getContext('2d');
+  const GROUPS = [
+    { name: 'app', color: '#c8f31d' },
+    { name: 'ui', color: '#6ea8ff' },
+    { name: 'dados', color: '#f2a52e' },
+    { name: 'auth', color: '#f23e2e' },
+    { name: 'infra', color: '#b58cff' },
+  ];
+  const WORDS = ['router', 'store', 'button', 'modal', 'form', 'cache', 'queue', 'session', 'token', 'db', 'worker', 'logger', 'config', 'api', 'hooks', 'theme', 'table', 'chart', 'crypto', 'mailer', 'upload', 'search', 'i18n', 'metrics'];
+  let nodes = [], links = [], alpha = 1, hover = null, drag = null, W = 0, H = 0;
+
+  function rng(seed) { return () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32; }
+  let seed = 3;
+
+  function generate() {
+    const n = Number($('nodes').value), rand = rng(seed);
+    nodes = Array.from({ length: n }, (_, i) => {
+      const g = i < GROUPS.length ? i : Math.floor(rand() * GROUPS.length);
+      return { id: i, g, label: i < GROUPS.length ? GROUPS[i].name : WORDS[i % WORDS.length] + (i >= WORDS.length ? i : ''),
+        x: W / 2 + (rand() - 0.5) * W * 0.6, y: H / 2 + (rand() - 0.5) * H * 0.6, vx: 0, vy: 0, deg: 0 };
+    });
+    links = [];
+    // Each node depends on its group's hub, plus an occasional cross-module edge.
+    for (let i = GROUPS.length; i < n; i++) {
+      links.push({ a: i, b: nodes[i].g });
+      if (rand() < 0.45) links.push({ a: i, b: GROUPS.length + Math.floor(rand() * (i - GROUPS.length || 1)) });
+    }
+    for (let i = 1; i < GROUPS.length; i++) links.push({ a: i, b: 0 });
+    links = links.filter(l => l.a !== l.b && l.b < n);
+    links.forEach(l => { nodes[l.a].deg++; nodes[l.b].deg++; });
+    alpha = 1;
+    $('i-n').textContent = nodes.length; $('i-e').textContent = links.length;
+    $('legend').innerHTML = GROUPS.map(g => `<span><i style="background:${g.color}"></i>${g.name}</span>`).join('');
+  }
+
+  const radius = (n) => 3 + Math.sqrt(n.deg) * 2.2;
+
+  function step() {
+    const dist = Number($('dist').value), charge = Number($('charge').value), gravity = Number($('gravity').value);
+    const k = alpha;
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+        if (d2 < 0.01) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 0.5; }
+        if (d2 > 160000) continue; // beyond 400px the push is negligible
+        const f = charge * k / d2, d = Math.sqrt(d2);
+        const fx = dx / d * f, fy = dy / d * f;
+        a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+      }
+    }
+    for (const l of links) {
+      const a = nodes[l.a], b = nodes[l.b];
+      const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
+      const f = (d - dist) / d * 0.08 * k;
+      a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
+    }
+    for (const n of nodes) {
+      n.vx += (W / 2 - n.x) * gravity * k;
+      n.vy += (H / 2 - n.y) * gravity * k;
+      if (n === drag) { n.vx = n.vy = 0; continue; }
+      n.vx *= 0.6; n.vy *= 0.6;
+      n.x += n.vx; n.y += n.vy;
+      const r = radius(n);
+      n.x = Math.min(W - r, Math.max(r, n.x));
+      n.y = Math.min(H - r, Math.max(r, n.y));
+    }
+    alpha = Math.max(drag ? 0.3 : 0, alpha * 0.985 - 0.0005);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const lit = hover ? new Set([hover.id, ...links.filter(l => l.a === hover.id || l.b === hover.id).flatMap(l => [l.a, l.b])]) : null;
+    ctx.lineWidth = 1;
+    for (const l of links) {
+      const a = nodes[l.a], b = nodes[l.b];
+      const on = lit && (l.a === hover.id || l.b === hover.id);
+      ctx.strokeStyle = on ? GROUPS[hover.g].color : lit ? 'rgba(138,148,160,.08)' : 'rgba(138,148,160,.28)';
+      ctx.lineWidth = on ? 1.6 : 1;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+    const showLabels = $('labels').checked;
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    for (const n of nodes) {
+      const r = radius(n), dim = lit && !lit.has(n.id);
+      ctx.globalAlpha = dim ? 0.2 : 1;
+      ctx.fillStyle = GROUPS[n.g].color;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fill();
+      if (n === hover || n === drag) { ctx.strokeStyle = '#e8ecef'; ctx.lineWidth = 2; ctx.stroke(); }
+      if (showLabels && (n.id < GROUPS.length || (lit && lit.has(n.id)))) {
+        ctx.fillStyle = '#e8ecef';
+        ctx.fillText(n.label, n.x + r + 3, n.y + 3);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function loop() {
+    requestAnimationFrame(loop);
+    if (alpha > 0.001) step();
+    draw();
+    $('i-alpha').textContent = alpha.toFixed(3);
+  }
+
+  function resize() {
+    const r = stage.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    const oldW = W, oldH = H;
+    W = r.width; H = r.height;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (oldW) for (const n of nodes) { n.x *= W / oldW; n.y *= H / oldH; }
+    alpha = Math.max(alpha, 0.3);
+  }
+
+  const at = (e) => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const pick = (p) => {
+    let best = null, bd = Infinity;
+    for (const n of nodes) { const d = Math.hypot(n.x - p.x, n.y - p.y); if (d < radius(n) + 6 && d < bd) { bd = d; best = n; } }
+    return best;
+  };
+  stage.addEventListener('pointerdown', (e) => {
+    const n = pick(at(e)); if (!n) return;
+    drag = n; stage.setPointerCapture(e.pointerId); alpha = Math.max(alpha, 0.3);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    const p = at(e);
+    if (drag) { drag.x = p.x; drag.y = p.y; return; }
+    hover = pick(p);
+    stage.style.cursor = hover ? 'grab' : 'default';
+    $('i-hover').textContent = hover ? `${hover.label} · ${GROUPS[hover.g].name} · ${hover.deg} ligações` : ' ';
+  });
+  const end = () => { drag = null; };
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+  stage.addEventListener('pointerleave', () => { if (!drag) hover = null; });
+
+  const bind = (id, fmt, fn) => $(id).addEventListener('input', () => { $(id + '-out').textContent = fmt($(id).value); fn(); });
+  const reheat = () => { alpha = Math.max(alpha, 0.5); };
+  bind('nodes', v => v, generate);
+  bind('dist', v => v, reheat);
+  bind('charge', v => v, reheat);
+  bind('gravity', v => Number(v).toFixed(3).replace(/0$/, '').replace('.', ','), reheat);
+  $('shake').addEventListener('click', () => { nodes.forEach(n => { n.vx += (Math.random() - 0.5) * 60; n.vy += (Math.random() - 0.5) * 60; }); alpha = 1; });
+  $('regen').addEventListener('click', () => { seed++; generate(); });
+  new ResizeObserver(resize).observe(stage);
+  resize(); generate(); loop();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    $('nodes').value = 40; $('dist').value = 26; $('charge').value = 320; $('gravity').value = 0.05;
+    $('labels').checked = false;
+    generate();
+    // The pointer repels the graph while hovering, so the card reacts; otherwise it breathes.
+    stage.addEventListener('pointermove', (e) => {
+      const p = at(e);
+      for (const n of nodes) { const dx = n.x - p.x, dy = n.y - p.y, d2 = dx * dx + dy * dy + 30; n.vx += dx / d2 * 60; n.vy += dy / d2 * 60; }
+      alpha = Math.max(alpha, 0.25);
+    });
+    setInterval(() => { seed++; generate(); }, 6000);
+  }
+})();
+</script>
+</html>

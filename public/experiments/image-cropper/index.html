@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Image Cropper</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; height: 580px; background: #000; border-radius: 6px; overflow: hidden; display: grid; place-items: center; padding: 24px; }
+  .area { position: relative; touch-action: none; user-select: none; }
+  .area canvas { display: block; width: 100%; height: 100%; }
+  /* The box's huge shadow is the dimmed outside; overflow on .area keeps it inside the image. */
+  .area { overflow: hidden; cursor: crosshair; }
+  .box { position: absolute; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .62); outline: 1px solid rgba(255,255,255,.9); cursor: move; }
+  .box:focus-visible { outline: 2px solid var(--accent); }
+  .box.thirds { background:
+    linear-gradient(90deg, transparent calc(33.33% - .5px), rgba(255,255,255,.35) 0 calc(33.33% + .5px), transparent 0 calc(66.66% - .5px), rgba(255,255,255,.35) 0 calc(66.66% + .5px), transparent 0),
+    linear-gradient(0deg, transparent calc(33.33% - .5px), rgba(255,255,255,.35) 0 calc(33.33% + .5px), transparent 0 calc(66.66% - .5px), rgba(255,255,255,.35) 0 calc(66.66% + .5px), transparent 0); }
+  .h { position: absolute; width: 14px; height: 14px; background: var(--accent); border: 2px solid #000; }
+  .h[data-h="nw"] { left: -7px; top: -7px; cursor: nwse-resize; }
+  .h[data-h="ne"] { right: -7px; top: -7px; cursor: nesw-resize; }
+  .h[data-h="sw"] { left: -7px; bottom: -7px; cursor: nesw-resize; }
+  .h[data-h="se"] { right: -7px; bottom: -7px; cursor: nwse-resize; }
+  .h[data-h="n"] { left: calc(50% - 7px); top: -7px; cursor: ns-resize; }
+  .h[data-h="s"] { left: calc(50% - 7px); bottom: -7px; cursor: ns-resize; }
+  .h[data-h="w"] { top: calc(50% - 7px); left: -7px; cursor: ew-resize; }
+  .h[data-h="e"] { top: calc(50% - 7px); right: -7px; cursor: ew-resize; }
+  .dims { position: absolute; left: 0; bottom: -26px; font-family: var(--font-mono); font-size: 11px; background: var(--accent); color: #0e0e0c; padding: 2px 7px; white-space: nowrap; pointer-events: none; }
+  .box.top-edge .dims { bottom: auto; top: 4px; left: 4px; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .ratios { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .ratios label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); border-top: 1px solid var(--line); }
+  .ratios label:nth-child(-n+3) { border-top: 0; }
+  .ratios label:not(:nth-child(3n+1)) { border-left: 1px solid var(--line); }
+  .ratios input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .ratios label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  button.plain, .upload { font: inherit; font-size: 13px; padding: 9px 10px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; display: block; }
+  button.plain:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  select { font: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink); width: 100%; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .preview { display: flex; gap: 12px; align-items: center; }
+  .preview canvas { width: 96px; height: 96px; object-fit: contain; background: #000; border: 1px solid var(--line); }
+  .preview span { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  :is(input, button, select, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 10px; }
+  html.card .h { width: 9px; height: 9px; border-width: 1px; }
+  html.card .dims { font-size: 9px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="area" id="area">
+      <canvas id="view"></canvas>
+      <div class="box thirds" id="box" tabindex="0" aria-label="Área de recorte; setas movem, shift+setas redimensionam">
+        <i class="h" data-h="nw"></i><i class="h" data-h="n"></i><i class="h" data-h="ne"></i><i class="h" data-h="e"></i>
+        <i class="h" data-h="se"></i><i class="h" data-h="s"></i><i class="h" data-h="sw"></i><i class="h" data-h="w"></i>
+        <span class="dims" id="dims"></span>
+      </div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Image Cropper</h1>
+      <p>Recorte com proporção travada, giro, espelho e exportação. Arraste a caixa, as alças, ou desenhe uma nova fora dela.</p>
+    </div>
+    <div class="ratios" role="radiogroup" aria-label="Proporção">
+      <label><input type="radio" name="ratio" value="0" checked><span>livre</span></label>
+      <label><input type="radio" name="ratio" value="1"><span>1:1</span></label>
+      <label><input type="radio" name="ratio" value="0.8"><span>4:5</span></label>
+      <label><input type="radio" name="ratio" value="1.7778"><span>16:9</span></label>
+      <label><input type="radio" name="ratio" value="0.5625"><span>9:16</span></label>
+      <label><input type="radio" name="ratio" value="orig"><span>original</span></label>
+    </div>
+    <div class="row3">
+      <button type="button" class="plain" id="rotl" aria-label="Girar à esquerda">↺ 90°</button>
+      <button type="button" class="plain" id="rotr" aria-label="Girar à direita">↻ 90°</button>
+      <button type="button" class="plain" id="flip">espelhar</button>
+    </div>
+    <label class="check"><input type="checkbox" id="thirds" checked> Grade dos terços</label>
+    <div class="field">
+      <label for="outw">Largura exportada <output id="outw-out">original</output></label>
+      <input type="range" id="outw" min="0" max="2400" step="40" value="0">
+    </div>
+    <div class="field">
+      <label for="fmt">Formato</label>
+      <select id="fmt"><option value="image/png">PNG</option><option value="image/jpeg">JPEG 0,9</option><option value="image/webp">WebP 0,9</option></select>
+    </div>
+    <div class="preview"><canvas id="thumb" width="192" height="192"></canvas><span id="thumb-info"></span></div>
+    <div class="row">
+      <button type="button" class="plain" id="dl">Baixar recorte</button>
+      <label class="upload">Outra imagem<input type="file" id="file" accept="image/*"></label>
+    </div>
+    <p class="note">O recorte vive em coordenadas da <em>imagem</em>, não da tela, então sobrevive a redimensionar a janela. Com proporção travada, cada alça tem um ponto fixo (o canto oposto, ou o meio do lado oposto) e o tamanho máximo é o que cabe a partir dele. Girar e espelhar redesenham a imagem num <code>canvas</code> de origem; o export copia só o retângulo com <code>drawImage(src, sx, sy, sw, sh, 0, 0, w, h)</code>. A escurecida em volta é um <code>box-shadow</code> gigante da caixa.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), area = $('area'), view = $('view'), box = $('box');
+  const src = document.createElement('canvas');
+  const MIN = 24;
+  let image = null, rotation = 0, flipped = false, crop = null, k = 1;
+
+  const W = () => src.width, H = () => src.height;
+  function aspect() {
+    const v = document.querySelector('input[name="ratio"]:checked').value;
+    return v === 'orig' ? W() / H() : Number(v) || null;
+  }
+
+  function orient() {
+    const swap = rotation % 180 !== 0;
+    src.width = swap ? image.naturalHeight : image.naturalWidth;
+    src.height = swap ? image.naturalWidth : image.naturalHeight;
+    const c = src.getContext('2d');
+    c.save();
+    c.translate(src.width / 2, src.height / 2);
+    c.rotate(rotation * Math.PI / 180);
+    if (flipped) c.scale(-1, 1);
+    c.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
+    c.restore();
+  }
+
+  function layout() {
+    if (!image) return;
+    const pad = parseFloat(getComputedStyle(stage).paddingLeft) * 2;
+    const aw = stage.clientWidth - pad, ah = stage.clientHeight - pad;
+    k = Math.min(aw / W(), ah / H());
+    const dw = Math.round(W() * k), dh = Math.round(H() * k);
+    area.style.width = dw + 'px'; area.style.height = dh + 'px';
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    view.width = dw * dpr; view.height = dh * dpr;
+    view.getContext('2d').drawImage(src, 0, 0, view.width, view.height);
+    paint();
+  }
+
+  // Largest rect of the current aspect, centred, at `fill` of the image.
+  function defaultCrop(fill = 0.8) {
+    const a = aspect();
+    let w = W() * fill, h = H() * fill;
+    if (a) { if (w / h > a) w = h * a; else h = w / a; }
+    return { x: (W() - w) / 2, y: (H() - h) / 2, w, h };
+  }
+
+  function paint() {
+    if (!crop) return;
+    box.style.left = crop.x * k + 'px'; box.style.top = crop.y * k + 'px';
+    box.style.width = crop.w * k + 'px'; box.style.height = crop.h * k + 'px';
+    box.classList.toggle('top-edge', (crop.y + crop.h) * k > area.clientHeight - 30);
+    $('dims').textContent = `${Math.round(crop.w)} × ${Math.round(crop.h)}`;
+    thumb();
+  }
+
+  function thumb() {
+    const t = $('thumb'), c = t.getContext('2d');
+    const s = Math.min(t.width / crop.w, t.height / crop.h);
+    c.clearRect(0, 0, t.width, t.height);
+    c.drawImage(src, crop.x, crop.y, crop.w, crop.h, (t.width - crop.w * s) / 2, (t.height - crop.h * s) / 2, crop.w * s, crop.h * s);
+    const out = outSize();
+    $('thumb-info').textContent = `sai em ${out.w} × ${out.h} px`;
+  }
+
+  function outSize() {
+    const want = Number($('outw').value) || Math.round(crop.w);
+    return { w: want, h: Math.max(1, Math.round(want * crop.h / crop.w)) };
+  }
+
+  function resize(r, h, dx, dy) {
+    let L = r.x, T = r.y, R = r.x + r.w, B = r.y + r.h;
+    if (h.includes('w')) L = Math.min(R - MIN, L + dx);
+    if (h.includes('e')) R = Math.max(L + MIN, R + dx);
+    if (h.includes('n')) T = Math.min(B - MIN, T + dy);
+    if (h.includes('s')) B = Math.max(T + MIN, B + dy);
+    const a = aspect();
+    if (!a) {
+      L = Math.max(0, L); T = Math.max(0, T); R = Math.min(W(), R); B = Math.min(H(), B);
+      return { x: L, y: T, w: R - L, h: B - T };
+    }
+    // The fixed point is whatever the dragged handle is not touching.
+    const horiz = h.includes('w') ? 'left' : h.includes('e') ? 'right' : 'center';
+    const vert = h.includes('n') ? 'up' : h.includes('s') ? 'down' : 'center';
+    const ax = horiz === 'left' ? R : horiz === 'right' ? L : r.x + r.w / 2;
+    const ay = vert === 'up' ? B : vert === 'down' ? T : r.y + r.h / 2;
+    let w = R - L, hh = B - T;
+    if (horiz !== 'center' && vert !== 'center') { if (w / a > hh) hh = w / a; else w = hh * a; }
+    else if (horiz !== 'center') hh = w / a;
+    else w = hh * a;
+    const maxW = horiz === 'left' ? ax : horiz === 'right' ? W() - ax : 2 * Math.min(ax, W() - ax);
+    const maxH = vert === 'up' ? ay : vert === 'down' ? H() - ay : 2 * Math.min(ay, H() - ay);
+    w = Math.max(Math.min(MIN, maxW), Math.min(w, maxW, maxH * a));
+    hh = w / a;
+    return {
+      x: horiz === 'left' ? ax - w : horiz === 'right' ? ax : ax - w / 2,
+      y: vert === 'up' ? ay - hh : vert === 'down' ? ay : ay - hh / 2,
+      w, h: hh,
+    };
+  }
+
+  function move(r, dx, dy) {
+    return { ...r, x: Math.min(W() - r.w, Math.max(0, r.x + dx)), y: Math.min(H() - r.h, Math.max(0, r.y + dy)) };
+  }
+
+  // One gesture model: move the box, drag a handle, or draw a new box from outside.
+  let gesture = null;
+  const point = (e) => { const b = area.getBoundingClientRect(); return { x: (e.clientX - b.left) / k, y: (e.clientY - b.top) / k }; };
+  area.addEventListener('pointerdown', (e) => {
+    if (!crop) return;
+    area.setPointerCapture(e.pointerId);
+    const p = point(e), handle = e.target.dataset?.h;
+    if (handle) gesture = { kind: 'resize', handle, start: { ...crop }, p };
+    else if (e.target.closest('.box')) gesture = { kind: 'move', start: { ...crop }, p };
+    else gesture = { kind: 'draw', start: { x: Math.min(W(), Math.max(0, p.x)), y: Math.min(H(), Math.max(0, p.y)), w: 0, h: 0 }, p };
+  });
+  area.addEventListener('pointermove', (e) => {
+    if (!gesture) return;
+    const p = point(e), dx = p.x - gesture.p.x, dy = p.y - gesture.p.y;
+    if (gesture.kind === 'move') crop = move(gesture.start, dx, dy);
+    else if (gesture.kind === 'resize') crop = resize(gesture.start, gesture.handle, dx, dy);
+    else if (Math.hypot(dx, dy) * k > 4) crop = resize(gesture.start, (dy < 0 ? 'n' : 's') + (dx < 0 ? 'w' : 'e'), dx, dy);
+    paint();
+  });
+  const end = () => { gesture = null; };
+  area.addEventListener('pointerup', end);
+  area.addEventListener('pointercancel', end);
+
+  box.addEventListener('keydown', (e) => {
+    const step = (e.altKey ? 1 : 10) / k;
+    const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    crop = e.shiftKey ? resize(crop, (d[1] ? 's' : 'e'), d[0], d[1]) : move(crop, d[0], d[1]);
+    paint();
+  });
+
+  function reorient(fn) { fn(); orient(); crop = defaultCrop(); layout(); }
+  $('rotl').addEventListener('click', () => reorient(() => { rotation = (rotation + 270) % 360; }));
+  $('rotr').addEventListener('click', () => reorient(() => { rotation = (rotation + 90) % 360; }));
+  $('flip').addEventListener('click', () => reorient(() => { flipped = !flipped; }));
+  document.querySelectorAll('input[name="ratio"]').forEach(r => r.addEventListener('change', () => { crop = defaultCrop(); paint(); }));
+  $('thirds').addEventListener('change', () => box.classList.toggle('thirds', $('thirds').checked));
+  $('outw').addEventListener('input', () => { $('outw-out').textContent = Number($('outw').value) ? $('outw').value + ' px' : 'original'; thumb(); });
+
+  $('dl').addEventListener('click', () => {
+    const { w, h } = outSize();
+    const out = document.createElement('canvas');
+    out.width = w; out.height = h;
+    const c = out.getContext('2d');
+    c.imageSmoothingQuality = 'high';
+    c.drawImage(src, crop.x, crop.y, crop.w, crop.h, 0, 0, w, h);
+    const type = $('fmt').value;
+    out.toBlob((b) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = 'recorte.' + type.split('/')[1];
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }, type, 0.9);
+  });
+
+  async function load(url) {
+    const img = new Image();
+    img.src = url; await img.decode();
+    image = img; rotation = 0; flipped = false;
+    orient(); crop = defaultCrop(); layout();
+  }
+  $('file').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) load(URL.createObjectURL(f)); });
+  new ResizeObserver(layout).observe(stage);
+  load('photo.jpg');
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    // Glide the box between ratios and positions.
+    const RATIOS = ['1', '0.5625', '1.7778', '0.8'];
+    let i = 0, target = null;
+    setInterval(() => {
+      if (!image || gesture) return;
+      document.querySelector(`input[name="ratio"][value="${RATIOS[i = (i + 1) % RATIOS.length]}"]`).checked = true;
+      const d = defaultCrop(0.45 + Math.random() * 0.4);
+      target = { ...d, x: Math.random() * (W() - d.w), y: Math.random() * (H() - d.h) };
+    }, 1800);
+    (function glide() {
+      requestAnimationFrame(glide);
+      if (!target || !crop || gesture) return;
+      for (const key of ['x', 'y', 'w', 'h']) crop[key] += (target[key] - crop[key]) * 0.12;
+      paint();
+    })();
+  }
+})();
+</script>
+</html>

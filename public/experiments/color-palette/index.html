@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Color Palette</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .photo { position: relative; min-height: 0; display: grid; place-items: center; padding: 20px; }
+  .photo img { max-width: 100%; max-height: 420px; display: block; object-fit: contain; }
+  .stage.over .photo::after { content: "solte a imagem"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11,13,16,.85); color: var(--accent); font-family: var(--font-mono); font-size: 13px; }
+  .swatches { display: flex; height: 150px; }
+  .sw { position: relative; flex: var(--w, 1) 1 0; min-width: 0; background: var(--c); color: var(--t); padding: 10px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; border: 0; font: inherit; text-align: left; cursor: pointer; transition: flex-grow 300ms; }
+  .sw:hover { flex-grow: calc(var(--w, 1) + 1.2); }
+  .sw b { font-family: var(--font-mono); font-weight: 400; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sw span { font-family: var(--font-mono); font-size: 10px; opacity: .75; white-space: nowrap; }
+  .sw.copied::after { content: "copiado"; position: absolute; top: 8px; left: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  pre { margin: 0; font-family: var(--font-mono); font-size: 11px; line-height: 1.6; background: #0f1319; border: 1px solid var(--line); border-radius: 4px; padding: 10px; max-height: 180px; overflow: auto; white-space: pre; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.plain, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; display: block; }
+  button.plain:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; }
+  html.card .photo { padding: 0; }
+  html.card .photo img { width: 100%; height: 100%; max-height: none; object-fit: cover; }
+  html.card .stage { grid-template-rows: minmax(0, 1fr) 30%; }
+  html.card .swatches { height: auto; }
+  html.card .sw { padding: 0; }
+  html.card .sw b, html.card .sw span { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="photo"><img id="img" src="photo.jpg" alt="Foto de onde a paleta é extraída"></div>
+    <div class="swatches" id="swatches"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Color Palette</h1>
+      <p>Extrai a paleta dominante de qualquer foto, no browser. Clique numa cor para copiar o hex.</p>
+    </div>
+    <div class="field">
+      <label for="k">Cores <output id="k-out">6</output></label>
+      <input type="range" id="k" min="2" max="12" step="1" value="6">
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Ordem">
+      <label><input type="radio" name="order" value="share" checked><span>presença</span></label>
+      <label><input type="radio" name="order" value="light"><span>luz</span></label>
+      <label><input type="radio" name="order" value="hue"><span>matiz</span></label>
+    </div>
+    <div class="field">
+      <label>Exportar</label>
+      <pre id="css"></pre>
+    </div>
+    <div class="row">
+      <button type="button" class="plain" id="copy">Copiar CSS</button>
+      <label class="upload">Outra foto<input type="file" id="file" accept="image/*"></label>
+    </div>
+    <p class="note">A foto é reduzida para ~120 px num <code>canvas</code> e os pixels viram pontos em RGB. O <code>k-means</code> agrupa esses pontos em <em>k</em> centros; a semente é <code>k-means++</code> (cada centro novo sorteado longe dos anteriores), que evita duas cores quase iguais. A largura de cada faixa é a fração de pixels do grupo, e o texto escolhe preto ou branco pela luminância relativa da WCAG.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let pixels = null, palette = [];
+
+  function sample(img) {
+    const scale = Math.min(1, 120 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    const out = [];
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 127) out.push(d[i], d[i + 1], d[i + 2]);
+    return Float32Array.from(out);
+  }
+
+  // Seeded so the same photo and k always give the same palette.
+  function rng(seed) { return () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32; }
+
+  function kmeans(px, k) {
+    const n = px.length / 3, rand = rng(7);
+    const dist = (i, c) => { const dr = px[i * 3] - c[0], dg = px[i * 3 + 1] - c[1], db = px[i * 3 + 2] - c[2]; return dr * dr + dg * dg + db * db; };
+    // k-means++: each new centre is drawn with probability proportional to its squared distance.
+    const first = Math.floor(rand() * n);
+    const centres = [[px[first * 3], px[first * 3 + 1], px[first * 3 + 2]]];
+    const near = new Float32Array(n).fill(Infinity);
+    while (centres.length < k) {
+      let sum = 0;
+      const last = centres[centres.length - 1];
+      for (let i = 0; i < n; i++) { near[i] = Math.min(near[i], dist(i, last)); sum += near[i]; }
+      let r = rand() * sum, pick = n - 1;
+      for (let i = 0; i < n; i++) { r -= near[i]; if (r <= 0) { pick = i; break; } }
+      centres.push([px[pick * 3], px[pick * 3 + 1], px[pick * 3 + 2]]);
+    }
+    const label = new Uint8Array(n);
+    for (let iter = 0; iter < 16; iter++) {
+      let moved = 0;
+      for (let i = 0; i < n; i++) {
+        let best = 0, bd = Infinity;
+        for (let c = 0; c < k; c++) { const d = dist(i, centres[c]); if (d < bd) { bd = d; best = c; } }
+        if (label[i] !== best) { label[i] = best; moved++; }
+      }
+      const acc = Array.from({ length: k }, () => [0, 0, 0, 0]);
+      for (let i = 0; i < n; i++) { const a = acc[label[i]]; a[0] += px[i * 3]; a[1] += px[i * 3 + 1]; a[2] += px[i * 3 + 2]; a[3]++; }
+      acc.forEach((a, c) => { if (a[3]) centres[c] = [a[0] / a[3], a[1] / a[3], a[2] / a[3]]; });
+      if (iter && moved === 0) break;
+    }
+    const counts = new Array(k).fill(0);
+    for (let i = 0; i < n; i++) counts[label[i]]++;
+    return centres.map((c, i) => ({ rgb: c.map(Math.round), share: counts[i] / n })).filter(p => p.share > 0);
+  }
+
+  const hex = (rgb) => '#' + rgb.map(v => v.toString(16).padStart(2, '0')).join('');
+  function luminance([r, g, b]) {
+    const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  }
+  function hue([r, g, b]) {
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    if (!d) return -1; // greys first
+    const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return (h * 60 + 360) % 360;
+  }
+
+  function render() {
+    const order = document.querySelector('input[name="order"]:checked').value;
+    const sorted = [...palette].sort(order === 'share' ? (a, b) => b.share - a.share
+      : order === 'light' ? (a, b) => luminance(a.rgb) - luminance(b.rgb)
+      : (a, b) => hue(a.rgb) - hue(b.rgb));
+    $('swatches').innerHTML = sorted.map(p => {
+      const h = hex(p.rgb), text = luminance(p.rgb) > 0.18 ? '#0b0d10' : '#f4f4f0';
+      return `<button type="button" class="sw" style="--c:${h};--t:${text};--w:${Math.max(0.35, p.share * 10).toFixed(2)}" data-hex="${h}"><b>${h}</b><span>${(p.share * 100).toFixed(1)}%</span></button>`;
+    }).join('');
+    $('css').textContent = ':root {\n' + sorted.map((p, i) => `  --palette-${i + 1}: ${hex(p.rgb)}; /* ${(p.share * 100).toFixed(1)}% */`).join('\n') + '\n}';
+  }
+
+  function extract() {
+    if (!pixels || !pixels.length) return;
+    palette = kmeans(pixels, Number($('k').value));
+    render();
+  }
+
+  async function load(src) {
+    const img = $('img');
+    img.src = src;
+    await img.decode();
+    pixels = sample(img);
+    extract();
+  }
+
+  function copy(text, el) {
+    navigator.clipboard?.writeText(text).catch(() => {});
+    if (!el) return;
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 900);
+  }
+
+  $('swatches').addEventListener('click', (e) => { const b = e.target.closest('.sw'); if (b) copy(b.dataset.hex, b); });
+  $('k').addEventListener('input', () => { $('k-out').textContent = $('k').value; extract(); });
+  document.querySelectorAll('input[name="order"]').forEach(r => r.addEventListener('change', render));
+  $('copy').addEventListener('click', () => copy($('css').textContent));
+  const accept = (f) => { if (f && f.type.startsWith('image/')) load(URL.createObjectURL(f)); };
+  $('file').addEventListener('change', (e) => accept(e.target.files[0]));
+  const stage = $('stage');
+  ['dragenter', 'dragover'].forEach(t => stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.remove('over'); }));
+  stage.addEventListener('drop', (e) => accept(e.dataTransfer.files[0]));
+  load('photo.jpg');
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Breathe between few and many colours; the pointer's x picks k while hovering.
+    let k = 3, dir = 1, hovering = false;
+    stage.addEventListener('pointermove', (e) => {
+      hovering = true;
+      const r = stage.getBoundingClientRect();
+      const next = 2 + Math.round((e.clientX - r.left) / r.width * 8);
+      if (String(next) !== $('k').value) { $('k').value = next; extract(); }
+    });
+    stage.addEventListener('pointerleave', () => { hovering = false; });
+    setInterval(() => {
+      if (hovering) return;
+      k += dir; if (k >= 8 || k <= 3) dir *= -1;
+      $('k').value = k; extract();
+    }, 1200);
+  }
+})();
+</script>
+</html>

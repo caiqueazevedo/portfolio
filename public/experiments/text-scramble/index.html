@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Text Scramble</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 540px; background: #000; border-radius: 6px; padding: 36px; display: grid; align-content: space-between; gap: 32px; container-type: inline-size; overflow: hidden; }
+  .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .headline { margin: 0; font-family: var(--font-display); font-weight: 400; text-transform: uppercase; font-size: clamp(38px, 11cqw, 120px); line-height: .92; letter-spacing: .01em; min-height: 1.84em; overflow-wrap: anywhere; }
+  .headline.mono { font-family: var(--font-mono); font-weight: 500; font-size: clamp(26px, 7cqw, 76px); line-height: 1.05; letter-spacing: -.02em; }
+  .dud { color: var(--accent); opacity: .85; }
+  .links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 28px; }
+  .links a { font-family: var(--font-mono); font-size: 14px; color: var(--ink); text-decoration: none; letter-spacing: .08em; text-transform: uppercase; }
+  .links a:hover { color: var(--accent); }
+  .links a::before { content: "→ "; color: var(--muted); }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  textarea, select { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink); width: 100%; }
+  textarea { min-height: 96px; resize: vertical; line-height: 1.4; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  :is(input, textarea, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 18px; align-content: center; }
+  html.card .links, html.card .kicker { display: none; }
+  html.card .headline { font-size: clamp(30px, 17cqw, 90px); }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <span class="kicker" id="kicker">01 / 04</span>
+    <h2 class="headline" id="headline" aria-live="polite"></h2>
+    <ul class="links" aria-label="Links com efeito ao passar o mouse">
+      <li><a href="#" data-scramble>Projetos</a></li>
+      <li><a href="#" data-scramble>Código aberto</a></li>
+      <li><a href="#" data-scramble>Contato</a></li>
+      <li><a href="#" data-scramble>Currículo</a></li>
+    </ul>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Text Scramble</h1>
+      <p>Um texto que se decifra letra por letra ao trocar de frase. Passe o mouse nos links para ver o mesmo efeito em escala pequena.</p>
+    </div>
+    <div class="field">
+      <label for="phrases">Frases (uma por linha)</label>
+      <textarea id="phrases" spellcheck="false">Software sob medida
+Do protótipo à produção
+Segurança desde o login
+Sem mágica, só código</textarea>
+    </div>
+    <div class="field">
+      <label for="glyphs">Caracteres de ruído</label>
+      <select id="glyphs">
+        <option value="!<>-_\/[]{}—=+*^?#">símbolos</option>
+        <option value="01">binário</option>
+        <option value="ABCDEFGHIJKLMNOPQRSTUVWXYZ">letras</option>
+        <option value="░▒▓█▄▀">blocos</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dur">Duração <output id="dur-out">900 ms</output></label>
+      <input type="range" id="dur" min="200" max="2500" step="50" value="900">
+    </div>
+    <div class="field">
+      <label for="hold">Pausa entre frases <output id="hold-out">1,6 s</output></label>
+      <input type="range" id="hold" min="400" max="5000" step="100" value="1600">
+    </div>
+    <label class="check"><input type="checkbox" id="mono"> Fonte mono</label>
+    <p class="note">Para cada posição sorteiam-se dois instantes: quando começa a embaralhar e quando assenta no caractere final. Entre os dois, a cada quadro de <code>requestAnimationFrame</code> há uma chance de trocar o glifo de ruído, o que dá o tremido irregular. A transição termina quando todas as posições assentaram, e a <code>Promise</code> resolve. Com <code>prefers-reduced-motion</code> o texto só troca.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const glyphs = () => $('glyphs').value;
+  const escapeHtml = (s) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+  // One scrambler per element; a new call cancels the running one.
+  function scramble(el, to, duration) {
+    const from = el.dataset.text ?? el.textContent;
+    el.dataset.text = to;
+    // Settle the interrupted run too, or whoever awaits it would hang forever.
+    if (el._raf) { cancelAnimationFrame(el._raf); el._raf = null; el._resolve?.(); }
+    if (reduced.matches) { el.textContent = to; return Promise.resolve(); }
+    const frames = Math.max(8, Math.round(duration / 16.7));
+    const len = Math.max(from.length, to.length);
+    const queue = Array.from({ length: len }, (_, i) => {
+      const start = Math.floor(Math.random() * frames * 0.4);
+      return { from: from[i] || '', to: to[i] || '', start, end: start + Math.floor(frames * 0.3 + Math.random() * frames * 0.6), char: '' };
+    });
+    let frame = 0;
+    return new Promise((resolve) => {
+      el._resolve = resolve;
+      const tick = () => {
+        let html = '', done = 0;
+        const set = glyphs();
+        for (const q of queue) {
+          if (frame >= q.end) { done++; html += escapeHtml(q.to); }
+          else if (frame >= q.start) {
+            if (!q.char || Math.random() < 0.28) q.char = set[Math.floor(Math.random() * set.length)];
+            html += q.to === ' ' && q.from === ' ' ? ' ' : `<span class="dud">${escapeHtml(q.char)}</span>`;
+          } else html += escapeHtml(q.from);
+        }
+        el.innerHTML = html;
+        if (done === queue.length) { el._raf = null; resolve(); return; }
+        frame++;
+        el._raf = requestAnimationFrame(tick);
+      };
+      tick();
+    });
+  }
+
+  const headline = $('headline');
+  const phrases = () => $('phrases').value.split('\n').map(s => s.trim()).filter(Boolean);
+  let index = 0, loopId = 0;
+
+  async function loop() {
+    const id = ++loopId;
+    while (id === loopId) {
+      const list = phrases();
+      if (!list.length) return;
+      index %= list.length;
+      $('kicker').textContent = String(index + 1).padStart(2, '0') + ' / ' + String(list.length).padStart(2, '0');
+      await scramble(headline, list[index], Number($('dur').value));
+      await new Promise(r => setTimeout(r, Number($('hold').value)));
+      index++;
+    }
+  }
+
+  document.querySelectorAll('[data-scramble]').forEach(a => {
+    a.dataset.text = a.textContent;
+    a.addEventListener('mouseenter', () => scramble(a, a.dataset.text, 500));
+    a.addEventListener('click', (e) => e.preventDefault());
+  });
+
+  $('phrases').addEventListener('input', () => { index = 0; loop(); });
+  $('dur').addEventListener('input', () => { $('dur-out').textContent = $('dur').value + ' ms'; });
+  $('hold').addEventListener('input', () => { $('hold-out').textContent = (Number($('hold').value) / 1000).toFixed(1).replace('.', ',') + ' s'; });
+  $('mono').addEventListener('change', () => headline.classList.toggle('mono', $('mono').checked));
+  headline.dataset.text = '';
+  loop();
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Hover re-scrambles the current phrase in place.
+    stage.addEventListener('pointerenter', () => scramble(headline, headline.dataset.text, 700));
+  }
+})();
+</script>
+</html>

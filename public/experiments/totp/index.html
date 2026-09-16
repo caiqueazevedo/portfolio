@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>TOTP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --bad: #f23e2e;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; padding: 28px; display: grid; place-items: center; align-content: center; gap: 22px; container-type: inline-size; }
+  .token { display: flex; align-items: center; gap: clamp(14px, 4cqw, 28px); }
+  .ring { width: clamp(56px, 13cqw, 96px); aspect-ratio: 1; flex: none; }
+  .ring circle { fill: none; stroke-width: 7; }
+  .ring .track { stroke: #1a1f26; }
+  .ring .bar { stroke: var(--accent); stroke-linecap: butt; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke 200ms; }
+  .ring.low .bar { stroke: var(--bad); }
+  .ring text { fill: var(--ink); font-family: var(--font-mono); font-size: 26px; text-anchor: middle; dominant-baseline: central; }
+  .code { font-family: var(--font-mono); font-weight: 500; font-size: clamp(40px, 12cqw, 104px); letter-spacing: .06em; line-height: 1; font-variant-numeric: tabular-nums; cursor: copy; }
+  .code span + span { margin-left: .3em; }
+  .code.copied { color: var(--accent); }
+  .issuer { text-align: center; font-size: 13px; color: var(--muted); }
+  .issuer b { color: var(--ink); font-weight: 500; }
+  .window { display: flex; gap: 10px; font-family: var(--font-mono); font-size: 12px; color: #4a535e; }
+  .window span { padding: 4px 8px; border: 1px solid #1a1f26; border-radius: 3px; }
+  .window .now { color: var(--ink); border-color: var(--line); }
+  .verify { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .verify input { font-family: var(--font-mono); font-size: 16px; letter-spacing: .2em; width: 11ch; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: #0f1319; color: var(--ink); text-align: center; }
+  .verify output { font-family: var(--font-mono); font-size: 12px; min-width: 22ch; }
+  .verify output.ok { color: var(--accent); } .verify output.bad { color: var(--bad); }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"], select { font: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink); width: 100%; }
+  #secret { font-family: var(--font-mono); letter-spacing: .06em; }
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .uri { font-family: var(--font-mono); font-size: 10.5px; word-break: break-all; color: var(--muted); background: #0f1319; border: 1px solid var(--line); border-radius: 4px; padding: 8px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  .vectors { margin: 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 10.5px; display: grid; gap: 2px; }
+  .vectors li.ok { color: var(--accent); } .vectors li.bad { color: var(--bad); }
+  :is(input, button, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel, html.card .verify, html.card .window { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 12px; }
+  html.card .token { flex-direction: column; gap: 14px; }
+  html.card .ring { width: 38%; }
+  html.card .code { font-size: 17cqw; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="issuer"><b id="issuer-label">Portfolio</b> · <span id="account-label">caique</span></div>
+    <div class="token">
+      <svg class="ring" id="ring" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="track" cx="50" cy="50" r="44"/>
+        <circle class="bar" id="bar" cx="50" cy="50" r="44" pathLength="100" stroke-dasharray="100 100"/>
+        <text x="50" y="50" id="left">30</text>
+      </svg>
+      <div class="code" id="code" title="Clique para copiar" aria-live="polite">––– –––</div>
+    </div>
+    <div class="window" id="window" aria-label="Códigos anterior, atual e próximo"></div>
+    <div class="verify">
+      <input type="text" id="try" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="código" aria-label="Código para verificar">
+      <output id="verdict">digite um código para validar</output>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>TOTP</h1>
+      <p>O código de 6 dígitos do Google Authenticator, gerado aqui mesmo com WebCrypto. Mesmo segredo, mesmo relógio, mesmo código do celular.</p>
+    </div>
+    <div class="field">
+      <label for="secret">Segredo (base32)</label>
+      <input type="text" id="secret" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="row">
+      <div class="field"><label for="algo">Hash</label><select id="algo"><option>SHA-1</option><option>SHA-256</option><option>SHA-512</option></select></div>
+      <div class="field"><label for="digits">Dígitos</label><select id="digits"><option>6</option><option>8</option></select></div>
+      <div class="field"><label for="period">Período</label><select id="period"><option value="30">30 s</option><option value="60">60 s</option></select></div>
+    </div>
+    <div class="field">
+      <label>URI para o app autenticador</label>
+      <div class="uri" id="uri"></div>
+    </div>
+    <button type="button" class="plain" id="gen">Novo segredo</button>
+    <button type="button" class="plain" id="selftest">Testar com os vetores da RFC 6238</button>
+    <ul class="vectors" id="vectors"></ul>
+    <p class="note">O contador é <code>floor(unix / período)</code>, escrito em 8 bytes big-endian. Esse contador passa por <code>HMAC</code> com o segredo; do resultado, o último nibble diz onde ler 4 bytes (a "truncagem dinâmica"), que viram um inteiro de 31 bits e depois <code>mod 10^dígitos</code>. A verificação aceita a janela anterior e a próxima, para tolerar relógios um pouco fora. O segredo nunca sai desta página.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+  function base32Decode(s) {
+    const clean = s.toUpperCase().replace(/[\s=-]/g, '');
+    let bits = 0, value = 0;
+    const out = [];
+    for (const ch of clean) {
+      const i = ALPHA.indexOf(ch);
+      if (i < 0) throw new Error('caractere fora do base32: ' + ch);
+      value = (value << 5) | i; bits += 5;
+      if (bits >= 8) { out.push((value >>> (bits - 8)) & 255); bits -= 8; }
+    }
+    return new Uint8Array(out);
+  }
+  function base32Encode(bytes) {
+    let bits = 0, value = 0, out = '';
+    for (const b of bytes) {
+      value = (value << 8) | b; bits += 8;
+      while (bits >= 5) { out += ALPHA[(value >>> (bits - 5)) & 31]; bits -= 5; }
+    }
+    if (bits) out += ALPHA[(value << (5 - bits)) & 31];
+    return out;
+  }
+
+  const keyCache = new Map();
+  async function hmacKey(bytes, hash) {
+    const id = hash + ':' + bytes.join(',');
+    if (!keyCache.has(id)) keyCache.set(id, crypto.subtle.importKey('raw', bytes, { name: 'HMAC', hash }, false, ['sign']));
+    return keyCache.get(id);
+  }
+
+  // RFC 4226 HOTP with the counter from RFC 6238.
+  async function hotp(secretBytes, counter, digits, hash) {
+    const msg = new ArrayBuffer(8), view = new DataView(msg);
+    view.setUint32(0, Math.floor(counter / 2 ** 32));
+    view.setUint32(4, counter >>> 0);
+    const mac = new Uint8Array(await crypto.subtle.sign('HMAC', await hmacKey(secretBytes, hash), msg));
+    const offset = mac[mac.length - 1] & 0x0f;
+    const bin = ((mac[offset] & 0x7f) << 24) | (mac[offset + 1] << 16) | (mac[offset + 2] << 8) | mac[offset + 3];
+    return String(bin % 10 ** digits).padStart(digits, '0');
+  }
+
+  const settings = () => ({ hash: $('algo').value, digits: Number($('digits').value), period: Number($('period').value) });
+  const group = (c) => c.length === 6 ? `<span>${c.slice(0, 3)}</span><span>${c.slice(3)}</span>` : `<span>${c.slice(0, 4)}</span><span>${c.slice(4)}</span>`;
+
+  let current = '', lastCounter = -1, secretBytes = null;
+
+  async function tick() {
+    const { hash, digits, period } = settings();
+    const now = Date.now() / 1000, counter = Math.floor(now / period);
+    const left = period - (now % period);
+    $('left').textContent = Math.ceil(left);
+    $('bar').setAttribute('stroke-dasharray', `${(left / period * 100).toFixed(2)} 100`);
+    $('ring').classList.toggle('low', left < 6);
+    if (!secretBytes || counter === lastCounter) return;
+    lastCounter = counter;
+    const [prev, cur, next] = await Promise.all([-1, 0, 1].map(d => hotp(secretBytes, counter + d, digits, hash)));
+    current = cur;
+    $('code').innerHTML = group(cur);
+    $('window').innerHTML = `<span>${prev}</span><span class="now">${cur}</span><span>${next}</span>`;
+  }
+
+  function readSecret() {
+    try {
+      secretBytes = base32Decode($('secret').value);
+      if (secretBytes.length < 10) throw new Error('segredo curto demais (mín. 80 bits)');
+      $('secret').style.borderColor = '';
+    } catch (e) {
+      secretBytes = null;
+      $('secret').style.borderColor = 'var(--bad)';
+      $('code').textContent = '––– –––';
+    }
+    lastCounter = -1;
+    const { hash, digits, period } = settings();
+    const secret = $('secret').value.replace(/\s/g, '').toUpperCase();
+    $('uri').textContent = `otpauth://totp/Portfolio:caique?secret=${secret}&issuer=Portfolio&algorithm=${hash.replace('-', '')}&digits=${digits}&period=${period}`;
+    tick(); verify();
+  }
+
+  async function verify() {
+    const code = $('try').value.replace(/\D/g, ''), out = $('verdict');
+    const { hash, digits, period } = settings();
+    if (!code || !secretBytes) { out.className = ''; out.textContent = 'digite um código para validar'; return; }
+    if (code.length !== digits) { out.className = ''; out.textContent = `faltam ${digits - code.length} dígitos`; return; }
+    const counter = Math.floor(Date.now() / 1000 / period);
+    for (const d of [0, -1, 1]) {
+      if (await hotp(secretBytes, counter + d, digits, hash) === code) {
+        out.className = 'ok';
+        out.textContent = d === 0 ? 'válido · janela atual' : d < 0 ? 'válido · janela anterior' : 'válido · próxima janela';
+        return;
+      }
+    }
+    out.className = 'bad'; out.textContent = 'inválido ou expirado';
+  }
+
+  // Appendix B of RFC 6238: ASCII seeds, 8 digits, 30 s step.
+  async function selftest() {
+    const enc = new TextEncoder();
+    const seeds = { 'SHA-1': enc.encode('12345678901234567890'), 'SHA-256': enc.encode('12345678901234567890123456789012'), 'SHA-512': enc.encode('1234567890123456789012345678901234567890123456789012345678901234') };
+    const cases = [
+      [59, '94287082', '46119246', '90693936'],
+      [1111111109, '07081804', '68084774', '25091201'],
+      [1111111111, '14050471', '67062674', '99943326'],
+      [1234567890, '89005924', '91819424', '93441116'],
+      [2000000000, '69279037', '90698825', '38618901'],
+      [20000000000, '65353130', '77737706', '47863826'],
+    ];
+    const rows = [];
+    let pass = 0;
+    for (const [t, ...expected] of cases) {
+      const got = await Promise.all(['SHA-1', 'SHA-256', 'SHA-512'].map(h => hotp(seeds[h], Math.floor(t / 30), 8, h)));
+      const ok = got.every((g, i) => g === expected[i]);
+      if (ok) pass++;
+      rows.push(`<li class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✕'} T=${t} → ${got.join(' ')}</li>`);
+    }
+    $('vectors').innerHTML = rows.join('') + `<li class="${pass === cases.length ? 'ok' : 'bad'}">${pass}/${cases.length} tempos × 3 hashes batem</li>`;
+    return pass === cases.length;
+  }
+
+  function newSecret() {
+    const raw = base32Encode(crypto.getRandomValues(new Uint8Array(20)));
+    $('secret').value = raw.match(/.{1,4}/g).join(' ');
+    readSecret();
+  }
+
+  $('secret').addEventListener('input', readSecret);
+  ['algo', 'digits', 'period'].forEach(id => $(id).addEventListener('change', readSecret));
+  $('try').addEventListener('input', verify);
+  $('gen').addEventListener('click', newSecret);
+  $('selftest').addEventListener('click', selftest);
+  $('code').addEventListener('click', () => {
+    if (!current) return;
+    navigator.clipboard?.writeText(current).catch(() => {});
+    $('code').classList.add('copied'); setTimeout(() => $('code').classList.remove('copied'), 700);
+  });
+  window.totpSelfTest = selftest;
+  newSecret();
+  setInterval(tick, 250);
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // A 10 s period keeps the card changing while someone looks at it.
+    const ten = document.createElement('option'); ten.value = '10'; ten.textContent = '10 s';
+    $('period').append(ten); $('period').value = '10';
+    readSecret();
+  }
+})();
+</script>
+</html>

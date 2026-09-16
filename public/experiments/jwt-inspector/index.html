@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>JWT Inspector</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --bad: #f23e2e; --warn: #f2a52e;
+    --h: #ff6b8b; --p: #b58cff; --s: #6ea8ff;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; min-height: 600px; background: #000; border-radius: 6px; padding: 18px; display: grid; gap: 14px; align-content: start; }
+  .lbl { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  #token { font-family: var(--font-mono); font-size: 12px; line-height: 1.6; padding: 10px; border: 1px solid var(--line); border-radius: 4px; background: #0f1319; color: var(--ink); width: 100%; height: 92px; resize: vertical; word-break: break-all; }
+  #token:focus { outline: none; border-color: var(--accent); }
+  .colored { font-family: var(--font-mono); font-size: 12px; line-height: 1.6; word-break: break-all; }
+  .colored .h { color: var(--h); } .colored .p { color: var(--p); } .colored .s { color: var(--s); } .colored .dot { color: var(--muted); }
+  .parts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .parts { grid-template-columns: 1fr; } }
+  .parts textarea { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; padding: 10px; border: 1px solid var(--line); border-left: 3px solid var(--c); border-radius: 4px; background: #0f1319; color: var(--ink); width: 100%; height: 170px; resize: vertical; tab-size: 2; }
+  .parts textarea:focus { outline: none; border-color: var(--c); }
+  .parts textarea.invalid { border-color: var(--bad); }
+  .claims { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .claims td { padding: 5px 8px; border-top: 1px solid #1a1f26; vertical-align: top; }
+  .claims td:first-child { font-family: var(--font-mono); color: var(--p); width: 1%; white-space: nowrap; }
+  .claims td:last-child { color: var(--muted); }
+  .claims .expired { color: var(--bad); } .claims .fresh { color: var(--accent); }
+  .status { font-family: var(--font-mono); font-size: 13px; padding: 11px 14px; border-radius: 4px; border: 1px solid var(--line); }
+  .status.ok { color: var(--accent); border-color: var(--accent); }
+  .status.bad { color: var(--bad); border-color: var(--bad); }
+  .status.warn { color: var(--warn); border-color: var(--warn); }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"], select { font: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink); width: 100%; }
+  #secret { font-family: var(--font-mono); }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 10px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  :is(input, button, select, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel, html.card #token, html.card .claims-wrap, html.card .lbl { display: none; }
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 12px; gap: 10px; align-content: center; }
+  html.card .parts { grid-template-columns: 1fr; gap: 6px; }
+  html.card .parts textarea { height: 11.5em; font-size: 10px; resize: none; overflow: hidden; pointer-events: none; }
+  html.card .parts .hdr { display: none; }
+  html.card .colored { font-size: 9.5px; max-height: 5.4em; overflow: hidden; }
+  html.card .status { font-size: 10.5px; padding: 7px 9px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div>
+      <div class="lbl"><span>Token codificado</span><span id="size"></span></div>
+      <textarea id="token" spellcheck="false" aria-label="Token JWT"></textarea>
+    </div>
+    <div class="colored" id="colored" aria-hidden="true"></div>
+    <div class="parts">
+      <div class="hdr"><div class="lbl"><span>Header</span></div><textarea id="header" spellcheck="false" style="--c: var(--h)" aria-label="Header"></textarea></div>
+      <div><div class="lbl"><span>Payload</span><span>editável — reassina</span></div><textarea id="payload" spellcheck="false" style="--c: var(--p)" aria-label="Payload"></textarea></div>
+    </div>
+    <div class="claims-wrap"><table class="claims" id="claims"></table></div>
+    <div class="status" id="status">—</div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>JWT Inspector</h1>
+      <p>Decodifica, verifica e assina JSON Web Tokens HMAC no browser. Edite o payload e o token é reassinado; edite o token e a assinatura quebra.</p>
+    </div>
+    <div class="field">
+      <label for="secret">Segredo HMAC</label>
+      <input type="text" id="secret" value="segredo-de-exemplo-com-32-bytes!" spellcheck="false" autocomplete="off">
+    </div>
+    <label class="check"><input type="checkbox" id="b64"> Segredo em base64</label>
+    <div class="field">
+      <label for="alg">Algoritmo ao assinar</label>
+      <select id="alg"><option>HS256</option><option>HS384</option><option>HS512</option></select>
+    </div>
+    <div class="grid2">
+      <button type="button" class="plain" data-preset="valid">Válido</button>
+      <button type="button" class="plain" data-preset="expired">Expirado</button>
+      <button type="button" class="plain" data-preset="tampered">Adulterado</button>
+      <button type="button" class="plain" data-preset="none">alg: none</button>
+    </div>
+    <button type="button" class="plain" data-preset="jwtio">Exemplo do jwt.io</button>
+    <p class="note">Um JWT são três pedaços em <code>base64url</code> separados por ponto: header, payload e assinatura. A assinatura HMAC cobre os dois primeiros <em>exatamente como escritos</em>, por isso qualquer caractere trocado a invalida. A verificação usa <code>crypto.subtle.verify</code>, que compara em tempo constante. Decodificar não é verificar: o payload é legível por qualquer um, então nada secreto vai nele. E <code>alg: none</code> deve ser recusado sempre.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const HASH = { HS256: 'SHA-256', HS384: 'SHA-384', HS512: 'SHA-512' };
+
+  const b64url = (bytes) => { let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  const unb64url = (s) => {
+    if (!/^[A-Za-z0-9_-]*$/.test(s)) throw new Error('base64url inválido');
+    const t = s.replace(/-/g, '+').replace(/_/g, '/');
+    return Uint8Array.from(atob(t + '='.repeat((4 - t.length % 4) % 4)), c => c.charCodeAt(0));
+  };
+  const jsonPart = (obj) => b64url(enc.encode(JSON.stringify(obj)));
+
+  function secretBytes() {
+    const v = $('secret').value;
+    if (!$('b64').checked) return enc.encode(v);
+    try { return Uint8Array.from(atob(v.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)); } catch { return enc.encode(v); }
+  }
+  const key = (hash, usage) => crypto.subtle.importKey('raw', secretBytes(), { name: 'HMAC', hash }, false, [usage]);
+
+  async function sign(header, payload) {
+    const input = jsonPart(header) + '.' + jsonPart(payload);
+    const hash = HASH[header.alg];
+    if (!hash) return input + '.';
+    const sig = await crypto.subtle.sign('HMAC', await key(hash, 'sign'), enc.encode(input));
+    return input + '.' + b64url(new Uint8Array(sig));
+  }
+
+  const ago = (sec) => {
+    const a = Math.abs(sec), [n, u] = a < 60 ? [a, 's'] : a < 3600 ? [a / 60, 'min'] : a < 86400 ? [a / 3600, 'h'] : [a / 86400, 'd'];
+    return Math.round(n) + ' ' + u;
+  };
+  const CLAIMS = { iss: 'emissor', sub: 'sujeito', aud: 'audiência', exp: 'expira', nbf: 'não antes de', iat: 'emitido', jti: 'id do token' };
+
+  function claims(p) {
+    const now = Date.now() / 1000;
+    return Object.entries(p).map(([k, v]) => {
+      let desc = CLAIMS[k] || 'claim própria', cls = '';
+      if (['exp', 'nbf', 'iat'].includes(k) && typeof v === 'number') {
+        const when = new Date(v * 1000).toLocaleString('pt-BR');
+        if (k === 'exp') { cls = v < now ? 'expired' : 'fresh'; desc = v < now ? `expirou há ${ago(now - v)} · ${when}` : `expira em ${ago(v - now)} · ${when}`; }
+        else if (k === 'nbf') { cls = v > now ? 'expired' : ''; desc = v > now ? `ainda não vale (em ${ago(v - now)})` : `válido desde ${when}`; }
+        else desc = `emitido há ${ago(now - v)} · ${when}`;
+      }
+      const val = typeof v === 'string' ? v : JSON.stringify(v);
+      return `<tr><td>${k}</td><td class="${cls}">${val.replace(/[<&]/g, '')}</td><td class="${cls}">${desc}</td></tr>`;
+    }).join('');
+  }
+
+  function setStatus(kind, text) { $('status').className = 'status ' + kind; $('status').textContent = text; }
+
+  // Token -> panes. `fromEditor` skips rewriting the pane the user is typing in.
+  async function inspect(fromEditor) {
+    const token = $('token').value.trim();
+    const parts = token.split('.');
+    $('size').textContent = token.length + ' chars';
+    $('colored').innerHTML = parts.length === 3
+      ? `<span class="h">${parts[0]}</span><span class="dot">.</span><span class="p">${parts[1]}</span><span class="dot">.</span><span class="s">${parts[2]}</span>`
+      : token.replace(/[<&]/g, '');
+    if (parts.length !== 3) { setStatus('bad', 'Formato inválido · esperado header.payload.assinatura'); $('claims').innerHTML = ''; return; }
+    let header, payload;
+    try {
+      header = JSON.parse(dec.decode(unb64url(parts[0])));
+      payload = JSON.parse(dec.decode(unb64url(parts[1])));
+    } catch (e) { setStatus('bad', 'Não decodifica · ' + e.message); $('claims').innerHTML = ''; return; }
+    if (fromEditor !== 'header') $('header').value = JSON.stringify(header, null, 2);
+    if (fromEditor !== 'payload') $('payload').value = JSON.stringify(payload, null, 2);
+    $('claims').innerHTML = claims(payload);
+
+    if (header.alg === 'none' || !header.alg) { setStatus('warn', 'alg: none · sem assinatura; um servidor nunca deve aceitar este token'); return; }
+    const hash = HASH[header.alg];
+    if (!hash) { setStatus('warn', `${header.alg} · assimétrico, precisa da chave pública (fora do escopo desta demo)`); return; }
+    let valid = false;
+    try { valid = await crypto.subtle.verify('HMAC', await key(hash, 'verify'), unb64url(parts[2]), enc.encode(parts[0] + '.' + parts[1])); } catch { valid = false; }
+    const now = Date.now() / 1000;
+    if (!valid) setStatus('bad', `Assinatura inválida · ${header.alg} não confere com este segredo`);
+    else if (typeof payload.exp === 'number' && payload.exp < now) setStatus('warn', `Assinatura válida, mas expirado há ${ago(now - payload.exp)}`);
+    else if (typeof payload.nbf === 'number' && payload.nbf > now) setStatus('warn', 'Assinatura válida, mas ainda não vale (nbf)');
+    else setStatus('ok', `Assinatura válida · ${header.alg}`);
+  }
+
+  // Panes -> token (re-signed with the current secret).
+  async function resign(which) {
+    let header, payload;
+    try { header = JSON.parse($('header').value); $('header').classList.remove('invalid'); } catch { $('header').classList.add('invalid'); return; }
+    try { payload = JSON.parse($('payload').value); $('payload').classList.remove('invalid'); } catch { $('payload').classList.add('invalid'); return; }
+    $('token').value = await sign(header, payload);
+    inspect(which);
+  }
+
+  const now = () => Math.floor(Date.now() / 1000);
+  const base = () => ({ sub: 'user_8f3a', name: 'Caique', role: 'admin', iss: 'https://id.exemplo.com', aud: 'portfolio', iat: now() - 120, exp: now() + 3600 });
+
+  async function preset(name) {
+    $('b64').checked = false;
+    if (name === 'jwtio') {
+      $('secret').value = 'your-256-bit-secret';
+      $('token').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      return inspect();
+    }
+    if ($('secret').value === 'your-256-bit-secret') $('secret').value = 'segredo-de-exemplo-com-32-bytes!';
+    const alg = $('alg').value;
+    if (name === 'none') { $('token').value = jsonPart({ alg: 'none', typ: 'JWT' }) + '.' + jsonPart(base()) + '.'; return inspect(); }
+    const p = base();
+    if (name === 'expired') { p.iat = now() - 7300; p.exp = now() - 3700; }
+    let token = await sign({ alg, typ: 'JWT' }, p);
+    if (name === 'tampered') {
+      // Swap the payload for one claiming another role, keeping the original signature.
+      const [h, , s] = token.split('.');
+      token = [h, jsonPart({ ...p, role: 'superadmin' }), s].join('.');
+    }
+    $('token').value = token;
+    inspect();
+  }
+
+  $('token').addEventListener('input', () => inspect());
+  $('header').addEventListener('input', () => resign('header'));
+  $('payload').addEventListener('input', () => resign('payload'));
+  $('secret').addEventListener('input', () => inspect());
+  $('b64').addEventListener('change', () => inspect());
+  $('alg').addEventListener('change', async () => {
+    try { const h = JSON.parse($('header').value); h.alg = $('alg').value; $('header').value = JSON.stringify(h, null, 2); resign(); } catch {}
+  });
+  document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => preset(b.dataset.preset)));
+  preset('valid');
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    const ORDER = ['valid', 'tampered', 'expired', 'none'];
+    let i = 0;
+    setInterval(() => preset(ORDER[i = (i + 1) % ORDER.length]), 2200);
+  }
+})();
+</script>
+</html>
