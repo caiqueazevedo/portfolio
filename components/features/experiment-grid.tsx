@@ -19,7 +19,7 @@ export type GridItem = {
 
 type Sort = "az" | "za" | "newest" | "oldest";
 const SORTS: Sort[] = ["az", "za", "newest", "oldest"];
-const CATEGORIES: Array<Category | "all"> = ["all", "filter", "typography", "collage"];
+const CATEGORIES: Category[] = ["filter", "typography", "collage"];
 
 export type GridLabels = {
   category: string;
@@ -39,15 +39,24 @@ export type GridLabels = {
   count: string;
 };
 
-const SEG_BTN =
-  "px-3.5 py-2 font-condensed text-[12px] font-bold tracking-[0.1em] uppercase transition-all duration-[120ms] aria-pressed:bg-acid-500 aria-pressed:text-ink-950 hover:not-aria-pressed:bg-paper-100 hover:not-aria-pressed:text-ink-950";
+/* Toggle chip: a checkbox styled as a Raw Folio tag; several can be on at once. */
+const CHIP =
+  "inline-flex cursor-pointer items-center gap-1.5 border-2 px-3 py-1.5 font-condensed text-[12px] font-bold tracking-[0.1em] uppercase transition-all duration-[120ms] has-focus-visible:outline-2 has-focus-visible:outline-acid-500";
 
 export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: GridLabels }) {
   const [sort, setSort] = useState<Sort>("newest");
-  const [category, setCategory] = useState<Category | "all">("all");
+  // Multi-select: an empty set means no filter (everything shows).
+  const [categories, setCategories] = useState<Set<Category>>(new Set());
+
+  const toggle = (c: Category) =>
+    setCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(c)) next.delete(c); else next.add(c);
+      return next;
+    });
 
   const shown = useMemo(() => {
-    const list = items.filter((i) => category === "all" || i.category === category);
+    const list = items.filter((i) => categories.size === 0 || categories.has(i.category));
     const by: Record<Sort, (a: GridItem, b: GridItem) => number> = {
       az: (a, b) => a.title.localeCompare(b.title),
       za: (a, b) => b.title.localeCompare(a.title),
@@ -55,42 +64,41 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
       oldest: (a, b) => a.createdAt.localeCompare(b.createdAt),
     };
     return [...list].sort(by[sort]);
-  }, [items, sort, category]);
+  }, [items, sort, categories]);
 
   return (
     <>
       <div className="flex flex-col gap-4 border-b-2 border-ink-700 py-5 md:flex-row md:items-center md:justify-between">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3">
-          <span className="label text-ink-500">{labels.category}</span>
-          <div role="group" aria-label={labels.category} className="flex max-w-full overflow-x-auto border-2 border-paper-100">
-            {CATEGORIES.map((c, i) => (
-              <button
-                key={c}
-                type="button"
-                aria-pressed={category === c}
-                onClick={() => setCategory(c)}
-                className={cn(SEG_BTN, i > 0 && "border-l-2 border-paper-100")}
-              >
+        <fieldset className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3">
+          <legend className="sr-only">{labels.category}</legend>
+          <span aria-hidden="true" className="label text-ink-500">{labels.category}</span>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map((c) => (
+              <label key={c} className={cn(CHIP, categories.has(c) ? "border-acid-500 bg-acid-500 text-ink-950" : "border-paper-100 text-paper-100 hover:bg-paper-100 hover:text-ink-950")}>
+                <input type="checkbox" className="sr-only" checked={categories.has(c)} onChange={() => toggle(c)} />
+                <span aria-hidden="true" className="font-mono text-[11px]">{categories.has(c) ? "✕" : "+"}</span>
                 {labels[c]}
-              </button>
+              </label>
             ))}
+            {categories.size > 0 ? (
+              <button type="button" onClick={() => setCategories(new Set())} className="px-2 font-condensed text-[12px] font-bold tracking-[0.1em] text-ink-500 uppercase hover:text-paper-100">
+                {labels.all}
+              </button>
+            ) : null}
           </div>
-        </div>
+        </fieldset>
         <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3">
-          <span className="label text-ink-500">{labels.sort}</span>
-          <div role="group" aria-label={labels.sort} className="flex max-w-full overflow-x-auto border-2 border-paper-100">
-            {SORTS.map((s, i) => (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={sort === s}
-                onClick={() => setSort(s)}
-                className={cn(SEG_BTN, i > 0 && "border-l-2 border-paper-100")}
-              >
-                {labels[s]}
-              </button>
+          <label htmlFor="experiments-sort" className="label text-ink-500">{labels.sort}</label>
+          <select
+            id="experiments-sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as Sort)}
+            className="border-2 border-paper-100 bg-ink-950 px-3 py-2 font-condensed text-[12px] font-bold tracking-[0.1em] text-paper-100 uppercase outline-none focus-visible:border-acid-500"
+          >
+            {SORTS.map((s) => (
+              <option key={s} value={s}>{labels[s]}</option>
             ))}
-          </div>
+          </select>
           <span className="font-mono text-[12px] text-ink-500" aria-live="polite">
             {labels.count.replace("{count}", String(shown.length))}
           </span>

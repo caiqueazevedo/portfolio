@@ -25,21 +25,27 @@ describe("ExperimentGrid", () => {
     const user = userEvent.setup();
     render(<ExperimentGrid items={items} labels={labels} />);
     expect(titles()).toEqual(["Gamma", "Beta", "Alpha"]);
-    await user.click(within(screen.getByRole("group", { name: "Ordem" })).getByRole("button", { name: "A → Z" }));
+    await user.selectOptions(screen.getByLabelText("Ordem"), "az");
     expect(titles()).toEqual(["Alpha", "Beta", "Gamma"]);
-    await user.click(within(screen.getByRole("group", { name: "Ordem" })).getByRole("button", { name: "Mais antigos" }));
+    await user.selectOptions(screen.getByLabelText("Ordem"), "oldest");
     expect(titles()).toEqual(["Alpha", "Beta", "Gamma"]);
   });
 
-  it("filters by category and shows the count and the empty state", async () => {
+  it("combines several categories, clears them, and shows count and empty state", async () => {
     const user = userEvent.setup();
     render(<ExperimentGrid items={items} labels={labels} />);
     const cats = screen.getByRole("group", { name: "Categoria" });
-    await user.click(within(cats).getByRole("button", { name: "Filtro" }));
+    await user.click(within(cats).getByRole("checkbox", { name: "Filtro" }));
     expect(titles()).toEqual(["Gamma", "Beta"]);
     expect(screen.getByText("2 itens")).toBeInTheDocument();
-    await user.click(within(cats).getByRole("button", { name: "Colagem" }));
+    await user.click(within(cats).getByRole("checkbox", { name: "Tipografia" }));
+    expect(titles()).toEqual(["Gamma", "Beta", "Alpha"]);
+    await user.click(within(cats).getByRole("checkbox", { name: "Filtro" }));
+    await user.click(within(cats).getByRole("checkbox", { name: "Tipografia" }));
+    await user.click(within(cats).getByRole("checkbox", { name: "Colagem" }));
     expect(screen.queryAllByRole("heading", { level: 2 })).toHaveLength(0);
     expect(screen.getByText("Nada.")).toBeInTheDocument();
+    await user.click(within(cats).getByRole("button", { name: "Todos" }));
+    expect(titles()).toHaveLength(3);
   });
 });
