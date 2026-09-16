@@ -142,7 +142,13 @@
     selected = (i + shown.length) % shown.length;
     results.querySelectorAll('[role="option"]').forEach((li, k) => li.setAttribute('aria-selected', k === selected));
     q.setAttribute('aria-activedescendant', 'opt-' + selected);
-    results.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+    // Scroll the list only: scrollIntoView would also scroll every ancestor, including the
+    // page embedding this demo in an iframe.
+    const li = results.querySelector('[aria-selected="true"]');
+    if (!li) return;
+    const box = results.getBoundingClientRect(), r = li.getBoundingClientRect();
+    if (r.top < box.top) results.scrollTop -= box.top - r.top;
+    else if (r.bottom > box.bottom) results.scrollTop += r.bottom - box.bottom;
   }
 
   function run(i) {
@@ -176,9 +182,9 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // A non-modal open keeps the host page scrollable; the preview just needs the look.
-    q.value = ''; search(); dlg.show();
-    q.addEventListener('focus', () => q.blur());
+    // Set the attribute instead of show(): show() moves focus into the input, and focus
+    // inside an iframe scrolls the host page to it.
+    q.value = ''; search(); dlg.setAttribute('open', '');
     let i = 0; setInterval(() => select(++i), 1400);
   }
 })();
