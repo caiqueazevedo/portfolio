@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Liquid Distortion</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; touch-action: none; cursor: crosshair; container-type: inline-size; }
+  .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  /* Distorted copy, revealed only around the pointer by a radial mask. */
+  .stage .liquid {
+    filter: url(#liquid);
+    transform: scale(1.04);
+    -webkit-mask-image: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), #000 0, #000 calc(var(--r, 160px) * 0.4), transparent var(--r, 160px));
+    mask-image: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), #000 0, #000 calc(var(--r, 160px) * 0.4), transparent var(--r, 160px));
+  }
+  .stage .caption { position: absolute; left: 6%; bottom: 5%; font-family: var(--font-display); font-size: clamp(28px, 9cqw, 72px); line-height: .9; letter-spacing: .02em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; pointer-events: none; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<!-- Noise drives a displacement map; JS animates the noise frequency and the displacement scale. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="liquid" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feTurbulence id="fx-noise" type="turbulence" baseFrequency="0.012" numOctaves="2" seed="3" result="noise"/>
+    <feDisplacementMap id="fx-disp" in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <img id="img-base" src="photo.jpg" alt="Retrato">
+    <img class="liquid" id="img-liquid" src="photo.jpg" alt="">
+    <div class="caption">Move<br>me</div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Liquid Distortion</h1>
+      <p>A foto ondula como água onde o cursor passa e volta ao normal quando ele para. Quanto mais rápido, mais forte.</p>
+    </div>
+    <div class="field">
+      <label for="power">Intensidade <output id="power-out">60</output></label>
+      <input type="range" id="power" min="10" max="160" step="2" value="60">
+    </div>
+    <div class="field">
+      <label for="radius">Raio <output id="radius-out">160 px</output></label>
+      <input type="range" id="radius" min="60" max="400" step="10" value="160">
+    </div>
+    <div class="field">
+      <label for="freq">Frequência da onda <output id="freq-out">0.012</output></label>
+      <input type="range" id="freq" min="0.004" max="0.05" step="0.001" value="0.012">
+    </div>
+    <div class="field">
+      <label for="decay">Amortecimento <output id="decay-out">0.92</output></label>
+      <input type="range" id="decay" min="0.80" max="0.98" step="0.01" value="0.92">
+    </div>
+    <div class="row">
+      <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+    <p class="note">Duas cópias da foto: a de cima passa por <code>feTurbulence</code> → <code>feDisplacementMap</code> e só aparece dentro de uma <code>mask-image</code> radial que segue o ponteiro. A velocidade do ponteiro vira energia; a energia vira <code>scale</code> do deslocamento e decai a cada frame.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), noise = $('fx-noise'), disp = $('fx-disp');
+  const ctl = { power: $('power'), radius: $('radius'), freq: $('freq'), decay: $('decay') };
+  const defaults = { power: 60, radius: 160, freq: 0.012, decay: 0.92 };
+  let energy = 0, last = null, t = 0, raf = 0;
+
+  function readouts() {
+    $('power-out').textContent = ctl.power.value;
+    $('radius-out').textContent = ctl.radius.value + ' px';
+    $('freq-out').textContent = Number(ctl.freq.value).toFixed(3);
+    $('decay-out').textContent = Number(ctl.decay.value).toFixed(2);
+    stage.style.setProperty('--r', ctl.radius.value + 'px');
+  }
+
+  function frame() {
+    t += 0.03;
+    energy *= Number(ctl.decay.value);
+    const scale = Math.min(Number(ctl.power.value), energy);
+    disp.setAttribute('scale', scale.toFixed(1));
+    // A slow wobble on the frequency keeps the ripple alive while it fades.
+    const f = Number(ctl.freq.value);
+    noise.setAttribute('baseFrequency', `${(f * (1 + 0.25 * Math.sin(t))).toFixed(4)} ${(f * (1 + 0.25 * Math.cos(t * 0.8))).toFixed(4)}`);
+    if (scale > 0.2) raf = requestAnimationFrame(frame); else { raf = 0; disp.setAttribute('scale', 0); }
+  }
+
+  stage.addEventListener('pointermove', (e) => {
+    const r = stage.getBoundingClientRect();
+    stage.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+    stage.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    if (last) energy = Math.min(energy + Math.hypot(e.clientX - last.x, e.clientY - last.y) * 1.5, 400);
+    last = { x: e.clientX, y: e.clientY };
+    if (!raf) raf = requestAnimationFrame(frame);
+  });
+  stage.addEventListener('pointerleave', () => { last = null; });
+
+  Object.values(ctl).forEach(el => el.addEventListener('input', readouts));
+  $('reset').addEventListener('click', () => { Object.entries(defaults).forEach(([k, v]) => { ctl[k].value = v; }); readouts(); });
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { $('img-base').src = reader.result; $('img-liquid').src = reader.result; };
+    reader.readAsDataURL(f);
+  });
+  readouts();
+})();
+</script>
+</html>

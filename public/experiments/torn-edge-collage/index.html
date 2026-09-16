@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Torn Edge Collage</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-marker: "Permanent Marker", cursive;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+    --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; touch-action: none; user-select: none; }
+  .stage > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1) contrast(1.15); pointer-events: none; }
+  .stage::after { content: ""; position: absolute; inset: 0; background: var(--noise); opacity: .08; pointer-events: none; }
+  /* A scrap: outer element rotates and carries the hard shadow (drop-shadow follows the tear);
+     inner element is the torn paper itself. */
+  .scrap { position: absolute; width: 46%; cursor: grab; filter: drop-shadow(6px 6px 0 rgba(0,0,0,.6)); z-index: 1; }
+  .scrap.dragging { cursor: grabbing; z-index: 2; }
+  .scrap .paper { position: relative; padding: 9% 8%; color: #0e0e0c; font-family: var(--font-marker); font-size: clamp(16px, 7cqw, 40px); line-height: 1.1; }
+  .scrap .paper::after { content: ""; position: absolute; inset: 0; background: var(--noise); opacity: .14; mix-blend-mode: multiply; pointer-events: none; }
+  .stage { container-type: inline-size; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="text"] { font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; }
+  .swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .swatches button { height: 34px; padding: 0; border-radius: 4px; }
+  .swatches button[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <img id="img" src="photo.jpg" alt="Foto de fundo em preto e branco">
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Torn Edge Collage</h1>
+      <p>Recortes de papel rasgado colados sobre a foto. Arraste pra posicionar; cada rasgo é gerado na hora.</p>
+    </div>
+    <div class="field">
+      <label for="text">Texto do recorte</label>
+      <input type="text" id="text" value="make it real" maxlength="24" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="rough">Rasgo <output id="rough-out">4%</output></label>
+      <input type="range" id="rough" min="1" max="10" step="0.5" value="4">
+    </div>
+    <div class="field">
+      <label for="rot">Rotação <output id="rot-out">-3°</output></label>
+      <input type="range" id="rot" min="-12" max="12" step="0.5" value="-3">
+    </div>
+    <div class="field">
+      <label>Papel</label>
+      <div class="swatches" id="swatches"></div>
+    </div>
+    <div class="row">
+      <button type="button" id="add">Novo recorte</button>
+      <button type="button" id="clear">Limpar</button>
+    </div>
+    <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+    <p class="note">Cada recorte é um <code>clip-path: polygon()</code> com pontos sorteados ao longo da borda; a fibra do papel é um <code>feTurbulence</code> em <code>data:</code> URI com <code>mix-blend-mode: multiply</code>. A sombra é <code>filter: drop-shadow</code>, que acompanha o rasgo (um <code>box-shadow</code> seria cortado). Arraste com Pointer Events.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage');
+  const ctl = { text: $('text'), rough: $('rough'), rot: $('rot') };
+  const papers = [['#f4f2ec', 'papel'], ['#c8f31d', 'ácido'], ['#2e4bf2', 'azul']];
+  let paper = papers[0][0], selected = null;
+
+  // Jagged polygon: walk the four edges, jitter each point inward by up to `r` percent.
+  function tornPolygon(r) {
+    const pts = [], n = 9, j = () => (Math.random() * r).toFixed(1);
+    for (let i = 0; i < n; i++) pts.push(`${(i / n * 100).toFixed(1)}% ${j()}%`);
+    for (let i = 0; i < n; i++) pts.push(`${100 - j()}% ${(i / n * 100).toFixed(1)}%`);
+    for (let i = 0; i < n; i++) pts.push(`${(100 - i / n * 100).toFixed(1)}% ${100 - j()}%`);
+    for (let i = 0; i < n; i++) pts.push(`${j()}% ${(100 - i / n * 100).toFixed(1)}%`);
+    return `polygon(${pts.join(', ')})`;
+  }
+
+  function style(scrap) {
+    const inner = scrap.firstElementChild;
+    inner.style.clipPath = tornPolygon(Number(ctl.rough.value));
+    inner.style.background = paper;
+    inner.style.color = paper === '#2e4bf2' ? '#fff' : '#0e0e0c';
+    inner.textContent = ctl.text.value.trim() || 'make it real';
+    scrap.style.transform = `rotate(${ctl.rot.value}deg)`;
+  }
+
+  function add() {
+    const scrap = document.createElement('div');
+    scrap.className = 'scrap';
+    scrap.innerHTML = '<div class="paper"></div>';
+    scrap.style.left = (10 + Math.random() * 40) + '%';
+    scrap.style.top = (10 + Math.random() * 55) + '%';
+    stage.appendChild(scrap);
+    select(scrap);
+  }
+
+  function select(scrap) {
+    selected = scrap;
+    style(scrap);
+  }
+
+  // Drag: keep the offset from the pointer to the scrap's corner so it does not jump.
+  let drag = null;
+  stage.addEventListener('pointerdown', (e) => {
+    const scrap = e.target.closest('.scrap');
+    if (!scrap) return;
+    selected = scrap;
+    const r = scrap.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    drag = { scrap, dx: e.clientX - r.left, dy: e.clientY - r.top, s, w: r.width, h: r.height };
+    scrap.classList.add('dragging');
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const x = e.clientX - drag.s.left - drag.dx, y = e.clientY - drag.s.top - drag.dy;
+    drag.scrap.style.left = Math.max(-drag.w * 0.3, Math.min(drag.s.width - drag.w * 0.7, x)) + 'px';
+    drag.scrap.style.top = Math.max(-drag.h * 0.3, Math.min(drag.s.height - drag.h * 0.7, y)) + 'px';
+  });
+  const drop = () => { if (drag) { drag.scrap.classList.remove('dragging'); drag = null; } };
+  stage.addEventListener('pointerup', drop);
+  stage.addEventListener('pointercancel', drop);
+
+  papers.forEach(([hex, name]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.title = name; b.style.background = hex; b.setAttribute('aria-pressed', hex === paper);
+    b.addEventListener('click', () => {
+      paper = hex;
+      [...$('swatches').children].forEach(c => c.setAttribute('aria-pressed', c === b));
+      if (selected) style(selected);
+    });
+    $('swatches').appendChild(b);
+  });
+
+  ['text', 'rough', 'rot'].forEach(k => ctl[k].addEventListener('input', () => {
+    $('rough-out').textContent = ctl.rough.value + '%';
+    $('rot-out').textContent = ctl.rot.value + '°';
+    if (selected) style(selected);
+  }));
+  $('add').addEventListener('click', add);
+  $('clear').addEventListener('click', () => { stage.querySelectorAll('.scrap').forEach(s => s.remove()); selected = null; });
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { $('img').src = reader.result; };
+    reader.readAsDataURL(f);
+  });
+  add();
+})();
+</script>
+</html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Knockout Marquee</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: #000; border-radius: 6px; }
+  .stage svg { display: block; width: 100%; height: 100%; }
+  .stage text { font-family: var(--font-display); text-transform: uppercase; }
+  .stage .ghost { fill: none; stroke: rgba(232, 236, 239, .22); stroke-width: 1.5; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="text"] { font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; text-transform: uppercase; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: var(--ground); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-label="Texto correndo com a foto por dentro">
+      <defs>
+        <!-- White = photo shows. The text runs; the photo stays put. -->
+        <mask id="knock" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" fill="#fff">
+          <text id="run" y="50%" dominant-baseline="central"></text>
+        </mask>
+      </defs>
+      <image id="photo" href="photo.jpg" width="1600" height="900" preserveAspectRatio="xMidYMid slice" mask="url(#knock)"/>
+      <!-- A faint outline copy so the word is readable over the dark parts too. -->
+      <text id="ghost" class="ghost" y="50%" dominant-baseline="central"></text>
+    </svg>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Knockout Marquee</h1>
+      <p>Um texto gigante corre em loop e mostra a foto por dentro das letras. A foto fica parada; só a máscara anda.</p>
+    </div>
+    <div class="field">
+      <label for="text">Texto</label>
+      <input type="text" id="text" value="Make it bold ✱" maxlength="40" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="size">Tamanho <output id="size-out">360</output></label>
+      <input type="range" id="size" min="120" max="700" step="10" value="360">
+    </div>
+    <div class="field">
+      <label for="speed">Velocidade <output id="speed-out">120 px/s</output></label>
+      <input type="range" id="speed" min="20" max="600" step="10" value="120">
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Direção">
+      <label><input type="radio" name="dir" value="-1" checked><span>← esquerda</span></label>
+      <label><input type="radio" name="dir" value="1"><span>direita →</span></label>
+    </div>
+    <div class="row">
+      <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+    <p class="note">A <code>&lt;image&gt;</code> recebe <code>mask="url(#knock)"</code>; a máscara é um <code>&lt;text&gt;</code> com o texto repetido. A Web Animations API (<code>element.animate</code>) desloca o texto exatamente uma repetição por ciclo, então o loop não pula. Com <code>prefers-reduced-motion</code> o texto fica parado.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const run = $('run'), ghost = $('ghost');
+  const ctl = { text: $('text'), size: $('size'), speed: $('speed') };
+  const defaults = { text: 'Make it bold ✱', size: 360, speed: 120, dir: '-1' };
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let anims = [];
+
+  const dir = () => Number(document.querySelector('input[name="dir"]:checked').value);
+
+  function build() {
+    const word = (ctl.text.value.trim() || defaults.text).toUpperCase() + '  ';
+    const size = Number(ctl.size.value);
+    for (const t of [run, ghost]) { t.setAttribute('font-size', size); t.textContent = word; }
+    // Width of one repetition, then enough copies to cover the stage plus one spare to scroll into.
+    const unit = run.getComputedTextLength();
+    const copies = Math.ceil(1600 / unit) + 2;
+    for (const t of [run, ghost]) { t.textContent = word.repeat(copies); t.setAttribute('x', 0); }
+
+    anims.forEach(a => a.cancel()); anims = [];
+    if (reduced) return;
+    const d = dir();
+    const from = d < 0 ? 0 : -unit, to = d < 0 ? -unit : 0;
+    const duration = unit / Number(ctl.speed.value) * 1000;
+    for (const t of [run, ghost]) {
+      anims.push(t.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${to}px)` }], { duration, iterations: Infinity }));
+    }
+    $('size-out').textContent = size;
+    $('speed-out').textContent = ctl.speed.value + ' px/s';
+  }
+
+  Object.values(ctl).forEach(el => el.addEventListener('input', build));
+  document.querySelectorAll('input[name="dir"]').forEach(r => r.addEventListener('change', build));
+  $('reset').addEventListener('click', () => {
+    ctl.text.value = defaults.text; ctl.size.value = defaults.size; ctl.speed.value = defaults.speed;
+    document.querySelector(`input[name="dir"][value="${defaults.dir}"]`).checked = true;
+    build();
+  });
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => $('photo').setAttribute('href', reader.result);
+    reader.readAsDataURL(f);
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
+  build();
+})();
+</script>
+</html>

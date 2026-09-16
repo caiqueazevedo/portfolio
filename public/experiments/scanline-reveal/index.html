@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Scanline Reveal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  /* --scan is the animated value: the bar's position and the text's visible height read from it. */
+  @property --scan { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+  .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; container-type: inline-size; --scan: 0%; --beam: #c8f31d; --thick: 3px; }
+  .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1) contrast(1.1) brightness(.55); }
+  .stage .headline {
+    position: absolute; inset: 0; padding: 8% 7%; margin: 0;
+    font-family: var(--font-display); font-size: clamp(30px, 11cqw, 96px); line-height: .92; letter-spacing: .01em; text-transform: uppercase; color: #fff; white-space: pre-line;
+    clip-path: inset(0 0 calc(100% - var(--scan)) 0);
+  }
+  .stage .beam {
+    position: absolute; left: 0; right: 0; top: var(--scan); height: var(--thick); background: var(--beam);
+    box-shadow: 0 0 12px var(--beam), 0 0 40px var(--beam);
+  }
+  .stage.playing { animation: scan var(--dur, 3s) linear var(--count, infinite); }
+  @keyframes scan { from { --scan: 0%; } to { --scan: 100%; } }
+  @media (prefers-reduced-motion: reduce) {
+    .stage { --scan: 100%; animation: none !important; }
+    .stage .beam { display: none; }
+  }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  textarea { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); width: 100%; resize: vertical; min-height: 72px; text-transform: uppercase; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, textarea, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <div class="stage playing" id="stage">
+    <img id="img" src="photo.jpg" alt="">
+    <p class="headline" id="headline">Nothing
+hides
+from the
+scan</p>
+    <div class="beam"></div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Scanline Reveal</h1>
+      <p>Um feixe varre a foto de cima a baixo e a manchete acende linha a linha atrás dele.</p>
+    </div>
+    <div class="field">
+      <label for="text">Manchete (Enter quebra linha)</label>
+      <textarea id="text">Nothing
+hides
+from the
+scan</textarea>
+    </div>
+    <div class="field">
+      <label for="dur">Duração <output id="dur-out">3.0 s</output></label>
+      <input type="range" id="dur" min="1" max="8" step="0.5" value="3">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="thick">Espessura <output id="thick-out">3 px</output></label>
+        <input type="range" id="thick" min="1" max="12" step="1" value="3">
+      </div>
+      <div class="field"><label for="beam">Cor do feixe</label><input type="color" id="beam" value="#c8f31d"></div>
+    </div>
+    <label class="check"><input type="checkbox" id="loop" checked> Repetir</label>
+    <div class="row">
+      <button type="button" id="play">Reproduzir</button>
+      <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+    </div>
+    <p class="note">Uma propriedade CSS registrada com <code>@property</code> (<code>--scan</code>) é animada de 0% a 100%. O feixe usa o valor como <code>top</code>; a manchete usa como <code>clip-path: inset()</code>. Um único <code>@keyframes</code> move os dois. Com <code>prefers-reduced-motion</code> o texto aparece parado.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage');
+  const ctl = { text: $('text'), dur: $('dur'), thick: $('thick'), beam: $('beam'), loop: $('loop') };
+
+  function apply() {
+    $('headline').textContent = ctl.text.value;
+    stage.style.setProperty('--dur', ctl.dur.value + 's');
+    stage.style.setProperty('--thick', ctl.thick.value + 'px');
+    stage.style.setProperty('--beam', ctl.beam.value);
+    stage.style.setProperty('--count', ctl.loop.checked ? 'infinite' : '1');
+    $('dur-out').textContent = Number(ctl.dur.value).toFixed(1) + ' s';
+    $('thick-out').textContent = ctl.thick.value + ' px';
+  }
+
+  // Restart: drop the class, force a reflow so the browser forgets the old animation, add it back.
+  function play() {
+    stage.classList.remove('playing');
+    void stage.offsetWidth;
+    stage.classList.add('playing');
+  }
+
+  Object.values(ctl).forEach(el => el.addEventListener('input', apply));
+  ctl.loop.addEventListener('change', play);
+  $('play').addEventListener('click', play);
+  stage.addEventListener('animationend', () => { if (!ctl.loop.checked) stage.style.setProperty('--scan', '100%'); });
+  stage.addEventListener('animationstart', () => stage.style.removeProperty('--scan'));
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { $('img').src = reader.result; };
+    reader.readAsDataURL(f);
+  });
+  apply();
+})();
+</script>
+</html>

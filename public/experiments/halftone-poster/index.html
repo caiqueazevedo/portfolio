@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Halftone Poster</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; }
+  .stage canvas { display: block; width: 100%; height: 100%; }
+  .stage .caption { position: absolute; left: 6%; bottom: 5%; font-family: var(--font-display); font-size: clamp(28px, 9cqw, 72px); line-height: .9; letter-spacing: .02em; text-transform: uppercase; mix-blend-mode: difference; color: #fff; pointer-events: none; }
+  .stage { container-type: inline-size; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="out"></canvas>
+    <div class="caption">Raw<br>print</div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Halftone Poster</h1>
+      <p>A foto vira retícula de pontos, como jornal ou serigrafia. Ponto grande onde é escuro, pequeno onde é claro.</p>
+    </div>
+    <div class="field">
+      <label for="cell">Tamanho do ponto <output id="cell-out">10 px</output></label>
+      <input type="range" id="cell" min="4" max="24" step="1" value="10">
+    </div>
+    <div class="field">
+      <label for="angle">Ângulo da trama <output id="angle-out">15°</output></label>
+      <input type="range" id="angle" min="0" max="90" step="1" value="15">
+    </div>
+    <div class="field">
+      <label for="gain">Ganho de tinta <output id="gain-out">1.00</output></label>
+      <input type="range" id="gain" min="0.5" max="1.6" step="0.05" value="1">
+    </div>
+    <div class="row">
+      <div class="field"><label for="inkc">Tinta</label><input type="color" id="inkc" value="#0e0e0c"></div>
+      <div class="field"><label for="paper">Papel</label><input type="color" id="paper" value="#e9e6dd"></div>
+    </div>
+    <div class="row">
+      <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+    <p class="note">A imagem é lida com <code>getImageData</code> num canvas do tamanho do palco. Uma grade rotacionada percorre a foto; em cada célula a luminância média define o raio do círculo. Tudo no browser.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), out = $('out'), ctx = out.getContext('2d');
+  const src = document.createElement('canvas'), sctx = src.getContext('2d', { willReadFrequently: true });
+  const ctl = { cell: $('cell'), angle: $('angle'), gain: $('gain'), inkc: $('inkc'), paper: $('paper') };
+  const outs = { cell: $('cell-out'), angle: $('angle-out'), gain: $('gain-out') };
+  const defaults = { cell: 10, angle: 15, gain: 1, inkc: '#0e0e0c', paper: '#e9e6dd' };
+  const img = new Image();
+  let data = null, W = 0, H = 0;
+
+  // Draw the photo cover-fit into a working canvas and keep its pixels.
+  function sample() {
+    W = stage.clientWidth; H = stage.clientHeight;
+    src.width = out.width = W; src.height = out.height = H;
+    const r = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const w = img.naturalWidth * r, h = img.naturalHeight * r;
+    sctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+    data = sctx.getImageData(0, 0, W, H).data;
+  }
+
+  // Average luminance (0 = black, 1 = white) of a square cell centred on (x, y) in photo space.
+  function lum(x, y, size) {
+    const x0 = Math.max(0, Math.floor(x - size / 2)), y0 = Math.max(0, Math.floor(y - size / 2));
+    const x1 = Math.min(W, x0 + size), y1 = Math.min(H, y0 + size);
+    let sum = 0, n = 0;
+    for (let yy = y0; yy < y1; yy += 2) for (let xx = x0; xx < x1; xx += 2) {
+      const i = (yy * W + xx) * 4;
+      sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]; n++;
+    }
+    return n ? sum / n / 255 : 1;
+  }
+
+  function render() {
+    if (!data) return;
+    const cell = Number(ctl.cell.value), a = Number(ctl.angle.value) * Math.PI / 180, gain = Number(ctl.gain.value);
+    ctx.fillStyle = ctl.paper.value; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = ctl.inkc.value;
+    const cos = Math.cos(a), sin = Math.sin(a), D = Math.hypot(W, H) / 2;
+    // Walk a rotated lattice big enough to cover the diagonal; map each node back to photo space.
+    for (let gy = -D; gy < D; gy += cell) for (let gx = -D; gx < D; gx += cell) {
+      const px = W / 2 + gx * cos - gy * sin, py = H / 2 + gx * sin + gy * cos;
+      if (px < -cell || py < -cell || px > W + cell || py > H + cell) continue;
+      const radius = (1 - lum(px, py, cell)) * gain * cell / 2;
+      if (radius < 0.3) continue;
+      ctx.beginPath(); ctx.arc(px, py, Math.min(radius, cell * 0.75), 0, Math.PI * 2); ctx.fill();
+    }
+    outs.cell.textContent = cell + ' px';
+    outs.angle.textContent = ctl.angle.value + '°';
+    outs.gain.textContent = gain.toFixed(2);
+  }
+
+  Object.values(ctl).forEach(el => el.addEventListener('input', render));
+  window.addEventListener('resize', () => { sample(); render(); });
+  img.addEventListener('load', () => { sample(); render(); });
+  img.src = 'photo.jpg';
+
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { img.src = reader.result; };
+    reader.readAsDataURL(f);
+  });
+  $('reset').addEventListener('click', () => {
+    Object.entries(defaults).forEach(([k, v]) => { ctl[k].value = v; });
+    render();
+  });
+})();
+</script>
+</html>

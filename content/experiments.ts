@@ -52,4 +52,116 @@ export const experiments: Experiment[] = [
     background: "#e6e2db",
     sourceUrl: null,
   },
+  {
+    slug: "halftone-poster",
+    title: "Halftone Poster",
+    summary: {
+      pt: "A foto vira retícula de pontos, como jornal ou serigrafia. Tamanho do ponto, ângulo da trama e cores de tinta e papel.",
+      en: "The photo becomes a dot screen, like newsprint or silkscreen. Dot size, screen angle, ink and paper colours.",
+    },
+    technique: {
+      pt: "Canvas 2D lê a foto com getImageData; uma grade rotacionada percorre a imagem e, em cada célula, a luminância média vira o raio do círculo. Escuro = ponto grande.",
+      en: "A 2D canvas reads the photo with getImageData; a rotated lattice walks the image and, in each cell, the average luminance becomes the circle radius. Dark = big dot.",
+    },
+    tags: ["Canvas 2D", "Print", "Vanilla JS"],
+    height: 760,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "split-tone-duotone",
+    title: "Split Tone Duotone",
+    summary: {
+      pt: "Sombras numa cor, luzes em outra, com o meio-tom onde você quiser. Pares prontos e mistura com a cor original.",
+      en: "Shadows in one colour, highlights in another, midtone wherever you want it. Presets and a blend back to the original.",
+    },
+    technique: {
+      pt: "Um filtro SVG só: feColorMatrix tira a saturação e feComponentTransfer com type=\"table\" mapeia preto → sombra e branco → luz, com um terceiro ponto no meio-tom. Sem canvas.",
+      en: "One SVG filter: feColorMatrix removes saturation and feComponentTransfer with type=\"table\" maps black → shadow and white → highlight, with a third stop at the midtone. No canvas.",
+    },
+    tags: ["SVG filter", "Color", "CSS"],
+    height: 760,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "liquid-distortion",
+    title: "Liquid Distortion",
+    summary: {
+      pt: "A foto ondula como água onde o cursor passa e se acalma quando ele para. Quanto mais rápido o movimento, mais forte a onda.",
+      en: "The photo ripples like water where the cursor moves and settles when it stops. Faster movement, stronger wave.",
+    },
+    technique: {
+      pt: "Duas cópias da foto: a de cima passa por feTurbulence → feDisplacementMap e só aparece dentro de uma mask-image radial que segue o ponteiro. A velocidade vira energia, a energia vira scale do deslocamento e decai a cada frame.",
+      en: "Two copies of the photo: the top one goes through feTurbulence → feDisplacementMap and only shows inside a radial mask-image that follows the pointer. Speed becomes energy, energy becomes displacement scale and decays every frame.",
+    },
+    tags: ["SVG filter", "Pointer Events", "rAF"],
+    height: 760,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "scanline-reveal",
+    title: "Scanline Reveal",
+    summary: {
+      pt: "Um feixe varre a foto de cima a baixo e a manchete acende linha a linha atrás dele. Texto, duração e cor do feixe editáveis.",
+      en: "A beam sweeps the photo top to bottom and the headline lights up line by line behind it. Editable text, duration and beam colour.",
+    },
+    technique: {
+      pt: "Uma propriedade registrada com @property (--scan) é animada de 0% a 100%. O feixe usa o valor como top; a manchete usa como clip-path: inset(). Um @keyframes move os dois. Com prefers-reduced-motion o texto aparece parado.",
+      en: "A property registered with @property (--scan) animates from 0% to 100%. The beam uses it as top; the headline as clip-path: inset(). One @keyframes drives both. With prefers-reduced-motion the text shows still.",
+    },
+    tags: ["CSS @property", "clip-path", "Animation"],
+    height: 760,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "knockout-marquee",
+    title: "Knockout Marquee",
+    summary: {
+      pt: "Um texto gigante corre em loop e mostra a foto por dentro das letras. A foto fica parada; só a máscara anda.",
+      en: "A giant text runs in a loop and shows the photo inside the letters. The photo stays put; only the mask moves.",
+    },
+    technique: {
+      pt: "A <image> recebe mask=\"url(#knock)\" e a máscara é um <text> com o texto repetido. A Web Animations API desloca o texto exatamente uma repetição por ciclo, então o loop não pula.",
+      en: "The <image> gets mask=\"url(#knock)\" and the mask is a <text> with the text repeated. The Web Animations API shifts the text exactly one repetition per cycle, so the loop never jumps.",
+    },
+    tags: ["SVG mask", "Web Animations", "Typography"],
+    height: 640,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "torn-edge-collage",
+    title: "Torn Edge Collage",
+    summary: {
+      pt: "Recortes de papel rasgado colados sobre a foto em P&B. Arraste, gire, troque a cor do papel; cada rasgo é sorteado na hora.",
+      en: "Torn paper scraps stuck over the B&W photo. Drag, rotate, change the paper colour; every tear is generated on the spot.",
+    },
+    technique: {
+      pt: "Cada recorte é um clip-path: polygon() com pontos sorteados ao longo da borda; a fibra é um feTurbulence em data: URI com mix-blend-mode: multiply. A sombra é filter: drop-shadow, que acompanha o rasgo. Arrasto com Pointer Events.",
+      en: "Each scrap is a clip-path: polygon() with points jittered along the edge; the fibre is a feTurbulence data: URI with mix-blend-mode: multiply. The shadow is filter: drop-shadow, which follows the tear. Dragging via Pointer Events.",
+    },
+    tags: ["clip-path", "Pointer Events", "Raw Folio"],
+    height: 760,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "pixel-sort",
+    title: "Pixel Sort",
+    summary: {
+      pt: "Trechos da foto dentro de uma faixa de brilho são ordenados coluna a coluna. O glitch clássico, sem shader.",
+      en: "Runs of the photo inside a brightness window get sorted column by column. The classic glitch, no shader.",
+    },
+    technique: {
+      pt: "Canvas 2D e getImageData. Em cada coluna (ou linha), os pixels com brilho entre os dois limiares formam trechos contínuos; cada trecho é ordenado por brilho e escrito de volta com putImageData.",
+      en: "2D canvas and getImageData. In each column (or row), pixels with brightness between the two thresholds form contiguous runs; each run is sorted by brightness and written back with putImageData.",
+    },
+    tags: ["Canvas 2D", "Glitch", "Vanilla JS"],
+    height: 760,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
 ];

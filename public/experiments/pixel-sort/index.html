@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Pixel Sort</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; container-type: inline-size; }
+  .stage canvas { display: block; width: 100%; height: 100%; }
+  .stage .caption { position: absolute; left: 6%; bottom: 5%; font-family: var(--font-display); font-size: clamp(28px, 9cqw, 72px); line-height: .9; letter-spacing: .02em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; pointer-events: none; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: var(--ground); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="out"></canvas>
+    <div class="caption">Sort<br>it out</div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Pixel Sort</h1>
+      <p>Trechos da foto acima de um limiar de brilho são ordenados, coluna a coluna. O glitch clássico, sem shader.</p>
+    </div>
+    <div class="field">
+      <label for="lo">Limiar inferior <output id="lo-out">90</output></label>
+      <input type="range" id="lo" min="0" max="255" step="1" value="90">
+    </div>
+    <div class="field">
+      <label for="hi">Limiar superior <output id="hi-out">220</output></label>
+      <input type="range" id="hi" min="0" max="255" step="1" value="220">
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Direção">
+      <label><input type="radio" name="dir" value="v" checked><span>vertical</span></label>
+      <label><input type="radio" name="dir" value="h"><span>horizontal</span></label>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Ordem">
+      <label><input type="radio" name="order" value="asc" checked><span>escuro → claro</span></label>
+      <label><input type="radio" name="order" value="desc"><span>claro → escuro</span></label>
+    </div>
+    <div class="row">
+      <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+    <p class="note">Canvas 2D e <code>getImageData</code>. Em cada coluna (ou linha), os pixels com brilho entre os dois limiares formam "trechos" contínuos; cada trecho é ordenado por brilho e escrito de volta com <code>putImageData</code>. Tudo no browser.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), out = $('out'), ctx = out.getContext('2d', { willReadFrequently: true });
+  const ctl = { lo: $('lo'), hi: $('hi') };
+  const defaults = { lo: 90, hi: 220, dir: 'v', order: 'asc' };
+  const img = new Image();
+  let base = null, W = 0, H = 0, timer = 0;
+
+  const pick = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+
+  function sample() {
+    W = out.width = stage.clientWidth; H = out.height = stage.clientHeight;
+    const r = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const w = img.naturalWidth * r, h = img.naturalHeight * r;
+    ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+    base = ctx.getImageData(0, 0, W, H);
+  }
+
+  const bright = (d, i) => (d[i] + d[i + 1] + d[i + 2]) / 3;
+
+  function render() {
+    if (!base) return;
+    const lo = Math.min(Number(ctl.lo.value), Number(ctl.hi.value)), hi = Math.max(Number(ctl.lo.value), Number(ctl.hi.value));
+    const vertical = pick('dir') === 'v', desc = pick('order') === 'desc';
+    const src = base.data, frame = new ImageData(new Uint8ClampedArray(src), W, H), d = frame.data;
+    const lines = vertical ? W : H, len = vertical ? H : W;
+    const idx = vertical ? (line, k) => (k * W + line) * 4 : (line, k) => (line * W + k) * 4;
+
+    for (let line = 0; line < lines; line++) {
+      let k = 0;
+      while (k < len) {
+        // Find the next run of pixels inside the brightness window.
+        while (k < len && (bright(d, idx(line, k)) < lo || bright(d, idx(line, k)) > hi)) k++;
+        const start = k;
+        while (k < len && bright(d, idx(line, k)) >= lo && bright(d, idx(line, k)) <= hi) k++;
+        if (k - start < 2) continue;
+        const run = [];
+        for (let m = start; m < k; m++) { const i = idx(line, m); run.push([bright(d, i), d[i], d[i + 1], d[i + 2]]); }
+        run.sort((a, b) => desc ? b[0] - a[0] : a[0] - b[0]);
+        for (let m = start; m < k; m++) { const i = idx(line, m), p = run[m - start]; d[i] = p[1]; d[i + 1] = p[2]; d[i + 2] = p[3]; }
+      }
+    }
+    ctx.putImageData(frame, 0, 0);
+    $('lo-out').textContent = ctl.lo.value;
+    $('hi-out').textContent = ctl.hi.value;
+  }
+
+  // Sorting a full frame is a few milliseconds; debounce so slider drags stay smooth.
+  const schedule = () => { clearTimeout(timer); timer = setTimeout(render, 30); };
+
+  Object.values(ctl).forEach(el => el.addEventListener('input', schedule));
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', schedule));
+  window.addEventListener('resize', () => { sample(); render(); });
+  img.addEventListener('load', () => { sample(); render(); });
+  img.src = 'photo.jpg';
+
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { img.src = reader.result; };
+    reader.readAsDataURL(f);
+  });
+  $('reset').addEventListener('click', () => {
+    ctl.lo.value = defaults.lo; ctl.hi.value = defaults.hi;
+    document.querySelector(`input[name="dir"][value="${defaults.dir}"]`).checked = true;
+    document.querySelector(`input[name="order"][value="${defaults.order}"]`).checked = true;
+    render();
+  });
+})();
+</script>
+</html>

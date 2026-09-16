@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Split Tone Duotone</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; container-type: inline-size; }
+  .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* The whole effect is this one line: the filter below remaps luminance to two colours. */
+  .stage .toned { filter: url(#duotone); }
+  .stage .original { opacity: var(--mix, 0); }
+  .stage .caption { position: absolute; left: 6%; bottom: 5%; font-family: var(--font-display); font-size: clamp(28px, 9cqw, 72px); line-height: .9; letter-spacing: .02em; text-transform: uppercase; color: #fff; mix-blend-mode: overlay; pointer-events: none; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .presets button { padding: 0; height: 34px; border-radius: 4px; border: 1px solid var(--line); }
+  button, .upload { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; text-align: center; }
+  button:hover, .upload:hover { border-color: var(--accent); }
+  .upload input { display: none; }
+  :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+</style>
+
+<!-- Desaturate, then send each channel through a 3-point table: shadow → mid → highlight. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="duotone" color-interpolation-filters="sRGB">
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncR id="fr" type="table" tableValues="0 0.5 1"/>
+      <feFuncG id="fg" type="table" tableValues="0 0.5 1"/>
+      <feFuncB id="fb" type="table" tableValues="0 0.5 1"/>
+    </feComponentTransfer>
+  </filter>
+</svg>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <img class="toned" id="img-toned" src="photo.jpg" alt="Retrato em duotone">
+    <img class="original" id="img-orig" src="photo.jpg" alt="">
+    <div class="caption">Two<br>tones</div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Split Tone Duotone</h1>
+      <p>Sombras numa cor, luzes em outra. Escolha o par, ajuste onde fica o meio-tom.</p>
+    </div>
+    <div class="presets" id="presets" aria-label="Pares prontos"></div>
+    <div class="row">
+      <div class="field"><label for="shadow">Sombra</label><input type="color" id="shadow" value="#0e0e0c"></div>
+      <div class="field"><label for="light">Luz</label><input type="color" id="light" value="#c8f31d"></div>
+    </div>
+    <div class="field">
+      <label for="mid">Meio-tom <output id="mid-out">50%</output></label>
+      <input type="range" id="mid" min="10" max="90" step="1" value="50">
+    </div>
+    <div class="field">
+      <label for="mix">Cor original <output id="mix-out">0%</output></label>
+      <input type="range" id="mix" min="0" max="100" step="1" value="0">
+    </div>
+    <div class="row">
+      <label class="upload">Trocar foto<input type="file" id="file" accept="image/*"></label>
+      <button type="button" id="reset">Redefinir</button>
+    </div>
+    <p class="note">Um <code>&lt;filter&gt;</code> SVG: <code>feColorMatrix</code> tira a cor e <code>feComponentTransfer</code> com <code>type="table"</code> mapeia preto → sombra e branco → luz, com o meio-tom no ponto que você escolher. Nada de canvas.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const ctl = { shadow: $('shadow'), light: $('light'), mid: $('mid'), mix: $('mix') };
+  const fn = { r: $('fr'), g: $('fg'), b: $('fb') };
+  const defaults = { shadow: '#0e0e0c', light: '#c8f31d', mid: 50, mix: 0 };
+  const presets = [['#0e0e0c', '#c8f31d'], ['#1b1464', '#ff7a59'], ['#2b0a3d', '#ffd166'], ['#00303f', '#cae4db']];
+
+  const rgb = (hex) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+
+  function apply() {
+    const s = rgb(ctl.shadow.value), l = rgb(ctl.light.value), t = Number(ctl.mid.value) / 100;
+    // Three stops: black lands on the shadow colour, white on the light colour,
+    // and the middle stop slides the tonal balance.
+    ['r', 'g', 'b'].forEach((c, i) => {
+      const m = s[i] + (l[i] - s[i]) * (1 - t);
+      fn[c].setAttribute('tableValues', `${s[i]} ${m.toFixed(3)} ${l[i]}`);
+    });
+    $('stage').style.setProperty('--mix', Number(ctl.mix.value) / 100);
+    $('mid-out').textContent = ctl.mid.value + '%';
+    $('mix-out').textContent = ctl.mix.value + '%';
+  }
+
+  presets.forEach(([s, l]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.title = `${s} → ${l}`;
+    b.style.background = `linear-gradient(90deg, ${s}, ${l})`;
+    b.addEventListener('click', () => { ctl.shadow.value = s; ctl.light.value = l; apply(); });
+    $('presets').appendChild(b);
+  });
+
+  Object.values(ctl).forEach(el => el.addEventListener('input', apply));
+  $('reset').addEventListener('click', () => { Object.entries(defaults).forEach(([k, v]) => { ctl[k].value = v; }); apply(); });
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { $('img-toned').src = reader.result; $('img-orig').src = reader.result; };
+    reader.readAsDataURL(f);
+  });
+  apply();
+})();
+</script>
+</html>
