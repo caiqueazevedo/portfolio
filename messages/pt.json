@@ -65,7 +65,19 @@
     "metaDescription": "Sistemas que eu desenhei, construí e opero: identidade, social, desktop, observabilidade.",
     "kicker": "Cases",
     "title": "Seis sistemas, um responsável.",
-    "lead": "Cada um eu desenhei, construí e opero. Os três primeiros estão em uso todo dia."
+    "lead": "Cada um eu desenhei, construí e opero. Os três primeiros estão em uso todo dia.",
+    "filter": "Status",
+    "all": "Todos",
+    "featured": "Em destaque",
+    "others": "Outros sistemas",
+    "empty": "Nenhum case com esse status.",
+    "count": "{count} cases",
+    "stats": {
+      "production": "Em produção",
+      "systems": "Sistemas",
+      "techs": "Tecnologias",
+      "surfaces": "Superfícies"
+    }
   },
   "case": {
     "back": "← Voltar",

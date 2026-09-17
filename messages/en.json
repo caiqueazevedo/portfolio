@@ -65,7 +65,19 @@
     "metaDescription": "Systems I designed, built and operate: identity, social, desktop, observability.",
     "kicker": "Work",
     "title": "Six systems, one owner.",
-    "lead": "Each one I designed, built and operate. The first three are in use every day."
+    "lead": "Each one I designed, built and operate. The first three are in use every day.",
+    "filter": "Status",
+    "all": "All",
+    "featured": "Featured",
+    "others": "Other systems",
+    "empty": "No case with this status.",
+    "count": "{count} cases",
+    "stats": {
+      "production": "In production",
+      "systems": "Systems",
+      "techs": "Technologies",
+      "surfaces": "Surfaces"
+    }
   },
   "case": {
     "back": "← Back",
