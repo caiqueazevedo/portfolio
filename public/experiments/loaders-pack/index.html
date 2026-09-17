@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Loaders Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ---------- Stage: a grid of specimens ---------- */
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --size: 48px; --speed: 1s; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(150px, 1fr) auto; min-width: 0; transition: background .2s, color .2s; }
+  .grid.light .cell { background: #e9e6dd; color: #0e0e0c; }
+  @media (min-width: 560px) { .cell.wide { grid-column: span 2; } }
+  .demo { display: grid; place-items: center; padding: 24px 12px; min-width: 0; overflow: hidden; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent); font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .grid.light figcaption b { color: #0e0e0c; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 22%, transparent); border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .grid { --speed: 3s !important; } }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; border: 0; --size: 38px; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell:nth-child(n+7), html.card figcaption { display: none; }
+  html.card .demo { padding: 8px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Loaders Pack</h1>
+      <p>Doze indicadores de carregamento em CSS puro. Cada um copia sozinho, com as próprias variáveis de cor, tamanho e velocidade.</p>
+    </div>
+    <div class="field"><label for="accent">Cor</label><input type="color" id="accent" value="#c8f31d"></div>
+    <div class="field">
+      <label for="size">Tamanho <output id="size-out">48 px</output></label>
+      <input type="range" id="size" min="20" max="96" step="2" value="48">
+    </div>
+    <div class="field">
+      <label for="speed">Ciclo base <output id="speed-out">1,0 s</output></label>
+      <input type="range" id="speed" min="0.3" max="3" step="0.1" value="1">
+    </div>
+    <label class="check"><input type="checkbox" id="light"> Fundo claro</label>
+    <p class="note">Tudo parte de três variáveis: <code>--accent</code>, <code>--size</code> e <code>--speed</code>. As medidas internas são em <code>em</code> sobre um <code>font-size</code> igual ao tamanho, então o loader escala inteiro com uma linha. Cada peça tem <code>role="status"</code> e um rótulo; na região que está carregando, use <code>aria-busy="true"</code>. Com <code>prefers-reduced-motion</code> o ciclo fica 3× mais lento, em vez de parar — um loader parado parece travado.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)', S = 'var(--speed, 1s)';
+
+  const ITEMS = [
+    {
+      name: 'Órbita dupla', sel: '.ld-orbit',
+      html: `<div class="ld-orbit" role="status" aria-label="Carregando"><i></i><i></i></div>`,
+      css: `
+.ld-orbit { position: relative; width: 1em; height: 1em; font-size: var(--size, 48px); }
+.ld-orbit::before, .ld-orbit::after { content: ""; position: absolute; border-radius: 50%; }
+.ld-orbit::before { inset: 0; border: .05em solid color-mix(in srgb, ${A} 28%, transparent); }
+.ld-orbit::after { inset: .24em; border: .03em dashed color-mix(in srgb, currentColor 30%, transparent); }
+.ld-orbit i { position: absolute; inset: 0; animation: ld-orbit calc(${S} * 1.2) linear infinite; }
+.ld-orbit i::before { content: ""; position: absolute; left: 50%; top: -.075em; width: .2em; height: .2em; margin-left: -.1em; border-radius: 50%; background: ${A}; }
+.ld-orbit i + i { inset: .24em; animation-direction: reverse; animation-duration: calc(${S} * .8); }
+.ld-orbit i + i::before { width: .13em; height: .13em; margin-left: -.065em; top: -.05em; background: currentColor; }
+@keyframes ld-orbit { to { transform: rotate(1turn); } }`,
+    },
+    {
+      name: 'Equalizador', sel: '.ld-eq',
+      html: `<div class="ld-eq" role="status" aria-label="Carregando"><i></i><i></i><i></i><i></i><i></i></div>`,
+      css: `
+.ld-eq { display: flex; align-items: center; gap: .08em; height: 1em; font-size: var(--size, 48px); }
+.ld-eq i { width: .12em; height: 100%; border-radius: .06em; background: ${A}; transform: scaleY(.25); animation: ld-eq calc(${S} * .9) ease-in-out infinite; }
+/* Uneven offsets read as music; even ones read as a wave. */
+.ld-eq i:nth-child(1) { animation-delay: calc(${S} * -.72); }
+.ld-eq i:nth-child(2) { animation-delay: calc(${S} * -.18); }
+.ld-eq i:nth-child(3) { animation-delay: calc(${S} * -.55); }
+.ld-eq i:nth-child(4) { animation-delay: calc(${S} * -.05); animation-duration: calc(${S} * 1.1); }
+.ld-eq i:nth-child(5) { animation-delay: calc(${S} * -.38); }
+@keyframes ld-eq { 0%, 100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }`,
+    },
+    {
+      name: 'Anel em gomos', sel: '.ld-seg',
+      html: `<div class="ld-seg" role="status" aria-label="Carregando"></div>`,
+      css: `
+.ld-seg { width: 1em; height: 1em; font-size: var(--size, 48px); border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 10%, ${A});
+  -webkit-mask: repeating-conic-gradient(#000 0 22deg, transparent 22deg 30deg), radial-gradient(closest-side, transparent 58%, #000 60%);
+  -webkit-mask-composite: source-in;
+  mask: repeating-conic-gradient(#000 0 22deg, transparent 22deg 30deg), radial-gradient(closest-side, transparent 58%, #000 60%);
+  mask-composite: intersect;
+  animation: ld-seg calc(${S} * 1.2) steps(12) infinite; }
+@keyframes ld-seg { to { transform: rotate(1turn); } }`,
+    },
+    {
+      name: 'Ladrilhos', sel: '.ld-tiles',
+      html: `<div class="ld-tiles" role="status" aria-label="Carregando"><i></i><i></i><i></i><i></i></div>`,
+      css: `
+.ld-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: .08em; width: 1em; height: 1em; font-size: var(--size, 48px); perspective: 3em; }
+.ld-tiles i { background: ${A}; animation: ld-tiles calc(${S} * 1.6) ease-in-out infinite; }
+/* Clockwise: top-left, top-right, bottom-right, bottom-left. */
+.ld-tiles i:nth-child(2) { animation-delay: calc(${S} * .2); }
+.ld-tiles i:nth-child(4) { animation-delay: calc(${S} * .4); }
+.ld-tiles i:nth-child(3) { animation-delay: calc(${S} * .6); }
+@keyframes ld-tiles {
+  0%, 10% { transform: rotateY(0); opacity: 1; }
+  35%, 60% { transform: rotateY(180deg); opacity: .25; }
+  85%, 100% { transform: rotateY(360deg); opacity: 1; }
+}`,
+    },
+    {
+      name: 'Sonar', sel: '.ld-pulse',
+      html: `<div class="ld-pulse" role="status" aria-label="Carregando"><i></i><i></i></div>`,
+      css: `
+.ld-pulse { position: relative; width: 1em; height: 1em; font-size: var(--size, 48px); }
+.ld-pulse::before { content: ""; position: absolute; inset: .38em; border-radius: 50%; background: ${A}; }
+.ld-pulse i { position: absolute; inset: 0; border-radius: 50%; border: .04em solid ${A}; opacity: 0; animation: ld-pulse calc(${S} * 1.8) cubic-bezier(.2, .6, .3, 1) infinite; }
+.ld-pulse i + i { animation-delay: calc(${S} * .9); }
+@keyframes ld-pulse { 0% { transform: scale(.3); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }`,
+    },
+    {
+      name: 'Digitando', sel: '.ld-typing',
+      html: `<div class="ld-typing" role="status" aria-label="Digitando"><i></i><i></i><i></i></div>`,
+      css: `
+.ld-typing { display: flex; gap: .1em; align-items: flex-end; height: .6em; font-size: var(--size, 48px); }
+.ld-typing i { width: .16em; height: .16em; border-radius: .08em; background: ${A}; animation: ld-typing calc(${S} * 1.1) ease-in-out infinite; }
+.ld-typing i:nth-child(2) { animation-delay: calc(${S} * .14); }
+.ld-typing i:nth-child(3) { animation-delay: calc(${S} * .28); }
+/* Squash on take-off, stretch in the air: reads as a hop, not a slide. */
+@keyframes ld-typing {
+  0%, 60%, 100% { height: .16em; transform: translateY(0); }
+  15% { height: .1em; transform: translateY(0); }
+  30% { height: .26em; transform: translateY(-.26em); }
+  45% { height: .16em; transform: translateY(-.1em); }
+}`,
+    },
+    {
+      name: 'Trilho quadrado', sel: '.ld-track',
+      html: `<svg class="ld-track" viewBox="0 0 50 50" role="status" aria-label="Carregando"><rect class="ld-track-bg" x="5" y="5" width="40" height="40" rx="11" pathLength="100"/><rect x="5" y="5" width="40" height="40" rx="11" pathLength="100"/></svg>`,
+      css: `
+.ld-track { width: var(--size, 48px); height: var(--size, 48px); overflow: visible; }
+.ld-track rect { fill: none; stroke: ${A}; stroke-width: 5; stroke-linecap: round; animation: ld-track calc(${S} * 1.6) cubic-bezier(.5, 0, .5, 1) infinite; }
+.ld-track .ld-track-bg { stroke: color-mix(in srgb, ${A} 16%, transparent); animation: none; }
+/* The dash grows while it travels, then shrinks: one lap per cycle. */
+@keyframes ld-track {
+  0% { stroke-dasharray: 4 96; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 46 54; stroke-dashoffset: -30; }
+  100% { stroke-dasharray: 4 96; stroke-dashoffset: -100; }
+}`,
+    },
+    {
+      name: 'Ampulheta', sel: '.ld-glass',
+      html: `<div class="ld-glass" role="status" aria-label="Carregando"></div>`,
+      css: `
+.ld-glass { position: relative; width: .62em; height: 1em; font-size: var(--size, 48px); animation: ld-glass-flip calc(${S} * 2.4) cubic-bezier(.6, 0, .3, 1) infinite; }
+.ld-glass::before, .ld-glass::after { content: ""; position: absolute; left: 0; right: 0; height: 50%;
+  background: linear-gradient(${A} 0 0) bottom / 100% 100% no-repeat, color-mix(in srgb, currentColor 16%, transparent); }
+.ld-glass::before { top: 0; clip-path: polygon(0 0, 100% 0, 54% 100%, 46% 100%); animation: ld-glass-top calc(${S} * 2.4) linear infinite; }
+.ld-glass::after { bottom: 0; clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); animation: ld-glass-bottom calc(${S} * 2.4) linear infinite; }
+@keyframes ld-glass-top { 0% { background-size: 100% 100%, auto; } 80%, 100% { background-size: 100% 0%, auto; } }
+@keyframes ld-glass-bottom { 0% { background-size: 100% 0%, auto; } 80%, 100% { background-size: 100% 100%, auto; } }
+/* Turning over at the end swaps the full and empty halves, so the loop is seamless. */
+@keyframes ld-glass-flip { 0%, 80% { transform: rotate(0); } 100% { transform: rotate(180deg); } }`,
+    },
+    {
+      name: 'Espiral de pixels', sel: '.ld-pixels',
+      html: `<div class="ld-pixels" role="status" aria-label="Carregando"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>`,
+      css: `
+.ld-pixels { display: grid; grid-template-columns: repeat(3, 1fr); gap: .06em; width: 1em; height: 1em; font-size: var(--size, 48px); }
+.ld-pixels i { background: ${A}; opacity: .12; animation: ld-pixels calc(${S} * 1.8) ease-out infinite; }
+/* Spiral order through a 3×3 grid: 1 2 3 6 9 8 7 4 5. */
+.ld-pixels i:nth-child(2) { animation-delay: calc(${S} * .1); }
+.ld-pixels i:nth-child(3) { animation-delay: calc(${S} * .2); }
+.ld-pixels i:nth-child(6) { animation-delay: calc(${S} * .3); }
+.ld-pixels i:nth-child(9) { animation-delay: calc(${S} * .4); }
+.ld-pixels i:nth-child(8) { animation-delay: calc(${S} * .5); }
+.ld-pixels i:nth-child(7) { animation-delay: calc(${S} * .6); }
+.ld-pixels i:nth-child(4) { animation-delay: calc(${S} * .7); }
+.ld-pixels i:nth-child(5) { animation-delay: calc(${S} * .8); }
+@keyframes ld-pixels { 0% { opacity: .12; } 8% { opacity: 1; } 45%, 100% { opacity: .12; } }`,
+    },
+    {
+      name: 'Pêndulo de Newton', sel: '.ld-cradle',
+      html: `<div class="ld-cradle" role="status" aria-label="Carregando"><i></i><i></i><i></i><i></i><i></i></div>`,
+      css: `
+.ld-cradle { display: flex; height: 1em; padding: 0 .12em; font-size: var(--size, 48px); border-top: .035em solid color-mix(in srgb, currentColor 45%, transparent); }
+.ld-cradle i { position: relative; width: .17em; height: .82em; transform-origin: 50% 0;
+  background: linear-gradient(color-mix(in srgb, currentColor 45%, transparent) 0 0) center top / .018em calc(100% - .17em) no-repeat; }
+.ld-cradle i::after { content: ""; position: absolute; left: 0; bottom: 0; width: .17em; height: .17em; border-radius: 50%; background: ${A}; }
+.ld-cradle i:first-child { animation: ld-cradle-l calc(${S} * 1.2) infinite; }
+.ld-cradle i:last-child { animation: ld-cradle-r calc(${S} * 1.2) infinite; }
+/* Each end ball swings out and falls back while the other rests. */
+@keyframes ld-cradle-l {
+  0% { transform: rotate(0); animation-timing-function: cubic-bezier(.2, .6, .4, 1); }
+  25% { transform: rotate(38deg); animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  50%, 100% { transform: rotate(0); }
+}
+@keyframes ld-cradle-r {
+  0%, 50% { transform: rotate(0); animation-timing-function: cubic-bezier(.2, .6, .4, 1); }
+  75% { transform: rotate(-38deg); animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  100% { transform: rotate(0); }
+}`,
+    },
+    {
+      name: 'Barra pingue-pongue', sel: '.ld-bar', wide: false,
+      html: `<div class="ld-bar" role="progressbar" aria-label="Carregando"></div>`,
+      css: `
+.ld-bar { position: relative; width: 2.6em; height: .1em; font-size: var(--size, 48px); overflow: hidden; border-radius: .05em;
+  background: repeating-linear-gradient(90deg, color-mix(in srgb, ${A} 22%, transparent) 0 .1em, transparent .1em .16em); }
+/* The block stretches in the middle of its run and compresses at the walls. */
+.ld-bar::before { content: ""; position: absolute; top: 0; bottom: 0; border-radius: inherit; background: ${A};
+  animation: ld-bar calc(${S} * .9) cubic-bezier(.5, 0, .5, 1) infinite alternate; }
+@keyframes ld-bar { 0% { left: 0; width: 6%; } 50% { left: 30%; width: 40%; } 100% { left: 94%; width: 6%; } }`,
+    },
+    {
+      name: 'Relógio', sel: '.ld-clock',
+      html: `<div class="ld-clock" role="status" aria-label="Carregando"></div>`,
+      css: `
+.ld-clock { position: relative; width: 1em; height: 1em; font-size: var(--size, 48px); border-radius: 50%; border: .06em solid ${A}; }
+.ld-clock::before, .ld-clock::after { content: ""; position: absolute; left: calc(50% - .03em); bottom: 50%; width: .06em; border-radius: .03em; transform-origin: 50% 100%; }
+.ld-clock::before { height: .34em; background: currentColor; animation: ld-clock calc(${S} * .8) linear infinite; }
+/* The hour hand runs twelve times slower than the minute hand. */
+.ld-clock::after { height: .22em; background: ${A}; animation: ld-clock calc(${S} * 9.6) linear infinite; }
+@keyframes ld-clock { to { transform: rotate(1turn); } }`,
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>';
+  function snippet(it) {
+    return `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.wide ? ' wide' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  $('size').addEventListener('input', () => { grid.style.setProperty('--size', $('size').value + 'px'); $('size-out').textContent = $('size').value + ' px'; });
+  $('speed').addEventListener('input', () => { grid.style.setProperty('--speed', $('speed').value + 's'); $('speed-out').textContent = Number($('speed').value).toFixed(1).replace('.', ',') + ' s'; });
+  $('light').addEventListener('change', () => grid.classList.toggle('light', $('light').checked));
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    // Hover speeds everything up, so the card answers the pointer.
+    stage.addEventListener('pointerenter', () => grid.style.setProperty('--speed', '.5s'));
+    stage.addEventListener('pointerleave', () => grid.style.setProperty('--speed', '1s'));
+  }
+})();
+</script>
+</html>

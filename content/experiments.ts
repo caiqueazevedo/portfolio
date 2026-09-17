@@ -4,7 +4,7 @@ import type { Localized } from "./localized";
  * Open-source experiments: self-contained demo pages served from `public/experiments/<slug>/`
  * and embedded live on the open-source page, source shown beside them.
  */
-export type Category = "images" | "typography" | "interaction" | "data" | "security" | "media";
+export type Category = "images" | "typography" | "interaction" | "data" | "security" | "media" | "kits";
 
 export type Experiment = {
   slug: string;
@@ -670,6 +670,186 @@ export const experiments: Experiment[] = [
     },
     tags: ["Canvas 2D", "Pointer Events", "File API"],
     height: 780,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "loaders-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:00:00-03:00",
+    title: "Loaders Pack",
+    summary: {
+      pt: "Doze indicadores de carregamento em CSS puro: órbita, equalizador, gomos, ampulheta, pêndulo, relógio. Cor, tamanho e ritmo por variável.",
+      en: "Twelve pure-CSS loading indicators: orbit, equaliser, segments, hourglass, cradle, clock. Colour, size and pace through variables.",
+    },
+    technique: {
+      pt: "Cada loader mede tudo em em sobre um font-size igual a --size, então escala inteiro com uma variável; --speed multiplica todas as durações. Máscaras cônicas cortam o anel em gomos, e a ampulheta vira no fim do ciclo para trocar as metades sem emenda.",
+      en: "Each loader sizes everything in em over a font-size equal to --size, so one variable scales it whole; --speed multiplies every duration. Conic masks cut the ring into segments, and the hourglass flips at the end of its cycle to swap halves seamlessly.",
+    },
+    tags: ["CSS", "Animation", "Kit"],
+    height: 820,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "button-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:05:00-03:00",
+    title: "Button Pack",
+    summary: {
+      pt: "Doze botões com comportamento: carregar e confirmar, segurar para excluir, deslizar para pagar, copiar, curtir, bloqueado com motivo.",
+      en: "Twelve buttons with behaviour: load then confirm, hold to delete, slide to pay, copy, like, disabled with a reason.",
+    },
+    technique: {
+      pt: "Todos são botões nativos (ou role=\"slider\") e guardam o estado em data-state, que o CSS lê. O de segurar enche com uma variável atualizada por rAF e aceita espaço pressionado; o bloqueado usa aria-disabled para continuar focável e explicar por quê.",
+      en: "All are native buttons (or role=\"slider\") and keep state in data-state, which CSS reads. The hold button fills through a variable driven by rAF and accepts a held space key; the blocked one uses aria-disabled so it stays focusable and can explain why.",
+    },
+    tags: ["Buttons", "a11y", "Kit"],
+    height: 860,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "toggle-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:10:00-03:00",
+    title: "Toggle Pack",
+    summary: {
+      pt: "Switches, checkboxes e radios com personalidade — dia e noite, planos em cartão, estrelas, chips — sempre sobre inputs nativos.",
+      en: "Switches, checkboxes and radios with character — day and night, plan cards, stars, chips — always on native inputs.",
+    },
+    technique: {
+      pt: "O input real fica invisível mas presente, e o visual é o irmão seguinte, estilizado por input:checked + i. Onde não há irmão, entra label:has(input:checked). As estrelas mantêm a ordem 1 → 5 no DOM para as setas andarem certo. JS só no \"selecionar todos\" indeterminado e no switch que salva no servidor.",
+      en: "The real input stays invisible but present, and the visual is its next sibling, styled by input:checked + i. Where there is no sibling, label:has(input:checked) takes over. Stars keep 1 → 5 DOM order so arrow keys go the right way. JS only for the indeterminate select-all and the switch that saves to a server.",
+    },
+    tags: [":has()", "Forms", "Kit"],
+    height: 820,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "toast-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:15:00-03:00",
+    title: "Toast Pack",
+    summary: {
+      pt: "Sistema de notificações completo: pilha que expande, seis posições, pausa no hover, arrastar para dispensar, desfazer e estados de promise.",
+      en: "A complete notification system: an expanding stack, six positions, pause on hover, swipe to dismiss, undo and promise states.",
+    },
+    technique: {
+      pt: "Recolhida, a pilha é um baralho; no hover cada toast desce pela soma das alturas dos anteriores. A entrada usa @starting-style, sem timing em JS. A barra de vida é animação CSS pausada junto com o timer, e leitores de tela ouvem por duas regiões aria-live fixas.",
+      en: "Collapsed, the stack is a deck; on hover each toast moves down by the heights above it. Entry uses @starting-style, with no JS timing. The life bar is a CSS animation paused together with the timer, and screen readers hear through two fixed aria-live regions.",
+    },
+    tags: ["Notifications", "a11y", "Kit"],
+    height: 720,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "field-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:20:00-03:00",
+    title: "Field Pack",
+    summary: {
+      pt: "Doze campos de formulário: telefone e moeda com máscara, OTP, tags, upload, senha com Caps Lock, e-mail que corrige domínio.",
+      en: "Twelve form fields: masked phone and currency, OTP, tags, upload, password with Caps Lock warning, email that fixes domain typos.",
+    },
+    technique: {
+      pt: "A máscara de telefone conta os dígitos antes do cursor e o devolve ao mesmo ponto depois de formatar. A de moeda intercepta beforeinput e trabalha em centavos inteiros. O e-mail compara o domínio com os mais comuns por distância de edição. Contadores só falam com leitor de tela ao cruzar um limite.",
+      en: "The phone mask counts digits before the caret and puts it back at the same spot after formatting. The currency one intercepts beforeinput and works in integer cents. The email field compares the domain with common ones by edit distance. Counters only speak to screen readers when crossing a threshold.",
+    },
+    tags: ["Forms", "Input masks", "Kit"],
+    height: 900,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "overlay-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:25:00-03:00",
+    title: "Overlay Pack",
+    summary: {
+      pt: "Confirmação, exclusão digitando o nome, gaveta, popover, tooltip, menu de contexto, combobox, lightbox, banner de cookies e tour guiado.",
+      en: "Confirm, type-the-name delete, drawer, popover, tooltip, context menu, combobox, lightbox, cookie banner and guided tour.",
+    },
+    technique: {
+      pt: "Modais são <dialog> com showModal(), e o popover usa o atributo popover; entrada e saída animam com @starting-style e allow-discrete. O combobox mantém o foco no campo e anda pela lista com aria-activedescendant. O tour é um único elemento cuja sombra gigante escurece o resto.",
+      en: "Modals are <dialog> with showModal(), and the popover uses the popover attribute; enter and exit animate with @starting-style and allow-discrete. The combobox keeps focus in the input and walks the list with aria-activedescendant. The tour is a single element whose giant shadow darkens everything else.",
+    },
+    tags: ["dialog", "popover", "Kit"],
+    height: 900,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "skeleton-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:30:00-03:00",
+    title: "Skeleton Pack",
+    summary: {
+      pt: "Dez telas de carregamento no formato do conteúdo real — artigo, lista, tabela, perfil, chat, produto, vídeo — para a página não pular.",
+      en: "Ten loading screens shaped like the real content — article, list, table, profile, chat, product, video — so the page never jumps.",
+    },
+    technique: {
+      pt: "A onda usa background-attachment: fixed, então todas as barras brilham em sincronia, como uma luz passando. Esqueleto e conteúdo ocupam a mesma célula de grid e trocam por aria-busy, que também avisa o leitor de tela.",
+      en: "The wave uses background-attachment: fixed, so every bar shimmers in sync, like a light passing over. Skeleton and content share one grid cell and swap on aria-busy, which also informs screen readers.",
+    },
+    tags: ["Loading states", "CSS", "Kit"],
+    height: 860,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "progress-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:35:00-03:00",
+    title: "Progress Pack",
+    summary: {
+      pt: "Barra, gomos, anel, medidor, etapas do checkout, upload com tempo restante, leitura, meta, sessão expirando e rastreio de pedido.",
+      en: "Bar, segments, ring, gauge, checkout steps, upload with time left, reading, goal, expiring session and order tracking.",
+    },
+    technique: {
+      pt: "Usa <progress> e <ol> com aria-current onde existem; o resto é role=\"progressbar\" com aria-valuetext legível. A barra de leitura é animation-timeline: scroll(). O upload estima o tempo restante por média móvel exponencial, para o número não saltar a cada pacote.",
+      en: "Uses <progress> and <ol> with aria-current where they exist; the rest is role=\"progressbar\" with a readable aria-valuetext. The reading bar is animation-timeline: scroll(). The upload estimates time left with an exponential moving average, so the number does not jump on every chunk.",
+    },
+    tags: ["Progress", "scroll-timeline", "Kit"],
+    height: 900,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "avatar-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:40:00-03:00",
+    title: "Avatar Pack",
+    summary: {
+      pt: "Iniciais com cor estável, presença, grupo com +N, story, foto com fallback, sino com contador, badges, destinatários e hovercard.",
+      en: "Stable-colour initials, presence, +N group, story ring, photo fallback, bell counter, badges, recipients and hover card.",
+    },
+    technique: {
+      pt: "A cor vem de um hash FNV-1a do nome, em oklch com luminosidade fixa: mesma pessoa, mesma cor, mesmo contraste. Presença nunca depende só da cor — cada status tem um formato. Foto quebrada vira iniciais no mesmo lugar, sem mexer no layout.",
+      en: "Colour comes from an FNV-1a hash of the name, in oklch with fixed lightness: same person, same colour, same contrast. Presence never relies on colour alone — each status has a shape. A broken photo becomes initials in the same box, without moving the layout.",
+    },
+    tags: ["oklch", "a11y", "Kit"],
+    height: 860,
+    background: "#0b0d10",
+    sourceUrl: null,
+  },
+  {
+    slug: "nav-pack",
+    category: "kits",
+    createdAt: "2026-09-16T18:45:00-03:00",
+    title: "Nav Pack",
+    summary: {
+      pt: "Abas, trilha que recolhe, paginação, carregar mais, menu lateral, barra inferior, hambúrguer, scroll-spy, submenu e link de pular conteúdo.",
+      en: "Tabs, collapsing breadcrumb, pagination, load more, sidebar, bottom bar, hamburger, scroll-spy, submenu and skip link.",
+    },
+    technique: {
+      pt: "Abas com o padrão ARIA completo (setas, Home, End, tabindex itinerante). Paginação com sete posições fixas, para os botões não pularem. A trilha recolhe por @container, e o scroll-spy marca a última seção que cruzou uma linha a 30% do topo, rolando só o próprio contêiner.",
+      en: "Tabs with the full ARIA pattern (arrows, Home, End, roving tabindex). Pagination with seven fixed slots, so buttons never jump. The breadcrumb collapses through @container, and the scroll-spy marks the last section past a line 30% from the top, scrolling only its own container.",
+    },
+    tags: ["Navigation", "@container", "Kit"],
+    height: 900,
     background: "#0b0d10",
     sourceUrl: null,
   },

@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Nav Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --radius: 8px; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(190px, 1fr) auto; min-width: 0; }
+  @media (min-width: 600px) { .cell.wide { grid-column: span 2; } }
+  .cell:has([aria-expanded="true"], details[open]) { position: relative; z-index: 2; }
+  .demo { display: grid; place-items: center; padding: 22px 16px; min-width: 0; }
+  .demo > * { width: 100%; max-width: 30rem; min-width: 0; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  .panel input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .panel input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .panel :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: 1fr .7fr 1.4fr; border: 0; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell.wide { grid-column: span 2; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .demo { padding: 8px; }
+  html.card .demo > * { zoom: .78; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Nav Pack</h1>
+      <p>Abas, trilha que recolhe, paginação, carregar mais, menu lateral, barra inferior, hambúrguer, índice com scroll-spy, submenu e link de pular conteúdo.</p>
+    </div>
+    <div class="field"><label for="accent">Cor de destaque</label><input type="color" id="accent" value="#c8f31d"></div>
+    <div class="field">
+      <label for="radius">Cantos <output id="radius-out">8 px</output></label>
+      <input type="range" id="radius" min="0" max="20" step="1" value="8">
+    </div>
+    <p class="note">As abas seguem o padrão ARIA de verdade: setas, Home e End, <code>tabindex</code> itinerante e um só ponto de tabulação. A paginação tem sempre sete posições, então os botões não pulam de lugar ao avançar. A trilha recolhe por <code>@container</code>, sem medir nada em JS. O scroll-spy marca a última seção que cruzou uma linha a 30% do topo do próprio contêiner, e clicar no índice rola só esse contêiner — nunca a página em volta.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 8px)';
+  const FONT = 'font: 14px/1.4 system-ui, sans-serif; color: #e9e6dd;';
+  const FOCUS = (s) => `${s} :focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }`;
+  const T = (g) => g + '\uFE0E'; // text presentation, never emoji
+
+  const ITEMS = [
+    {
+      name: 'Abas com indicador', sel: '.nv-tabs', card: true, wide: true,
+      html: `<div class="nv-tabs"><div role="tablist" aria-label="Configurações"><button role="tab" id="nv-t1" aria-controls="nv-p1" aria-selected="true">Conta</button><button role="tab" id="nv-t2" aria-controls="nv-p2" aria-selected="false" tabindex="-1">Notificações</button><button role="tab" id="nv-t3" aria-controls="nv-p3" aria-selected="false" tabindex="-1">Faturamento</button><button role="tab" id="nv-t4" aria-controls="nv-p4" aria-selected="false" tabindex="-1">Equipe</button><span class="nv-tabs-ink" aria-hidden="true"></span></div><div role="tabpanel" id="nv-p1" aria-labelledby="nv-t1" tabindex="0">Nome, e-mail e senha da sua conta.</div><div role="tabpanel" id="nv-p2" aria-labelledby="nv-t2" tabindex="0" hidden>Escolha o que chega por e-mail e por push.</div><div role="tabpanel" id="nv-p3" aria-labelledby="nv-t3" tabindex="0" hidden>Plano Pro · próxima cobrança em 03/10.</div><div role="tabpanel" id="nv-p4" aria-labelledby="nv-t4" tabindex="0" hidden>4 pessoas · 2 convites pendentes.</div></div>`,
+      css: `
+.nv-tabs { ${FONT} }
+.nv-tabs [role="tablist"] { position: relative; display: flex; gap: .2em; border-bottom: 1px solid #2a2f37; overflow-x: auto; scrollbar-width: none; }
+.nv-tabs [role="tab"] { flex: none; padding: .75em .9em; border: 0; background: none; color: #8a94a0; font: 600 .92em/1 system-ui, sans-serif; cursor: pointer; transition: color .2s; }
+.nv-tabs [role="tab"]:hover, .nv-tabs [aria-selected="true"] { color: #e9e6dd; }
+.nv-tabs-ink { position: absolute; left: 0; bottom: 0; height: 2px; width: 0; background: ${A}; transition: transform .3s cubic-bezier(.5, 0, .2, 1), width .3s cubic-bezier(.5, 0, .2, 1); }
+.nv-tabs [role="tabpanel"] { padding: 1em .2em 0; color: #c9ced4; animation: nv-fade .25s ease-out; }
+${FOCUS('.nv-tabs')}
+@keyframes nv-fade { from { opacity: 0; transform: translateY(4px); } }`,
+      // Automatic activation: arrows move and select together; only the selected tab is in the tab order.
+      js: function (root) {
+        const list = root.querySelector('[role="tablist"]'), ink = root.querySelector('.nv-tabs-ink');
+        const tabs = [...root.querySelectorAll('[role="tab"]')], panels = tabs.map((t) => root.querySelector('#' + t.getAttribute('aria-controls')));
+        const current = () => tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+        const select = (i, focus) => {
+          tabs.forEach((t, k) => { const on = k === i; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; panels[k].hidden = !on; });
+          const t = tabs[i];
+          ink.style.width = `${t.offsetWidth}px`;
+          ink.style.transform = `translateX(${t.offsetLeft}px)`;
+          // Keep the tab visible inside a scrolling list, without touching any other scroller.
+          if (t.offsetLeft < list.scrollLeft) list.scrollLeft = t.offsetLeft;
+          else if (t.offsetLeft + t.offsetWidth > list.scrollLeft + list.clientWidth) list.scrollLeft = t.offsetLeft + t.offsetWidth - list.clientWidth;
+          if (focus) t.focus();
+        };
+        tabs.forEach((t, i) => t.addEventListener('click', () => select(i)));
+        list.addEventListener('keydown', (e) => {
+          const i = tabs.indexOf(document.activeElement);
+          const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+          if (i < 0 || next === undefined) return;
+          e.preventDefault();
+          select((next + tabs.length) % tabs.length, true);
+        });
+        new ResizeObserver(() => select(current())).observe(list);
+        root.select = (i) => select(i, false);
+        root.count = tabs.length;
+      },
+    },
+    {
+      name: 'Trilha que recolhe', sel: '.nv-crumbs-demo', wide: true,
+      html: `<div class="nv-crumbs-demo"><div class="nv-crumbs-box"><nav class="nv-crumbs" aria-label="Trilha"><ol><li><a href="#">Início</a></li><li class="nv-crumbs-more"><details><summary aria-label="Mostrar 3 níveis ocultos">…</summary><ul><li><a href="#">Loja</a></li><li><a href="#">Roupas</a></li><li><a href="#">Masculino</a></li></ul></details></li><li class="mid"><a href="#">Loja</a></li><li class="mid"><a href="#">Roupas</a></li><li class="mid"><a href="#">Masculino</a></li><li><a href="#" aria-current="page">Camiseta básica de algodão</a></li></ol></nav></div><label class="nv-crumbs-width">largura do contêiner <input type="range" min="40" max="100" value="100"></label></div>`,
+      css: `
+.nv-crumbs-demo { ${FONT} display: grid; gap: .8em; }
+.nv-crumbs-box { container-type: inline-size; width: var(--w, 100%); padding: .6em .7em; border: 1px dashed #2a2f37; border-radius: ${R}; }
+.nv-crumbs ol { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; font-size: .88em; white-space: nowrap; }
+.nv-crumbs ol > li { display: flex; align-items: center; min-width: 0; }
+.nv-crumbs ol > li + li::before { content: "/"; margin: 0 .5em; color: #3a414b; }
+.nv-crumbs a { color: #8a94a0; text-decoration: none; }
+.nv-crumbs a:hover { color: #e9e6dd; text-decoration: underline; }
+.nv-crumbs [aria-current] { color: #e9e6dd; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.nv-crumbs ol > li:last-child { flex: 1; }
+.nv-crumbs ol > li.nv-crumbs-more { display: none; position: relative; }
+.nv-crumbs summary { list-style: none; padding: 0 .35em; border-radius: 4px; color: #8a94a0; cursor: pointer; }
+.nv-crumbs summary::-webkit-details-marker { display: none; }
+.nv-crumbs summary:hover, .nv-crumbs details[open] summary { background: #1f252d; color: #e9e6dd; }
+.nv-crumbs details ul { position: absolute; left: 0; top: calc(100% + 6px); z-index: 5; display: grid; min-width: 9em; margin: 0; padding: .3em; list-style: none; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; box-shadow: 0 12px 30px rgba(0, 0, 0, .5); }
+.nv-crumbs details a { display: block; padding: .45em .6em; border-radius: calc(${R} * .6); }
+.nv-crumbs details a:hover { background: #1f252d; text-decoration: none; }
+/* Narrow container: the middle levels fold into the "…" menu. */
+@container (max-width: 26em) {
+  .nv-crumbs .mid { display: none; }
+  .nv-crumbs ol > li.nv-crumbs-more { display: flex; }
+}
+.nv-crumbs-width { display: flex; align-items: center; gap: .6em; font: 11px ui-monospace, monospace; color: #8a94a0; }
+.nv-crumbs-width input { flex: 1; accent-color: ${A}; }
+${FOCUS('.nv-crumbs-demo')}`,
+      js: function (root) {
+        const range = root.querySelector('input[type="range"]');
+        range.addEventListener('input', () => root.style.setProperty('--w', `${range.value}%`));
+        root.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+        const more = root.querySelector('details');
+        document.addEventListener('click', (e) => { if (!more.contains(e.target)) more.open = false; });
+      },
+    },
+    {
+      name: 'Paginação com reticências', sel: '.nv-pages', card: true, wide: true,
+      html: `<nav class="nv-pages" aria-label="Paginação" data-total="20" data-page="7"><button type="button" class="nv-pages-edge" data-go="prev" aria-label="Página anterior">←</button><ul></ul><button type="button" class="nv-pages-edge" data-go="next" aria-label="Próxima página">→</button><p aria-live="polite"></p></nav>`,
+      css: `
+.nv-pages { ${FONT} display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .3em; }
+.nv-pages ul { display: flex; gap: .3em; margin: 0; padding: 0; list-style: none; }
+.nv-pages button { display: grid; place-items: center; min-width: 2.3em; height: 2.3em; padding: 0 .4em; border: 1px solid #2a2f37; border-radius: calc(${R} * .7); background: none; color: #c9ced4; font: 600 .88em/1 ui-monospace, monospace; font-variant-numeric: tabular-nums; cursor: pointer; transition: background .15s, border-color .15s; }
+.nv-pages button:hover:not(:disabled) { border-color: #5a626c; }
+.nv-pages button[aria-current] { border-color: ${A}; background: ${A}; color: #0e0e0c; }
+.nv-pages button:disabled { opacity: .3; cursor: default; }
+.nv-pages .gap { display: grid; place-items: end center; width: 1.6em; height: 2.3em; color: #5a626c; }
+.nv-pages p { flex-basis: 100%; margin: .3em 0 0; text-align: center; font: 11px ui-monospace, monospace; color: #8a94a0; }
+${FOCUS('.nv-pages')}`,
+      // Always seven slots, so the buttons never jump as the page changes.
+      js: function (root) {
+        const list = root.querySelector('ul'), status = root.querySelector('p');
+        const [prev, next] = root.querySelectorAll('.nv-pages-edge');
+        const total = Number(root.dataset.total);
+        const slots = (cur) => {
+          if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+          if (cur <= 4) return [1, 2, 3, 4, 5, '…', total];
+          if (cur >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total];
+          return [1, '…', cur - 1, cur, cur + 1, '…', total];
+        };
+        const go = (page) => {
+          const cur = Math.max(1, Math.min(total, page));
+          const hadFocus = root.contains(document.activeElement) && list.contains(document.activeElement);
+          root.dataset.page = String(cur);
+          list.innerHTML = slots(cur).map((p) => p === '…'
+            ? '<li class="gap" aria-hidden="true">…</li>'
+            : `<li><button type="button" data-page="${p}" aria-label="Página ${p}"${p === cur ? ' aria-current="page"' : ''}>${p}</button></li>`).join('');
+          prev.disabled = cur === 1;
+          next.disabled = cur === total;
+          status.textContent = `Página ${cur} de ${total}`;
+          // The clicked button was replaced; put focus on its successor instead of losing it.
+          if (hadFocus) list.querySelector(`[data-page="${cur}"]`).focus({ preventScroll: true });
+        };
+        root.addEventListener('click', (e) => {
+          const b = e.target.closest('button');
+          if (!b) return;
+          const cur = Number(root.dataset.page);
+          go(b.dataset.go === 'prev' ? cur - 1 : b.dataset.go === 'next' ? cur + 1 : Number(b.dataset.page));
+        });
+        go(Number(root.dataset.page));
+        root.go = go;
+      },
+    },
+    {
+      name: 'Carregar mais', sel: '.nv-more',
+      html: `<div class="nv-more"><ul class="nv-more-list" aria-label="Projetos"></ul><div class="nv-more-foot"><p aria-live="polite"></p><div class="nv-more-bar" aria-hidden="true"><span></span></div><button type="button">Carregar mais</button></div></div>`,
+      css: `
+.nv-more { ${FONT} }
+.nv-more-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35em; margin: 0; padding: 0; list-style: none; }
+.nv-more-list li { padding: .5em; border-radius: calc(${R} * .6); background: #13171c; font: .78em ui-monospace, monospace; color: #c9ced4; animation: nv-fade .3s ease-out both; outline: none; }
+.nv-more-list li:focus-visible { box-shadow: 0 0 0 2px ${A}; }
+.nv-more-foot { display: grid; justify-items: center; gap: .45em; margin-top: .8em; }
+.nv-more-foot p { margin: 0; font-size: .8em; color: #8a94a0; }
+.nv-more-bar { width: 9em; height: 3px; border-radius: 2px; background: #1f252d; overflow: hidden; }
+.nv-more-bar span { display: block; height: 100%; width: var(--p, 0%); background: ${A}; transition: width .3s; }
+.nv-more button { padding: .6em 1.1em; border: 1.5px solid #3a414b; border-radius: calc(${R} * .7); background: none; color: #e9e6dd; font: 600 .85em/1 system-ui, sans-serif; cursor: pointer; }
+.nv-more button:hover:not(:disabled) { border-color: ${A}; }
+.nv-more button[aria-busy="true"] { cursor: progress; color: #8a94a0; }
+.nv-more button:disabled:not([aria-busy]) { display: none; }
+${FOCUS('.nv-more')}
+@keyframes nv-fade { from { opacity: 0; transform: translateY(4px); } }`,
+      // Moves focus to the first new item only when the user pressed the button, so reading continues from there.
+      js: function (root) {
+        const TOTAL = 24, PAGE = 6;
+        const list = root.querySelector('ul'), status = root.querySelector('p'), btn = root.querySelector('button');
+        let shown = 0;
+        const add = () => {
+          const from = shown;
+          shown = Math.min(TOTAL, shown + PAGE);
+          for (let i = from; i < shown; i++) {
+            const li = document.createElement('li');
+            li.tabIndex = -1;
+            li.textContent = `projeto-${String(i + 1).padStart(2, '0')}`;
+            li.style.animationDelay = `${(i - from) * 40}ms`;
+            list.append(li);
+          }
+          status.textContent = shown >= TOTAL ? `Todos os ${TOTAL} projetos` : `Mostrando ${shown} de ${TOTAL}`;
+          root.style.setProperty('--p', `${shown / TOTAL * 100}%`);
+          btn.disabled = shown >= TOTAL;
+          return list.children[from];
+        };
+        btn.addEventListener('click', () => {
+          const byKeyboardOrClick = document.activeElement === btn;
+          btn.setAttribute('aria-busy', 'true'); btn.disabled = true; btn.textContent = 'Carregando…';
+          setTimeout(() => {
+            btn.removeAttribute('aria-busy'); btn.textContent = 'Carregar mais';
+            const first = add();
+            if (byKeyboardOrClick && first) first.focus({ preventScroll: true });
+          }, 600);
+        });
+        add();
+      },
+    },
+    {
+      name: 'Menu lateral recolhível', sel: '.nv-side', wide: true,
+      html: `<div class="nv-side"><aside><button type="button" class="nv-side-toggle" aria-expanded="true" aria-controls="nv-side-nav"><span aria-hidden="true">«</span><span class="nv-side-label">Recolher</span></button><nav id="nv-side-nav" aria-label="Seções"><a href="#" aria-current="page" data-tip="Início"><i aria-hidden="true">${T('⌂')}</i><span>Início</span></a><a href="#" data-tip="Pedidos"><i aria-hidden="true">${T('▤')}</i><span>Pedidos</span></a><a href="#" data-tip="Agenda"><i aria-hidden="true">${T('◷')}</i><span>Agenda</span></a><a href="#" data-tip="Mensagens"><i aria-hidden="true">${T('✉')}</i><span>Mensagens</span><b>4</b></a><a href="#" data-tip="Ajustes"><i aria-hidden="true">${T('☰')}</i><span>Ajustes</span></a></nav></aside><main><i></i><i></i><i></i></main></div>`,
+      css: `
+.nv-side { ${FONT} display: flex; height: 15em; border: 1px solid #1f252d; border-radius: ${R}; overflow: hidden; }
+.nv-side aside { display: flex; flex-direction: column; gap: .4em; width: 11em; padding: .5em; border-right: 1px solid #1f252d; background: #0c0f13; transition: width .28s cubic-bezier(.5, 0, .2, 1); }
+.nv-side nav { display: grid; gap: .15em; }
+.nv-side a, .nv-side-toggle { position: relative; display: flex; align-items: center; gap: .7em; padding: .5em .6em; border-radius: calc(${R} * .7); color: #8a94a0; text-decoration: none; white-space: nowrap; }
+.nv-side-toggle { border: 0; background: none; font: inherit; font-size: .8em; cursor: pointer; }
+.nv-side-toggle span:first-child { display: inline-block; transition: rotate .28s; }
+.nv-side a i { width: 1.2em; font-style: normal; text-align: center; flex: none; }
+.nv-side a:hover { background: #151a20; color: #e9e6dd; }
+.nv-side a[aria-current] { background: #1a2018; color: ${A}; box-shadow: inset 2px 0 0 ${A}; }
+.nv-side a b { margin-left: auto; min-width: 1.5em; padding: .1em .35em; border-radius: 99px; background: #f23e2e; color: #fff; font-size: .7em; text-align: center; }
+.nv-side main { flex: 1; display: grid; align-content: start; gap: .5em; padding: .8em; }
+.nv-side main i { height: 1.8em; border-radius: 5px; background: #11151a; }
+/* Rail mode: labels leave the layout but stay readable by screen readers; a tooltip replaces them on hover. */
+.nv-side[data-rail] aside { width: 3.2em; }
+.nv-side[data-rail] .nv-side-toggle span:first-child { rotate: 180deg; }
+.nv-side[data-rail] :is(a span, .nv-side-label) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.nv-side[data-rail] a b { position: absolute; top: .1em; right: .1em; min-width: 1.3em; }
+.nv-side[data-rail] a:is(:hover, :focus-visible)::after { content: attr(data-tip); position: absolute; left: calc(100% + .6em); z-index: 3; padding: .3em .55em; border-radius: 4px; background: #e9e6dd; color: #0e0e0c; font-size: .8em; }
+.nv-side[data-rail] aside { overflow: visible; }
+.nv-side[data-rail] { overflow: visible; }
+${FOCUS('.nv-side')}`,
+      js: function (root) {
+        const toggle = root.querySelector('.nv-side-toggle'), label = root.querySelector('.nv-side-label');
+        toggle.addEventListener('click', () => {
+          const rail = root.toggleAttribute('data-rail');
+          toggle.setAttribute('aria-expanded', String(!rail));
+          label.textContent = rail ? 'Expandir' : 'Recolher';
+        });
+        root.querySelectorAll('nav a').forEach((a) => a.addEventListener('click', (e) => {
+          e.preventDefault();
+          root.querySelectorAll('nav a').forEach((x) => x.removeAttribute('aria-current'));
+          a.setAttribute('aria-current', 'page');
+        }));
+      },
+    },
+    {
+      name: 'Barra inferior mobile', sel: '.nv-phone', card: true,
+      html: `<div class="nv-phone"><div class="nv-phone-screen"><b>Início</b><i></i><i></i></div><nav class="nv-bottom" aria-label="Principal"><a href="#" aria-current="page"><i aria-hidden="true">${T('⌂')}</i><span>Início</span></a><a href="#"><i aria-hidden="true">${T('⌕')}</i><span>Buscar</span></a><a href="#"><i aria-hidden="true">${T('♡')}</i><span>Salvos</span></a><a href="#"><i aria-hidden="true">${T('◉')}</i><span>Perfil</span></a></nav></div>`,
+      css: `
+.nv-phone { ${FONT} display: grid; grid-template-rows: 1fr auto; width: 15em; height: 17em; border: 3px solid #2a2f37; border-radius: 1.6em; overflow: hidden; background: #0c0f13; }
+.nv-phone-screen { display: grid; align-content: start; gap: .5em; padding: 1em; }
+.nv-phone-screen i { height: 3em; border-radius: 8px; background: #151a20; }
+.nv-bottom { display: flex; justify-content: space-around; padding: .45em .4em .7em; border-top: 1px solid #1f252d; background: #0f1319; }
+.nv-bottom a { display: flex; align-items: center; padding: .45em .6em; border-radius: 99px; color: #8a94a0; text-decoration: none; transition: background .25s, color .25s; }
+.nv-bottom i { font-style: normal; font-size: 1.15em; line-height: 1; }
+/* The label only takes space on the active item; it slides open by max-width (screen readers read it either way). */
+.nv-bottom span { display: inline-block; max-width: 0; overflow: hidden; font-size: .8em; font-weight: 600; white-space: nowrap; transition: max-width .28s cubic-bezier(.5, 0, .2, 1), margin .28s; }
+.nv-bottom a[aria-current] { background: color-mix(in srgb, ${A} 16%, transparent); color: ${A}; }
+.nv-bottom a[aria-current] span { max-width: 6em; margin-left: .4em; }
+${FOCUS('.nv-bottom')}`,
+      js: function (root) {
+        const links = [...root.querySelectorAll('.nv-bottom a')], title = root.querySelector('.nv-phone-screen b');
+        const pick = (a) => {
+          links.forEach((x) => x.removeAttribute('aria-current'));
+          a.setAttribute('aria-current', 'page');
+          title.textContent = a.textContent.trim();
+        };
+        links.forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); pick(a); }));
+        root.pick = (i) => pick(links[i % links.length]);
+      },
+    },
+    {
+      name: 'Menu hambúrguer', sel: '.nv-burger', card: true,
+      html: `<div class="nv-burger"><header><b>Marca</b><button type="button" aria-expanded="false" aria-controls="nv-burger-menu" aria-label="Abrir menu"><span aria-hidden="true"></span></button></header><nav id="nv-burger-menu" aria-label="Menu" hidden><a href="#">Serviços</a><a href="#">Projetos</a><a href="#">Sobre</a><a href="#" class="cta">Fale comigo</a></nav><main><i></i><i></i></main></div>`,
+      css: `
+.nv-burger { ${FONT} position: relative; width: 15em; height: 17em; border: 3px solid #2a2f37; border-radius: 1.6em; overflow: hidden; background: #0c0f13; }
+.nv-burger header { display: flex; justify-content: space-between; align-items: center; padding: .8em 1em; border-bottom: 1px solid #1f252d; }
+.nv-burger button { position: relative; width: 2.2em; height: 2.2em; border: 0; border-radius: calc(${R} * .7); background: none; cursor: pointer; }
+/* Three bars from one span and its pseudo-elements; the middle one fades as the others cross. */
+.nv-burger button span, .nv-burger button span::before, .nv-burger button span::after { position: absolute; left: .45em; right: .45em; height: 2px; border-radius: 1px; background: #e9e6dd; transition: transform .3s cubic-bezier(.5, 0, .2, 1), opacity .2s, top .3s; }
+.nv-burger button span { top: calc(50% - 1px); }
+.nv-burger button span::before, .nv-burger button span::after { content: ""; left: 0; right: 0; }
+.nv-burger button span::before { top: -.4em; }
+.nv-burger button span::after { top: .4em; }
+.nv-burger [aria-expanded="true"] span { background: transparent; }
+.nv-burger [aria-expanded="true"] span::before { top: 0; transform: rotate(45deg); }
+.nv-burger [aria-expanded="true"] span::after { top: 0; transform: rotate(-45deg); }
+.nv-burger nav { position: absolute; inset: 3.7em 0 0; z-index: 2; display: grid; align-content: start; gap: .1em; padding: .6em; background: #0c0f13;
+  transition: opacity .25s, translate .25s, display .25s allow-discrete; }
+.nv-burger nav[hidden] { display: none; opacity: 0; translate: 0 -.6em; }
+@starting-style { .nv-burger nav:not([hidden]) { opacity: 0; translate: 0 -.6em; } }
+.nv-burger nav a { padding: .7em .6em; border-bottom: 1px solid #1a1f26; color: #e9e6dd; font-size: 1.05em; font-weight: 600; text-decoration: none; }
+.nv-burger nav a.cta { margin-top: .6em; border: 0; border-radius: calc(${R} * .7); background: ${A}; color: #0e0e0c; text-align: center; }
+.nv-burger main { display: grid; gap: .5em; padding: 1em; }
+.nv-burger main i { height: 3.5em; border-radius: 8px; background: #151a20; }
+${FOCUS('.nv-burger')}`,
+      js: function (root) {
+        const btn = root.querySelector('button'), nav = root.querySelector('nav');
+        const set = (open) => {
+          btn.setAttribute('aria-expanded', String(open));
+          btn.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+          nav.hidden = !open;
+        };
+        btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+        root.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !nav.hidden) { set(false); btn.focus(); }
+        });
+        nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); set(false); }));
+        root.toggle = () => set(nav.hidden);
+      },
+    },
+    {
+      name: 'Índice com scroll-spy', sel: '.nv-spy', wide: true,
+      html: `<div class="nv-spy"><nav aria-label="Nesta página"><b>Nesta página</b><a href="#nv-s1">Visão geral</a><a href="#nv-s2">Instalação</a><a href="#nv-s3">Configuração</a><a href="#nv-s4">Deploy</a><a href="#nv-s5">Dúvidas</a></nav><div class="nv-spy-body" tabindex="0" aria-label="Documentação">${[['nv-s1', 'Visão geral'], ['nv-s2', 'Instalação'], ['nv-s3', 'Configuração'], ['nv-s4', 'Deploy'], ['nv-s5', 'Dúvidas']].map(([id, t], i) => `<section id="${id}"><h4>${t}</h4><p>${['O pacote cuida de sessão, permissões e auditoria com uma API pequena.', 'Instale com o gerenciador que você já usa; não há dependências nativas.', 'Tudo se ajusta por um arquivo só, validado na inicialização.', 'Funciona em qualquer runtime com fetch: Workers, Deno, Node 20+.', 'Abra uma issue com um exemplo mínimo que reproduza o problema.'][i]}</p><p class="filler"></p></section>`).join('')}</div></div>`,
+      css: `
+.nv-spy { ${FONT} display: grid; grid-template-columns: 9em minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 1em; height: 14em; }
+.nv-spy nav { display: grid; align-content: start; gap: .1em; border-left: 1px solid #2a2f37; }
+.nv-spy nav b { padding: 0 0 .5em .8em; font-size: .7em; letter-spacing: .12em; text-transform: uppercase; color: #5a626c; }
+.nv-spy nav a { margin-left: -1px; padding: .3em .8em; border-left: 2px solid transparent; color: #8a94a0; font-size: .85em; text-decoration: none; transition: color .2s, border-color .2s; }
+.nv-spy nav a:hover { color: #e9e6dd; }
+.nv-spy nav a[aria-current] { border-left-color: ${A}; color: #e9e6dd; font-weight: 600; }
+.nv-spy-body { position: relative; overflow-y: auto; padding-right: .5em; scroll-behavior: smooth; scrollbar-width: thin; }
+.nv-spy-body h4 { margin: 0 0 .3em; font-size: 1em; }
+.nv-spy-body p { margin: 0 0 .5em; font-size: .88em; color: #c9ced4; }
+.nv-spy-body .filler { height: 5.5em; border-radius: 6px; background: repeating-linear-gradient(#11151a 0 .7em, transparent .7em 1.3em); }
+.nv-spy-body section { padding-bottom: .6em; }
+@media (prefers-reduced-motion: reduce) { .nv-spy-body { scroll-behavior: auto; } }
+${FOCUS('.nv-spy')}`,
+      // "Current" is the last section whose top has crossed a line 30% down the scroller, or the last one at the very end.
+      js: function (root) {
+        const body = root.querySelector('.nv-spy-body'), links = [...root.querySelectorAll('nav a')];
+        const sections = links.map((a) => body.querySelector(a.getAttribute('href')));
+        const mark = (id) => links.forEach((a) => (a.getAttribute('href') === `#${id}` ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+        let lock = null, raf = 0, unlock = 0;
+        const pick = () => {
+          if (lock) return;
+          const line = body.scrollTop + body.clientHeight * 0.3;
+          let active = sections[0];
+          for (const s of sections) if (s.offsetTop <= line) active = s;
+          if (body.scrollTop + body.clientHeight >= body.scrollHeight - 2) active = sections[sections.length - 1];
+          mark(active.id);
+        };
+        body.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(pick); }, { passive: true });
+        // A click pins its section while the smooth scroll runs, so the highlight does not flicker through the others.
+        const release = () => { clearTimeout(unlock); lock = null; };
+        body.addEventListener('scrollend', release);
+        links.forEach((a, i) => a.addEventListener('click', (e) => {
+          e.preventDefault();
+          lock = sections[i].id;
+          mark(lock);
+          clearTimeout(unlock);
+          unlock = setTimeout(release, 1000);
+          // offsetTop is relative to the scroller (it is position: relative); this scrolls only that box.
+          body.scrollTo({ top: sections[i].offsetTop });
+        }));
+        pick();
+      },
+    },
+    {
+      name: 'Anterior e próximo', sel: '.nv-pager',
+      html: `<nav class="nv-pager" aria-label="Mais artigos"><a href="#" rel="prev"><small>← Anterior</small><b>Deploy sem medo com feature flags</b></a><a href="#" rel="next"><small>Próximo →</small><b>Cache na borda sem dor de cabeça</b></a></nav>`,
+      css: `
+.nv-pager { ${FONT} display: grid; grid-template-columns: 1fr 1fr; gap: .5em; }
+.nv-pager a { display: grid; gap: .3em; align-content: start; padding: .8em .9em; border: 1px solid #2a2f37; border-radius: ${R}; color: #e9e6dd; text-decoration: none; transition: border-color .15s, transform .15s; }
+.nv-pager a:hover { border-color: ${A}; transform: translateY(-2px); }
+.nv-pager [rel="next"] { text-align: right; }
+.nv-pager small { font: .72em ui-monospace, monospace; letter-spacing: .06em; color: #8a94a0; }
+.nv-pager b { font-size: .9em; line-height: 1.3; }
+.nv-pager a:hover small { color: ${A}; }
+${FOCUS('.nv-pager')}`,
+    },
+    {
+      name: 'Submenu de produtos', sel: '.nv-mega',
+      html: `<nav class="nv-mega" aria-label="Principal"><ul><li class="has-panel"><button type="button" aria-expanded="false" aria-controls="nv-mega-p">Produtos <span aria-hidden="true">▾</span></button><div class="nv-mega-panel" id="nv-mega-p" hidden><a href="#"><b>Checkout</b><small>Pagamento em um clique</small></a><a href="#"><b>Estoque</b><small>Alertas antes de faltar</small></a><a href="#"><b>Relatórios</b><small>Vendas por canal e dia</small></a><a href="#"><b>Integrações</b><small>ERP, marketplaces, frete</small></a></div></li><li><a href="#">Preços</a></li><li><a href="#">Blog</a></li></ul></nav>`,
+      css: `
+.nv-mega { ${FONT} }
+.nv-mega > ul { display: flex; align-items: center; gap: .2em; margin: 0; padding: .3em; list-style: none; border: 1px solid #1f252d; border-radius: ${R}; }
+.nv-mega li { position: relative; }
+.nv-mega > ul > li > :is(a, button) { display: flex; align-items: center; gap: .35em; padding: .55em .8em; border: 0; border-radius: calc(${R} * .7); background: none; color: #c9ced4; font: 600 .9em/1 system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+.nv-mega > ul > li > :is(a, button):hover, .nv-mega [aria-expanded="true"] { background: #151a20; color: #e9e6dd; }
+.nv-mega button span { font-size: .75em; transition: rotate .2s; }
+.nv-mega [aria-expanded="true"] span { rotate: 180deg; }
+.nv-mega-panel { position: absolute; left: 0; top: calc(100% + .5em); z-index: 5; display: grid; grid-template-columns: 1fr 1fr; gap: .2em; width: 22em; padding: .4em; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; box-shadow: 0 18px 44px rgba(0, 0, 0, .55);
+  transition: opacity .18s, translate .18s, display .18s allow-discrete; }
+.nv-mega-panel[hidden] { display: none; opacity: 0; translate: 0 -.4em; }
+@starting-style { .nv-mega-panel:not([hidden]) { opacity: 0; translate: 0 -.4em; } }
+.nv-mega-panel a { display: grid; padding: .6em .7em; border-radius: calc(${R} * .7); color: #e9e6dd; text-decoration: none; }
+.nv-mega-panel a:hover { background: #1f252d; }
+.nv-mega-panel b { font-size: .9em; }
+.nv-mega-panel small { font-size: .78em; color: #8a94a0; }
+${FOCUS('.nv-mega')}`,
+      // Disclosure pattern (button + panel of links), not an ARIA menu: links keep working like links.
+      js: function (root) {
+        const item = root.querySelector('.has-panel'), btn = item.querySelector('button'), panel = item.querySelector('.nv-mega-panel');
+        const hover = matchMedia('(hover: hover)');
+        let t = 0;
+        const set = (open) => { clearTimeout(t); btn.setAttribute('aria-expanded', String(open)); panel.hidden = !open; };
+        btn.addEventListener('click', () => set(panel.hidden));
+        item.addEventListener('pointerenter', (e) => { if (hover.matches && e.pointerType === 'mouse') { clearTimeout(t); t = setTimeout(() => set(true), 120); } });
+        item.addEventListener('pointerleave', (e) => { if (hover.matches && e.pointerType === 'mouse') { clearTimeout(t); t = setTimeout(() => set(false), 250); } });
+        item.addEventListener('focusout', (e) => { if (!item.contains(e.relatedTarget)) set(false); });
+        item.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { set(false); btn.focus(); } });
+        document.addEventListener('click', (e) => { if (!item.contains(e.target)) set(false); });
+        root.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+      },
+    },
+    {
+      name: 'Pular para o conteúdo', sel: '.nv-skip',
+      html: `<div class="nv-skip"><a class="nv-skip-link" href="#nv-skip-main">Pular para o conteúdo</a><header><b>Marca</b><span>Serviços</span><span>Projetos</span><span>Blog</span><span>Contato</span></header><main id="nv-skip-main" tabindex="-1"><b>Conteúdo principal</b><i></i></main><button type="button" class="nv-skip-sim">Simular primeiro Tab</button></div>`,
+      css: `
+.nv-skip { ${FONT} position: relative; display: grid; gap: .5em; padding-top: .3em; overflow: hidden; }
+/* Off-canvas until it receives keyboard focus; the first Tab on the page lands here. */
+.nv-skip-link { position: absolute; left: .5em; top: .3em; z-index: 2; padding: .55em .9em; border-radius: calc(${R} * .7); background: ${A}; color: #0e0e0c; font-weight: 700; font-size: .85em; text-decoration: none; translate: 0 -150%; transition: translate .18s; }
+.nv-skip-link:focus-visible, .nv-skip-link.show { translate: 0; outline: 2px solid #e9e6dd; outline-offset: 2px; }
+.nv-skip header { display: flex; gap: .8em; padding: .5em .6em; border: 1px solid #1f252d; border-radius: calc(${R} * .7); font-size: .8em; color: #8a94a0; }
+.nv-skip header b { color: #e9e6dd; margin-right: auto; }
+.nv-skip main { display: grid; gap: .4em; padding: .6em; border: 1px dashed #2a2f37; border-radius: calc(${R} * .7); outline: none; }
+.nv-skip main:focus { border-color: ${A}; }
+.nv-skip main i { height: 2em; border-radius: 4px; background: #11151a; }
+.nv-skip-sim { justify-self: center; padding: .4em .7em; border: 1px solid #2a2f37; border-radius: 4px; background: none; color: #8a94a0; font: 12px ui-monospace, monospace; cursor: pointer; }`,
+      // In a real page the link needs no JS: href="#main" plus tabindex="-1" on <main> is the whole feature.
+      js: function (root) {
+        const link = root.querySelector('.nv-skip-link'), main = root.querySelector('main');
+        root.querySelector('.nv-skip-sim').addEventListener('click', () => link.focus());
+        link.addEventListener('click', (e) => { e.preventDefault(); main.focus({ preventScroll: true }); });
+        root.pin = (on) => link.classList.toggle('show', on);
+      },
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  function snippet(it) {
+    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
+    return s;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}${it.wide ? ' wide' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.querySelectorAll('.demo').forEach((d, n) => { if (ITEMS[n].js) ITEMS[n].js(d.firstElementChild); });
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  $('radius').addEventListener('input', () => { grid.style.setProperty('--radius', $('radius').value + 'px'); $('radius-out').textContent = $('radius').value + ' px'; });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    // Everything moves through the components' own APIs, never through focus.
+    const tabs = grid.querySelector('.nv-tabs'), pages = grid.querySelector('.nv-pages');
+    const phone = grid.querySelector('.nv-phone'), burger = grid.querySelector('.nv-burger');
+    const ROUTE = [7, 8, 9, 10, 11, 17, 18, 19, 20, 1, 2, 3, 4, 5];
+    let i = 0;
+    setInterval(() => {
+      i++;
+      tabs.select(i % tabs.count);
+      pages.go(ROUTE[i % ROUTE.length]);
+      phone.pick(i);
+      if (i % 2 === 0) burger.toggle();
+    }, 1200);
+  }
+})();
+</script>
+</html>

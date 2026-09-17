@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Toast Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ---------- Stage: a fake app the toasts live in ---------- */
+  .stage { position: relative; height: 600px; background: #000; border-radius: 6px; overflow: hidden; min-width: 0; }
+  .app { position: absolute; inset: 0; display: grid; grid-template-rows: auto auto 1fr; }
+  .app header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .app header b { color: var(--ink); font-weight: 600; }
+  .app header i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .triggers { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  .triggers button { font: 500 13px var(--font-body); padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; background: #0f1319; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .triggers button::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--muted)); }
+  .triggers button:hover { border-color: #3a414b; }
+  .rows { margin: 0; padding: 8px 18px; list-style: none; overflow: hidden; }
+  .rows li { display: grid; grid-template-columns: 70px 1fr auto; gap: 12px; padding: 11px 0; border-bottom: 1px solid #14181d; font-size: 13px; transition: opacity .25s, background .25s; }
+  .rows li span:first-child { font-family: var(--font-mono); color: var(--muted); }
+  .rows li span:last-child { font-family: var(--font-mono); color: var(--accent); }
+  .rows li.restored { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .rows li[hidden] { display: none; }
+
+  /* ---------- Panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label, .field > span { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .pos { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .pos label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); border-top: 1px solid var(--line); }
+  .pos label:nth-child(-n+3) { border-top: 0; }
+  .pos label:not(:nth-child(3n+1)) { border-left: 1px solid var(--line); }
+  .pos input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .pos label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  button.plain.done { border-color: var(--accent); color: var(--accent); }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel, html.card .triggers { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; }
+  html.card .rows li { grid-template-columns: 52px 1fr; font-size: 11px; padding: 8px 0; }
+  html.card .rows li span:last-child { display: none; }
+  html.card .toaster { font-size: 12px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div class="app" id="app">
+      <header><i></i><b>Painel</b> / Pedidos</header>
+      <div class="triggers" id="triggers">
+        <button type="button" data-demo="success" style="--dot:#c8f31d">Sucesso</button>
+        <button type="button" data-demo="error" style="--dot:#f23e2e">Erro com ação</button>
+        <button type="button" data-demo="warning" style="--dot:#f2a52e">Aviso</button>
+        <button type="button" data-demo="info" style="--dot:#6ea8ff">Info</button>
+        <button type="button" data-demo="promise">Promise</button>
+        <button type="button" data-demo="undo">Arquivar (desfazer)</button>
+        <button type="button" data-demo="message">Mensagem</button>
+      </div>
+      <ul class="rows" id="rows"></ul>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Toast Pack</h1>
+      <p>Um sistema de notificações completo: pilha que expande, seis posições, pausa no hover, arrastar para dispensar, desfazer e estados de promise.</p>
+    </div>
+    <div class="field">
+      <span>Posição</span>
+      <div class="pos" role="radiogroup" aria-label="Posição">
+        <label><input type="radio" name="pos" value="top-left"><span>↖</span></label>
+        <label><input type="radio" name="pos" value="top-center"><span>↑</span></label>
+        <label><input type="radio" name="pos" value="top-right"><span>↗</span></label>
+        <label><input type="radio" name="pos" value="bottom-left"><span>↙</span></label>
+        <label><input type="radio" name="pos" value="bottom-center"><span>↓</span></label>
+        <label><input type="radio" name="pos" value="bottom-right" checked><span>↘</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="dur">Duração <output id="dur-out">4,0 s</output></label>
+      <input type="range" id="dur" min="1500" max="10000" step="500" value="4000">
+    </div>
+    <div class="field">
+      <label for="max">Máximo na pilha <output id="max-out">4</output></label>
+      <input type="range" id="max" min="1" max="8" step="1" value="4">
+    </div>
+    <label class="check"><input type="checkbox" id="expand"> Sempre expandido</label>
+    <div class="row">
+      <button type="button" class="plain" id="copy">Copiar toaster</button>
+      <button type="button" class="plain" id="clear">Limpar</button>
+    </div>
+    <p class="note">Recolhida, a pilha vira um baralho: cada toast de trás desce 10 px e encolhe 5%. No hover ou com foco dentro, cada um é deslocado pela soma das alturas dos anteriores. O tempo pausa junto, e a barra de vida é uma animação CSS com <code>animation-play-state</code>, então nunca dessincroniza do timer. Leitores de tela ouvem por duas regiões fixas, <code>aria-live="polite"</code> e <code>"assertive"</code> para erros — inserir um elemento novo com <code>role="status"</code> nem sempre é anunciado.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  const TOAST_CSS = `
+.toaster { position: absolute; z-index: 50; width: min(22rem, calc(100% - 32px)); font: 14px/1.4 system-ui, sans-serif; }
+.toaster[data-position^="top"] { top: 16px; }
+.toaster[data-position^="bottom"] { bottom: 16px; }
+.toaster[data-position$="left"] { left: 16px; }
+.toaster[data-position$="right"] { right: 16px; }
+.toaster[data-position$="center"] { left: 50%; translate: -50% 0; }
+.toaster-list { position: relative; margin: 0; padding: 0; list-style: none; transition: height .3s; }
+.toaster-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.toast { --tone: #6ea8ff; position: absolute; left: 0; right: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: start; gap: .7em;
+  padding: .85em .8em .85em .9em; border: 1px solid #2a2f37; border-radius: 8px; background: #13171c; color: #e9e6dd;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45); overflow: hidden; touch-action: pan-y; user-select: none;
+  transform: translateX(var(--dx, 0px)) translateY(var(--y, 0px)) scale(var(--s, 1));
+  transition: transform .35s cubic-bezier(.2, .8, .2, 1), opacity .3s; }
+/* Back cards shrink toward the edge that stays hidden behind the front one. */
+.toaster[data-position^="bottom"] .toast { bottom: 0; transform-origin: 50% 0; }
+.toaster[data-position^="top"] .toast { top: 0; transform-origin: 50% 100%; }
+/* Entry needs no JS timing: the browser starts each new toast from these values. */
+@starting-style {
+  .toaster[data-position^="bottom"] .toast { transform: translateY(110%) scale(.92); opacity: 0; }
+  .toaster[data-position^="top"] .toast { transform: translateY(-110%) scale(.92); opacity: 0; }
+}
+.toast.is-leaving { opacity: 0; transform: translateX(var(--dx, 0px)) translateY(var(--y, 0px)) scale(.92); pointer-events: none; }
+.toast.is-hidden { opacity: 0; pointer-events: none; }
+.toast.is-dragging { transition: none; }
+.toast[data-type="success"] { --tone: #c8f31d; }
+.toast[data-type="error"] { --tone: #f23e2e; }
+.toast[data-type="warning"] { --tone: #f2a52e; }
+.toast[data-type="loading"] { --tone: #8a94a0; }
+.toast-icon { display: grid; place-items: center; width: 1.55em; height: 1.55em; border-radius: 50%; background: var(--tone); color: #0e0e0c; font-weight: 700; font-size: .8em; margin-top: .05em; }
+.toast[data-type="loading"] .toast-icon { background: none; border: 2px solid #2a2f37; border-top-color: #e9e6dd; animation: toast-spin .8s linear infinite; }
+.toast-body { min-width: 0; }
+.toast-title { margin: 0; font-weight: 600; }
+.toast-text { margin: .15em 0 0; color: #8a94a0; font-size: .9em; }
+.toast-action { align-self: center; font: inherit; font-size: .85em; font-weight: 600; padding: .35em .65em; border: 1px solid #3a414b; border-radius: 4px; background: none; color: var(--tone); cursor: pointer; white-space: nowrap; }
+.toast-action:hover { border-color: var(--tone); }
+.toast-close { align-self: start; font: inherit; font-size: .7em; line-height: 1; padding: .45em; border: 0; border-radius: 4px; background: none; color: #8a94a0; cursor: pointer; }
+.toast-close:hover { color: #e9e6dd; background: #1f252d; }
+.toast-life { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--tone); transform-origin: left; animation: toast-life var(--life, 4000ms) linear forwards; }
+.toast.is-paused .toast-life { animation-play-state: paused; }
+.toast :focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
+@keyframes toast-life { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes toast-spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) { .toast { transition: opacity .2s; } }`;
+
+  // ---------- The copyable part ----------
+  function createToaster(host, options = {}) {
+    const opts = { position: 'bottom-right', duration: 4000, max: 4, expand: false, ...options };
+    const ICON = { success: '✓', error: '✕', warning: '!', info: 'i', loading: '' };
+    const root = document.createElement('section');
+    root.className = 'toaster';
+    root.setAttribute('aria-label', 'Notificações');
+    const list = document.createElement('ol');
+    list.className = 'toaster-list';
+    const polite = document.createElement('div');
+    const urgent = document.createElement('div');
+    polite.className = urgent.className = 'toaster-live';
+    polite.setAttribute('aria-live', 'polite');
+    urgent.setAttribute('aria-live', 'assertive');
+    root.append(list, polite, urgent);
+    host.appendChild(root);
+
+    const toasts = []; // newest first
+    let seq = 0, hovered = false;
+
+    function announce(text, isUrgent) {
+      const region = isUrgent ? urgent : polite;
+      region.textContent = '';
+      setTimeout(() => { region.textContent = text; }, 60);
+    }
+
+    function layout() {
+      const expanded = opts.expand || hovered || root.contains(document.activeElement);
+      const dir = opts.position.startsWith('top') ? 1 : -1;
+      root.dataset.position = opts.position;
+      root.classList.toggle('is-expanded', expanded);
+      const frontH = toasts[0] ? toasts[0].el.scrollHeight : 0;
+      let offset = 0;
+      toasts.forEach((t, i) => {
+        const el = t.el;
+        // Collapsed back cards take the front card's height, so the deck edge is even.
+        el.style.maxHeight = expanded || i === 0 ? '' : `${frontH}px`;
+        el.style.setProperty('--y', `${dir * (expanded ? offset : i * 10)}px`);
+        el.style.setProperty('--s', expanded ? '1' : String(Math.max(0.85, 1 - i * 0.05)));
+        el.style.zIndex = String(100 - i);
+        el.classList.toggle('is-hidden', !expanded && i > 2);
+        offset += el.scrollHeight + 8;
+      });
+      list.style.height = `${expanded ? Math.max(0, offset - 8) : frontH + Math.min(toasts.length - 1, 2) * 10}px`;
+    }
+
+    function start(t) {
+      if (!Number.isFinite(t.duration) || t.timer) return;
+      t.startedAt = Date.now();
+      t.timer = setTimeout(() => dismiss(t.id), Math.max(0, t.remaining));
+      t.el.classList.remove('is-paused');
+    }
+    function pause(t) {
+      if (!t.timer) return;
+      clearTimeout(t.timer);
+      t.timer = 0;
+      t.remaining -= Date.now() - t.startedAt;
+      t.el.classList.add('is-paused');
+    }
+    const running = () => !hovered && !root.contains(document.activeElement) && !document.hidden;
+
+    function render(t, o) {
+      const el = t.el;
+      el.dataset.type = t.type;
+      el.style.setProperty('--life', `${t.duration}ms`);
+      el.innerHTML = `<span class="toast-icon" aria-hidden="true"></span><div class="toast-body"><p class="toast-title"></p></div>`
+        + (o.action ? '<button type="button" class="toast-action"></button>' : '<span></span>')
+        + '<button type="button" class="toast-close" aria-label="Fechar notificação">✕</button>'
+        + (Number.isFinite(t.duration) ? '<i class="toast-life" aria-hidden="true"></i>' : '');
+      el.querySelector('.toast-icon').textContent = o.icon ?? ICON[t.type] ?? '';
+      el.querySelector('.toast-title').textContent = o.title;
+      if (o.body) {
+        const p = document.createElement('p');
+        p.className = 'toast-text'; p.textContent = o.body;
+        el.querySelector('.toast-body').append(p);
+      }
+      if (o.action) {
+        const b = el.querySelector('.toast-action');
+        b.textContent = o.action.label;
+        b.addEventListener('click', () => { dismiss(t.id); o.action.onClick?.(); });
+      }
+      el.querySelector('.toast-close').addEventListener('click', () => dismiss(t.id));
+      announce([o.title, o.body].filter(Boolean).join('. '), t.type === 'error');
+    }
+
+    function bindSwipe(t) {
+      const el = t.el;
+      let from = null;
+      el.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('button')) return;
+        from = { x: e.clientX, time: Date.now() };
+        el.setPointerCapture(e.pointerId);
+        el.classList.add('is-dragging');
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!from) return;
+        const dx = e.clientX - from.x;
+        el.style.setProperty('--dx', `${dx}px`);
+        el.style.opacity = String(Math.max(0.2, 1 - Math.abs(dx) / 220));
+      });
+      const release = (e, cancelled) => {
+        if (!from) return;
+        const dx = cancelled ? 0 : e.clientX - from.x;
+        const speed = Math.abs(dx) / Math.max(1, Date.now() - from.time);
+        from = null;
+        el.classList.remove('is-dragging');
+        el.style.opacity = '';
+        // A long drag or a quick flick dismisses; anything else snaps back.
+        if (Math.abs(dx) > 90 || speed > 0.6) { el.style.setProperty('--dx', `${Math.sign(dx) * 120}%`); dismiss(t.id); }
+        else el.style.setProperty('--dx', '0px');
+      };
+      el.addEventListener('pointerup', (e) => release(e, false));
+      el.addEventListener('pointercancel', (e) => release(e, true));
+    }
+
+    function show(o) {
+      const type = o.type || 'info';
+      const duration = o.duration ?? (type === 'loading' ? Infinity : opts.duration);
+      const t = { id: ++seq, type, duration, remaining: duration, timer: 0, el: document.createElement('li') };
+      t.el.className = 'toast';
+      render(t, o);
+      list.prepend(t.el);
+      toasts.unshift(t);
+      bindSwipe(t);
+      while (toasts.length > opts.max) dismiss(toasts[toasts.length - 1].id);
+      layout();
+      if (running()) start(t); else t.el.classList.add('is-paused');
+      return t.id;
+    }
+
+    function update(id, o) {
+      const t = toasts.find((x) => x.id === id);
+      if (!t) return show(o);
+      clearTimeout(t.timer);
+      t.timer = 0;
+      t.type = o.type || t.type;
+      t.duration = t.remaining = o.duration ?? (t.type === 'loading' ? Infinity : opts.duration);
+      render(t, o);
+      layout();
+      if (running()) start(t); else t.el.classList.add('is-paused');
+      return id;
+    }
+
+    function dismiss(id) {
+      const i = toasts.findIndex((x) => x.id === id);
+      if (i < 0) return;
+      const [t] = toasts.splice(i, 1);
+      clearTimeout(t.timer);
+      const hadFocus = t.el.contains(document.activeElement);
+      t.el.classList.add('is-leaving');
+      setTimeout(() => t.el.remove(), 320);
+      // Keep keyboard users inside the stack instead of dropping focus on <body>.
+      if (hadFocus && toasts[0]) toasts[0].el.querySelector('.toast-close').focus({ preventScroll: true });
+      layout();
+    }
+
+    function promise(p, m) {
+      const pick = (v, x) => (typeof v === 'function' ? v(x) : v);
+      const id = show({ type: 'loading', title: m.loading });
+      p.then((v) => update(id, { type: 'success', title: pick(m.success, v) }),
+        (e) => update(id, { type: 'error', title: pick(m.error, e) }));
+      return p;
+    }
+
+    const pauseAll = () => { toasts.forEach(pause); };
+    const resumeAll = () => { if (running()) toasts.forEach(start); };
+    root.addEventListener('pointerenter', () => { hovered = true; pauseAll(); layout(); });
+    root.addEventListener('pointerleave', () => { hovered = false; resumeAll(); layout(); });
+    root.addEventListener('focusin', () => { pauseAll(); layout(); });
+    root.addEventListener('focusout', () => setTimeout(() => { resumeAll(); layout(); }));
+    document.addEventListener('visibilitychange', () => (document.hidden ? pauseAll() : resumeAll()));
+
+    return {
+      show, update, dismiss, promise,
+      clear: () => [...toasts].forEach((t) => dismiss(t.id)),
+      configure: (o) => { Object.assign(opts, o); while (toasts.length > opts.max) dismiss(toasts[toasts.length - 1].id); layout(); },
+    };
+  }
+
+  // ---------- Demo wiring ----------
+  const style = document.createElement('style');
+  style.textContent = TOAST_CSS;
+  document.head.appendChild(style);
+  const toast = createToaster($('app'));
+
+  const ORDERS = [['#4821', 'Loja Pinheiros', 'R$ 312'], ['#4820', 'Mariana Lopes', 'R$ 89'], ['#4819', 'Café Aurora', 'R$ 1.240'], ['#4818', 'Estúdio Norte', 'R$ 540'], ['#4817', 'João Pedro', 'R$ 72'], ['#4816', 'Padaria 24h', 'R$ 198'], ['#4815', 'Clínica Sol', 'R$ 2.030'], ['#4814', 'Rafa Tattoo', 'R$ 410'], ['#4813', 'Mercado Vila', 'R$ 655'], ['#4812', 'Loja Pinheiros', 'R$ 128']];
+  const rows = $('rows');
+  const rowHtml = (o) => `<li data-id="${o[0]}"><span>${o[0]}</span><span>${o[1]}</span><span>${o[2]}</span></li>`;
+  rows.innerHTML = ORDERS.map(rowHtml).join('');
+
+  const fake = (failRate, ms = 1600) => new Promise((ok, fail) => setTimeout(() => (Math.random() < failRate ? fail(new Error('timeout')) : ok()), ms));
+  const DEMOS = {
+    success: () => toast.show({ type: 'success', title: 'Pedido #4821 enviado', body: 'O cliente recebe o rastreio por e-mail.' }),
+    error: () => toast.show({
+      type: 'error', title: 'Falha ao salvar', body: 'Sem conexão com o servidor.', duration: 8000,
+      action: { label: 'Tentar de novo', onClick: () => toast.promise(fake(0.3), { loading: 'Salvando de novo…', success: 'Salvo', error: 'Ainda sem conexão' }) },
+    }),
+    warning: () => toast.show({ type: 'warning', title: 'Seu plano vence em 3 dias', body: 'Renove para não perder os relatórios.' }),
+    info: () => toast.show({ type: 'info', title: 'Nova versão disponível', action: { label: 'Recarregar', onClick: () => toast.show({ type: 'success', title: 'Atualizado para 2.4.0' }) } }),
+    promise: () => toast.promise(fake(0.35, 2000), { loading: 'Gerando relatório de setembro…', success: 'Relatório pronto para download', error: 'Não foi possível gerar o relatório' }),
+    undo: () => {
+      const li = rows.querySelector('li:not([hidden])');
+      if (!li) return toast.show({ type: 'info', title: 'Nada para arquivar' });
+      li.hidden = true;
+      toast.show({
+        type: 'info', icon: '⌫', title: `Pedido ${li.dataset.id} arquivado`, duration: 6000,
+        action: { label: 'Desfazer', onClick: () => { li.hidden = false; li.classList.add('restored'); setTimeout(() => li.classList.remove('restored'), 900); toast.show({ type: 'success', title: `Pedido ${li.dataset.id} restaurado` }); } },
+      });
+    },
+    message: () => toast.show({ type: 'info', icon: 'A', title: 'Ana comentou no pedido #4819', body: '“Pode entregar depois das 14h?”', action: { label: 'Responder' } }),
+  };
+  $('triggers').addEventListener('click', (e) => { const b = e.target.closest('[data-demo]'); if (b) DEMOS[b.dataset.demo](); });
+
+  document.querySelectorAll('input[name="pos"]').forEach((r) => r.addEventListener('change', () => toast.configure({ position: r.value })));
+  $('dur').addEventListener('input', () => { toast.configure({ duration: Number($('dur').value) }); $('dur-out').textContent = (Number($('dur').value) / 1000).toFixed(1).replace('.', ',') + ' s'; });
+  $('max').addEventListener('input', () => { toast.configure({ max: Number($('max').value) }); $('max-out').textContent = $('max').value; });
+  $('expand').addEventListener('change', () => toast.configure({ expand: $('expand').checked }));
+  $('clear').addEventListener('click', () => toast.clear());
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  $('copy').addEventListener('click', async () => {
+    const usage = `\n// Uso\nconst toast = createToaster(document.body, { position: 'bottom-right' });\ntoast.show({ type: 'success', title: 'Salvo', body: 'Tudo certo.' });\ntoast.promise(fetch('/api/report'), { loading: 'Gerando…', success: 'Pronto', error: 'Falhou' });\n`;
+    // In a real page the toaster sits on the viewport: swap absolute for fixed.
+    const css = TOAST_CSS.trim().replace('.toaster { position: absolute;', '.toaster { position: fixed;');
+    const text = `${S_OPEN}\n${css}\n${S_CLOSE}\n\n${J_OPEN}\n${createToaster.toString()}\n${usage}${J_CLOSE}\n`;
+    let ok = true;
+    try { await navigator.clipboard.writeText(text); } catch { ok = false; }
+    $('copy').textContent = ok ? 'copiado' : 'sem acesso';
+    $('copy').classList.add('done');
+    setTimeout(() => { $('copy').textContent = 'Copiar toaster'; $('copy').classList.remove('done'); }, 1400);
+  });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    toast.configure({ duration: 3200, max: 4 });
+    const SEQ = ['success', 'promise', 'warning', 'message', 'error', 'info'];
+    let i = 0;
+    DEMOS.success();
+    setInterval(() => DEMOS[SEQ[i = (i + 1) % SEQ.length]](), 1500);
+  }
+})();
+</script>
+</html>

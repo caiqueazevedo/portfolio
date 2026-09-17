@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Overlay Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --radius: 10px; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(180px, 1fr) auto; min-width: 0; }
+  @media (min-width: 560px) { .cell.wide { grid-column: span 2; } }
+  .demo { position: relative; display: grid; place-items: center; padding: 24px 16px; min-width: 0; }
+  .demo > * { max-width: 100%; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+  /* The cookie banner is fixed in a real page; here it sits inside its cell. */
+  .demo .ov-cookie { position: absolute; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  .panel input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .panel input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .panel :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: 3fr 2fr; border: 0; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .demo { padding: 0; font-size: 12px; }
+  html.card .ov-trigger { display: none; }
+  html.card .cell:has(.ov-tour) { order: -1; }
+  /* Not on the tour: it measures with getBoundingClientRect and positions in CSS pixels. */
+  html.card .demo > .ov-cookie-demo { zoom: .8; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Overlay Pack</h1>
+      <p>Tudo que aparece por cima: confirmação, exclusão digitando o nome, gaveta, popover, tooltip, menu de contexto, combobox, lightbox, banner de cookies e tour guiado.</p>
+    </div>
+    <div class="field"><label for="accent">Cor de destaque</label><input type="color" id="accent" value="#c8f31d"></div>
+    <div class="field">
+      <label for="radius">Cantos <output id="radius-out">10 px</output></label>
+      <input type="range" id="radius" min="0" max="20" step="1" value="10">
+    </div>
+    <p class="note">Modais são <code>&lt;dialog&gt;</code> com <code>showModal()</code>: camada superior, fundo inerte, foco preso e Esc de graça. O popover usa o atributo <code>popover</code>, que já fecha ao clicar fora. Entrada e saída animam com <code>@starting-style</code> e <code>transition-behavior: allow-discrete</code>, sem JS de animação. O combobox mantém o foco no campo e anda pela lista com <code>aria-activedescendant</code>; o menu de contexto abre também por Shift+F10 e devolve o foco ao fechar.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 10px)';
+  const FONT = 'font: 15px/1.45 system-ui, sans-serif; color: #e9e6dd;';
+  const TRIGGER = `.ov-trigger { font: 600 14px/1 system-ui, sans-serif; padding: .85em 1.2em; border: 1.5px solid #3a414b; border-radius: calc(${R} * .6); background: #0f1319; color: #e9e6dd; cursor: pointer; }
+.ov-trigger:hover { border-color: ${A}; }
+.ov-trigger:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }`;
+  const BTN = (scope) => `${scope} footer { display: flex; justify-content: flex-end; gap: .5em; flex-wrap: wrap; }
+${scope} footer button { font: 600 14px/1 system-ui, sans-serif; padding: .75em 1em; border: 1.5px solid #3a414b; border-radius: calc(${R} * .6); background: none; color: #e9e6dd; cursor: pointer; }
+${scope} footer button:hover { border-color: #5a626c; }
+${scope} footer .primary { border-color: ${A}; background: ${A}; color: #0e0e0c; }
+${scope} footer .danger { border-color: #f23e2e; background: #f23e2e; color: #0e0e0c; }
+${scope} footer button:disabled { opacity: .35; cursor: not-allowed; }
+${scope} :focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }`;
+  // Enter and exit animations for a modal <dialog>, no JS involved.
+  const DIALOG = (scope, from = 'translate: 0 12px; scale: .97;', fade = true) => {
+    const hidden = (fade ? 'opacity: 0; ' : '') + from;
+    return `${scope} { padding: 0; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; color: #e9e6dd; box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+  ${hidden} transition: opacity .22s, translate .28s cubic-bezier(.3, 0, .2, 1), scale .22s, overlay .28s allow-discrete, display .28s allow-discrete; }
+${scope}[open] { opacity: 1; translate: 0; scale: 1; }
+@starting-style { ${scope}[open] { ${hidden} } }
+${scope}::backdrop { background: rgb(5 6 8 / 0); transition: background .22s, overlay .22s allow-discrete, display .22s allow-discrete; }
+${scope}[open]::backdrop { background: rgb(5 6 8 / .72); }
+@starting-style { ${scope}[open]::backdrop { background: rgb(5 6 8 / 0); } }
+${scope} form { display: grid; gap: .9em; margin: 0; padding: 1.4em; }
+${scope} h2 { margin: 0; font-size: 1.15em; }
+${scope} p { margin: 0; color: #9aa3ad; }`;
+  };
+
+  const ITEMS = [
+    {
+      name: 'Confirmação', sel: '.ov-confirm-demo',
+      html: `<div class="ov-confirm-demo"><button type="button" class="ov-trigger">Sair do editor</button><dialog class="ov-confirm" aria-labelledby="ov-confirm-t" aria-describedby="ov-confirm-d"><form method="dialog"><h2 id="ov-confirm-t">Sair sem salvar?</h2><p id="ov-confirm-d">Você tem 3 alterações que ainda não foram salvas.</p><footer><button value="stay" autofocus>Continuar editando</button><button value="leave" class="danger">Sair mesmo assim</button></footer></form></dialog><output aria-live="polite"></output></div>`,
+      css: `
+${TRIGGER}
+.ov-confirm-demo { ${FONT} display: grid; justify-items: center; gap: .8em; }
+.ov-confirm-demo output { font: 12px ui-monospace, monospace; color: #8a94a0; min-height: 1.4em; }
+.ov-confirm { width: min(24rem, calc(100vw - 2rem)); ${FONT} }
+${DIALOG('.ov-confirm')}
+${BTN('.ov-confirm')}`,
+      // The safe choice has autofocus, so Enter on a reflex never destroys work.
+      js: function (root) {
+        const dialog = root.querySelector('dialog'), out = root.querySelector('output');
+        root.querySelector('.ov-trigger').addEventListener('click', () => dialog.showModal());
+        dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close('stay'); });
+        dialog.addEventListener('close', () => {
+          out.textContent = `returnValue: "${dialog.returnValue || 'escape'}"`;
+          dialog.returnValue = '';
+        });
+      },
+    },
+    {
+      name: 'Excluir digitando o nome', sel: '.ov-danger-demo',
+      html: `<div class="ov-danger-demo"><button type="button" class="ov-trigger">Excluir projeto…</button><dialog class="ov-danger" aria-labelledby="ov-danger-t"><form method="dialog"><h2 id="ov-danger-t">Excluir projeto</h2><p>Isso apaga <b>portfolio-v2</b>, 214 arquivos e todo o histórico de deploys. Não dá para desfazer.</p><label>Digite <code>portfolio-v2</code> para confirmar<input autocomplete="off" spellcheck="false" autofocus></label><footer><button value="cancel">Cancelar</button><button value="delete" class="danger" disabled>Excluir projeto</button></footer></form></dialog><output aria-live="polite"></output></div>`,
+      css: `
+${TRIGGER}
+.ov-danger-demo { ${FONT} display: grid; justify-items: center; gap: .8em; }
+.ov-danger-demo output { font: 12px ui-monospace, monospace; color: #8a94a0; min-height: 1.4em; }
+.ov-danger { width: min(26rem, calc(100vw - 2rem)); border-top: 3px solid #f23e2e; ${FONT} }
+${DIALOG('.ov-danger')}
+.ov-danger p b { color: #e9e6dd; }
+.ov-danger label { display: grid; gap: .45em; font-size: .88em; color: #c9ced4; }
+.ov-danger code { padding: .1em .35em; border-radius: 4px; background: #1f252d; color: #e9e6dd; }
+.ov-danger input { padding: .65em .8em; border: 1.5px solid #3a414b; border-radius: calc(${R} * .6); background: #0f1319; color: #e9e6dd; font: 14px ui-monospace, monospace; outline: none; }
+.ov-danger input:focus { border-color: #f23e2e; }
+${BTN('.ov-danger')}`,
+      js: function (root) {
+        const dialog = root.querySelector('dialog'), input = dialog.querySelector('input');
+        const confirmBtn = dialog.querySelector('.danger'), out = root.querySelector('output');
+        const NAME = 'portfolio-v2';
+        root.querySelector('.ov-trigger').addEventListener('click', () => { input.value = ''; confirmBtn.disabled = true; dialog.showModal(); });
+        input.addEventListener('input', () => { confirmBtn.disabled = input.value.trim() !== NAME; });
+        dialog.addEventListener('close', () => { out.textContent = dialog.returnValue === 'delete' ? 'projeto excluído' : 'nada foi apagado'; dialog.returnValue = ''; });
+      },
+    },
+    {
+      name: 'Gaveta lateral', sel: '.ov-drawer-demo',
+      html: `<div class="ov-drawer-demo"><button type="button" class="ov-trigger">Filtros <span class="ov-drawer-count">2</span></button><dialog class="ov-drawer" aria-labelledby="ov-drawer-t"><form method="dialog"><header><h2 id="ov-drawer-t">Filtros</h2><button value="close" aria-label="Fechar">✕</button></header><div><fieldset><legend>Tipo de vaga</legend><label><input type="checkbox" name="f" checked> Remoto</label><label><input type="checkbox" name="f"> Híbrido</label><label><input type="checkbox" name="f" checked> Presencial</label></fieldset><fieldset><legend>Senioridade</legend><label><input type="checkbox" name="f"> Júnior</label><label><input type="checkbox" name="f"> Pleno</label><label><input type="checkbox" name="f"> Sênior</label></fieldset></div><footer><button value="clear" type="button" data-clear>Limpar</button><button value="apply" class="primary">Ver <span data-n>128</span> vagas</button></footer></form></dialog></div>`,
+      css: `
+${TRIGGER}
+.ov-drawer-count { display: inline-grid; place-items: center; min-width: 1.5em; height: 1.5em; margin-left: .35em; border-radius: 999px; background: ${A}; color: #0e0e0c; font-size: .8em; }
+.ov-drawer-count[hidden] { display: none; }
+.ov-drawer { position: fixed; inset: 0 0 0 auto; width: min(22rem, 92vw); height: 100dvh; max-height: none; margin: 0; border-radius: ${R} 0 0 ${R}; ${FONT} }
+${DIALOG('.ov-drawer', 'translate: 100% 0;', false)}
+.ov-drawer { max-width: none; }
+.ov-drawer form { height: 100%; grid-template-rows: auto 1fr auto; align-content: start; }
+.ov-drawer header { display: flex; justify-content: space-between; align-items: center; }
+.ov-drawer header button { border: 0; background: none; color: #8a94a0; font-size: 1em; cursor: pointer; }
+.ov-drawer fieldset { display: grid; gap: .55em; align-content: start; margin: 0 0 1em; padding: 0; border: 0; }
+.ov-drawer legend { margin-bottom: .5em; font-size: .75em; letter-spacing: .12em; text-transform: uppercase; color: #8a94a0; }
+.ov-drawer fieldset label { display: flex; align-items: center; gap: .6em; cursor: pointer; }
+.ov-drawer input { width: 1.1em; height: 1.1em; margin: 0; accent-color: ${A}; }
+.ov-drawer > form > div { overflow: auto; }
+${BTN('.ov-drawer')}`,
+      js: function (root) {
+        const dialog = root.querySelector('dialog'), boxes = [...dialog.querySelectorAll('input')];
+        const count = root.querySelector('.ov-drawer-count'), n = dialog.querySelector('[data-n]');
+        // Stand-in result counts per filter; a real page would ask the server.
+        const HITS = [118, 64, 58, 41, 97, 102], ALL = 240;
+        const sync = () => {
+          const on = boxes.filter((b) => b.checked);
+          count.textContent = String(on.length);
+          count.hidden = on.length === 0;
+          n.textContent = String(on.length ? Math.min(ALL, on.reduce((s, b) => s + HITS[boxes.indexOf(b)], 0)) : ALL);
+        };
+        root.querySelector('.ov-trigger').addEventListener('click', () => dialog.showModal());
+        dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+        dialog.querySelector('[data-clear]').addEventListener('click', () => { boxes.forEach((b) => { b.checked = false; }); sync(); });
+        boxes.forEach((b) => b.addEventListener('change', sync));
+        sync();
+      },
+    },
+    {
+      name: 'Popover de conta', sel: '.ov-pop-demo',
+      html: `<div class="ov-pop-demo"><button type="button" class="ov-avatar" popovertarget="ov-account" aria-label="Abrir menu da conta">CA</button><div id="ov-account" popover class="ov-pop"><div class="ov-pop-head"><b>Caique Azevedo</b><span>caique@exemplo.com</span></div><button type="button">Perfil</button><button type="button">Faturamento</button><button type="button">Atalhos <kbd>?</kbd></button><hr><button type="button" class="out">Sair</button></div></div>`,
+      css: `
+.ov-avatar { width: 2.8em; height: 2.8em; border: 2px solid #2a2f37; border-radius: 50%; background: linear-gradient(135deg, ${A}, #3a8f6a); color: #0e0e0c; font: 700 14px/1 system-ui, sans-serif; cursor: pointer; }
+.ov-avatar:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
+.ov-pop { inset: auto; margin: 0; width: 15rem; padding: .35em; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; color: #e9e6dd; ${FONT} font-size: 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+  opacity: 0; translate: 0 -6px; transition: opacity .16s, translate .16s, overlay .16s allow-discrete, display .16s allow-discrete; }
+.ov-pop:popover-open { opacity: 1; translate: 0; }
+@starting-style { .ov-pop:popover-open { opacity: 0; translate: 0 -6px; } }
+.ov-pop-head { display: grid; padding: .6em .7em .7em; border-bottom: 1px solid #2a2f37; margin-bottom: .3em; }
+.ov-pop-head span { font-size: .85em; color: #8a94a0; }
+.ov-pop button { display: flex; justify-content: space-between; width: 100%; padding: .6em .7em; border: 0; border-radius: calc(${R} * .6); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.ov-pop button:hover, .ov-pop button:focus-visible { background: #1f252d; outline: none; }
+.ov-pop kbd { font: 11px ui-monospace, monospace; color: #8a94a0; }
+.ov-pop hr { margin: .3em 0; border: 0; border-top: 1px solid #2a2f37; }
+.ov-pop .out { color: #f23e2e; }`,
+      // The popover API handles open/close, Esc and click-outside; this only places it under the avatar.
+      js: function (root) {
+        const btn = root.querySelector('.ov-avatar'), pop = root.querySelector('[popover]');
+        pop.addEventListener('beforetoggle', (e) => {
+          if (e.newState !== 'open') return;
+          const r = btn.getBoundingClientRect(), w = 240;
+          pop.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2))}px`;
+          pop.style.top = `${Math.min(innerHeight - 8, r.bottom + 8)}px`;
+        });
+        pop.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => pop.hidePopover()));
+      },
+    },
+    {
+      name: 'Tooltip acessível', sel: '.ov-tip-demo', card: false,
+      html: `<p class="ov-tip-demo">Taxa de conversão <b>3,8%</b><span class="ov-tip-wrap"><button type="button" class="ov-tip-trigger" aria-describedby="ov-tip-1" aria-label="O que é isso?">?</button><span role="tooltip" id="ov-tip-1" class="ov-tip">Pedidos pagos divididos pelas visitas únicas dos últimos 30 dias.</span></span></p>`,
+      css: `
+.ov-tip-demo { ${FONT} margin: 0; display: flex; align-items: center; gap: .5em; }
+.ov-tip-demo > b { font-family: ui-monospace, monospace; color: ${A}; }
+.ov-tip-wrap { position: relative; display: inline-flex; }
+.ov-tip-trigger { display: grid; place-items: center; width: 1.5em; height: 1.5em; padding: 0; border: 1.5px solid #5a626c; border-radius: 50%; background: none; color: #c9ced4; font: 700 .75em/1 system-ui, sans-serif; cursor: help; }
+.ov-tip-trigger:focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }
+.ov-tip { position: absolute; left: 50%; bottom: calc(100% + 10px); z-index: 5; width: max-content; max-width: 15em; padding: .55em .75em; border-radius: calc(${R} * .6); background: #e9e6dd; color: #0e0e0c; font-size: .8em; line-height: 1.35;
+  translate: -50% 4px; opacity: 0; visibility: hidden; transition: opacity .15s, translate .15s, visibility 0s .15s; }
+.ov-tip::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% 0; border: 6px solid transparent; border-top-color: #e9e6dd; }
+.ov-tip[data-side="bottom"] { bottom: auto; top: calc(100% + 10px); translate: -50% -4px; }
+.ov-tip[data-side="bottom"]::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: #e9e6dd; }
+.ov-tip[data-open] { opacity: 1; visibility: visible; translate: -50% 0; transition: opacity .15s, translate .15s; }`,
+      // Hoverable (the pointer can move onto the text), dismissible with Esc, and it flips when there is no room above.
+      js: function (root) {
+        const wrap = root.querySelector('.ov-tip-wrap'), tip = root.querySelector('[role="tooltip"]');
+        let showTimer = 0, hideTimer = 0;
+        const open = (delay) => {
+          clearTimeout(hideTimer);
+          showTimer = setTimeout(() => {
+            const r = wrap.getBoundingClientRect();
+            tip.dataset.side = r.top < tip.offsetHeight + 24 ? 'bottom' : 'top';
+            tip.dataset.open = '';
+          }, delay);
+        };
+        const close = (delay) => { clearTimeout(showTimer); hideTimer = setTimeout(() => delete tip.dataset.open, delay); };
+        wrap.addEventListener('pointerenter', () => open(300));
+        wrap.addEventListener('pointerleave', () => close(150));
+        wrap.addEventListener('focusin', () => open(0));
+        wrap.addEventListener('focusout', () => close(0));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(0); });
+        root.pin = () => { tip.dataset.side = 'top'; tip.dataset.open = ''; };
+      },
+    },
+    {
+      name: 'Menu de contexto', sel: '.ov-ctx',
+      html: `<div class="ov-ctx" tabindex="0" aria-label="relatorio-q3.pdf. Botão direito ou Shift+F10 abre as ações."><div class="ov-ctx-file" aria-hidden="true"><i></i><span>relatorio-q3.pdf</span></div><small>botão direito · Shift+F10</small><ul class="ov-ctx-menu" role="menu" aria-label="Ações do arquivo" hidden><li role="menuitem" tabindex="-1">Abrir<kbd>Enter</kbd></li><li role="menuitem" tabindex="-1">Renomear<kbd>F2</kbd></li><li role="menuitem" tabindex="-1">Duplicar<kbd>Ctrl D</kbd></li><li role="menuitem" tabindex="-1">Compartilhar<kbd>⇧ S</kbd></li><li role="separator"></li><li role="menuitem" tabindex="-1" class="danger">Excluir<kbd>Del</kbd></li></ul><output aria-live="polite"></output></div>`,
+      css: `
+.ov-ctx { ${FONT} display: grid; justify-items: center; gap: .5em; width: 100%; padding: 1.2em; border: 1.5px dashed #2a2f37; border-radius: ${R}; cursor: context-menu; user-select: none; }
+.ov-ctx:focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }
+.ov-ctx-file { display: grid; justify-items: center; gap: .4em; font-size: .85em; }
+.ov-ctx-file i { width: 2.4em; height: 3em; border-radius: 3px; background: linear-gradient(225deg, transparent .55em, #e9e6dd .56em); position: relative; }
+.ov-ctx-file i::after { content: "PDF"; position: absolute; left: .2em; bottom: .35em; padding: .1em .25em; border-radius: 2px; background: #f23e2e; color: #0e0e0c; font: 700 .55em/1 system-ui, sans-serif; }
+.ov-ctx small { font: 11px ui-monospace, monospace; color: #8a94a0; }
+.ov-ctx output { font: 12px ui-monospace, monospace; color: ${A}; min-height: 1.4em; }
+.ov-ctx-menu { position: fixed; z-index: 50; min-width: 12rem; margin: 0; padding: .3em; list-style: none; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; box-shadow: 0 18px 50px rgba(0, 0, 0, .55); font-size: 14px; transform-origin: top left; animation: ov-ctx-in .12s ease-out; }
+.ov-ctx-menu li[role="menuitem"] { display: flex; justify-content: space-between; gap: 2em; padding: .55em .7em; border-radius: calc(${R} * .6); cursor: pointer; outline: none; }
+.ov-ctx-menu li[role="menuitem"]:is(:hover, :focus) { background: #1f252d; }
+.ov-ctx-menu kbd { font: 11px ui-monospace, monospace; color: #8a94a0; }
+.ov-ctx-menu .danger { color: #f23e2e; }
+.ov-ctx-menu [role="separator"] { height: 1px; margin: .3em 0; background: #2a2f37; }
+@keyframes ov-ctx-in { from { opacity: 0; transform: scale(.94); } }`,
+      js: function (root) {
+        const menu = root.querySelector('[role="menu"]'), out = root.querySelector('output');
+        const items = [...menu.querySelectorAll('[role="menuitem"]')];
+        let focusOnOpen = true;
+        function open(x, y, focus = true) {
+          menu.hidden = false;
+          // Keep the whole menu inside the viewport.
+          const w = menu.offsetWidth, h = menu.offsetHeight;
+          menu.style.left = `${Math.max(4, Math.min(x, innerWidth - w - 4))}px`;
+          menu.style.top = `${Math.max(4, Math.min(y, innerHeight - h - 4))}px`;
+          if (focus) items[0].focus({ preventScroll: true });
+        }
+        function close(returnFocus) {
+          if (menu.hidden) return;
+          menu.hidden = true;
+          if (returnFocus) root.focus({ preventScroll: true });
+        }
+        const run = (item) => { out.textContent = `→ ${item.firstChild.textContent}`; close(true); };
+        root.addEventListener('contextmenu', (e) => { e.preventDefault(); open(e.clientX, e.clientY, focusOnOpen); });
+        root.addEventListener('keydown', (e) => {
+          if (e.target !== root) return;
+          if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+            e.preventDefault();
+            const r = root.getBoundingClientRect();
+            open(r.left + r.width / 2, r.top + r.height / 2);
+          }
+        });
+        menu.addEventListener('keydown', (e) => {
+          const i = items.indexOf(document.activeElement);
+          const go = (k) => items[(k + items.length) % items.length].focus({ preventScroll: true });
+          if (e.key === 'ArrowDown') { e.preventDefault(); go(i + 1); }
+          else if (e.key === 'ArrowUp') { e.preventDefault(); go(i - 1); }
+          else if (e.key === 'Home') { e.preventDefault(); go(0); }
+          else if (e.key === 'End') { e.preventDefault(); go(items.length - 1); }
+          else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (i >= 0) run(items[i]); }
+          else if (e.key === 'Escape') { e.preventDefault(); close(true); }
+          else if (e.key === 'Tab') close(false);
+          else if (e.key.length === 1) {
+            // Type-ahead: jump to the next item starting with that letter.
+            const k = items.findIndex((it, j) => j > i && it.textContent.toLowerCase().startsWith(e.key.toLowerCase()));
+            const any = k >= 0 ? k : items.findIndex((it) => it.textContent.toLowerCase().startsWith(e.key.toLowerCase()));
+            if (any >= 0) go(any);
+          }
+        });
+        items.forEach((it) => it.addEventListener('click', () => run(it)));
+        document.addEventListener('pointerdown', (e) => { if (!menu.contains(e.target)) close(false); });
+        addEventListener('blur', () => close(false));
+        root.openAt = (x, y) => open(x, y, false);
+        root.closeMenu = () => close(false);
+      },
+    },
+    {
+      name: 'Combobox com busca', sel: '.ov-combo',
+      html: `<div class="ov-combo"><label for="ov-city">Cidade de entrega</label><div class="ov-combo-box"><input id="ov-city" role="combobox" aria-expanded="false" aria-controls="ov-city-list" aria-autocomplete="list" autocomplete="off" placeholder="Comece a digitar"><button type="button" tabindex="-1" aria-label="Mostrar cidades">▾</button></div><ul id="ov-city-list" role="listbox" aria-label="Cidades" hidden></ul><span class="ov-combo-sr" aria-live="polite"></span></div>`,
+      css: `
+.ov-combo { ${FONT} position: relative; width: 17rem; }
+.ov-combo label { display: block; margin-bottom: .4em; font-size: .8em; font-weight: 600; color: #c9ced4; }
+.ov-combo-box { display: flex; border: 1.5px solid #3a414b; border-radius: calc(${R} * .6); background: #0f1319; }
+.ov-combo-box:focus-within { border-color: ${A}; }
+.ov-combo input { flex: 1; min-width: 0; padding: .7em .85em; border: 0; background: none; color: inherit; font: inherit; outline: none; }
+.ov-combo-box button { padding: 0 .8em; border: 0; background: none; color: #8a94a0; cursor: pointer; }
+.ov-combo [role="listbox"] { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; max-height: 12.5em; margin: 0; padding: .3em; overflow-y: auto; list-style: none; border: 1px solid #2a2f37; border-radius: calc(${R} * .6); background: #13171c; box-shadow: 0 18px 40px rgba(0, 0, 0, .5); font-size: 14px; }
+.ov-combo [role="option"] { display: flex; justify-content: space-between; gap: 1em; padding: .5em .6em; border-radius: calc(${R} * .4); cursor: pointer; }
+.ov-combo [role="option"] small { color: #8a94a0; font-family: ui-monospace, monospace; }
+.ov-combo [role="option"][aria-selected="true"] { background: #1f252d; box-shadow: inset 2px 0 0 ${A}; }
+.ov-combo mark { background: none; color: ${A}; font-weight: 700; }
+.ov-combo .empty { padding: .6em; color: #8a94a0; }
+.ov-combo-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }`,
+      // Focus never leaves the input: the highlighted option is announced through aria-activedescendant.
+      js: function (root) {
+        const CITIES = [['São Paulo', 'SP'], ['Rio de Janeiro', 'RJ'], ['Belo Horizonte', 'MG'], ['Brasília', 'DF'], ['Salvador', 'BA'], ['Fortaleza', 'CE'], ['Curitiba', 'PR'], ['Manaus', 'AM'], ['Recife', 'PE'], ['Porto Alegre', 'RS'], ['Belém', 'PA'], ['Goiânia', 'GO'], ['Guarulhos', 'SP'], ['Campinas', 'SP'], ['São Luís', 'MA'], ['Maceió', 'AL'], ['Natal', 'RN'], ['Teresina', 'PI'], ['Campo Grande', 'MS'], ['João Pessoa', 'PB'], ['Florianópolis', 'SC'], ['Ribeirão Preto', 'SP'], ['Uberlândia', 'MG'], ['Joinville', 'SC'], ['Londrina', 'PR'], ['Niterói', 'RJ'], ['Vitória', 'ES'], ['Cuiabá', 'MT'], ['Aracaju', 'SE'], ['Santos', 'SP'], ['São José dos Campos', 'SP'], ['Juiz de Fora', 'MG'], ['Maringá', 'PR'], ['Caxias do Sul', 'RS'], ['Palmas', 'TO'], ['Porto Velho', 'RO'], ['Macapá', 'AP'], ['Boa Vista', 'RR'], ['Rio Branco', 'AC'], ['Petrópolis', 'RJ']];
+        const input = root.querySelector('input'), list = root.querySelector('[role="listbox"]'), sr = root.querySelector('.ov-combo-sr');
+        const plain = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+        let shown = [], active = -1;
+
+        function filter() {
+          const q = plain(input.value.trim());
+          shown = CITIES.filter(([c]) => plain(c).includes(q))
+            .sort((a, b) => plain(a[0]).indexOf(q) - plain(b[0]).indexOf(q) || a[0].localeCompare(b[0]));
+          active = shown.length ? 0 : -1;
+          list.innerHTML = shown.length ? shown.map(([c, uf], i) => {
+            const at = plain(c).indexOf(q);
+            // Accent-insensitive match; indices line up because NFD stripping keeps one char per letter here.
+            const label = q ? esc(c.slice(0, at)) + '<mark>' + esc(c.slice(at, at + q.length)) + '</mark>' + esc(c.slice(at + q.length)) : esc(c);
+            return `<li role="option" id="ov-city-${i}" aria-selected="false">${label}<small>${uf}</small></li>`;
+          }).join('') : `<li class="empty">Nenhuma cidade para “${esc(input.value.trim())}”</li>`;
+          sr.textContent = shown.length ? `${shown.length} cidades` : 'Nenhuma cidade';
+          paint();
+        }
+        function paint() {
+          [...list.querySelectorAll('[role="option"]')].forEach((o, i) => o.setAttribute('aria-selected', String(i === active)));
+          const el = active >= 0 ? list.children[active] : null;
+          if (el) {
+            input.setAttribute('aria-activedescendant', el.id);
+            // Scroll the list only; scrollIntoView would also move every page above it.
+            if (el.offsetTop < list.scrollTop) list.scrollTop = el.offsetTop - 4;
+            else if (el.offsetTop + el.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = el.offsetTop + el.offsetHeight - list.clientHeight + 4;
+          } else input.removeAttribute('aria-activedescendant');
+        }
+        const open = () => { if (!list.hidden) return; filter(); list.hidden = false; input.setAttribute('aria-expanded', 'true'); };
+        const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); };
+        const choose = (i) => { if (!shown[i]) return; input.value = shown[i][0]; sr.textContent = `${shown[i][0]}, ${shown[i][1]} selecionada`; close(); };
+
+        input.addEventListener('input', () => { if (list.hidden) open(); else filter(); });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowDown') { e.preventDefault(); if (list.hidden) open(); else { active = Math.min(shown.length - 1, active + 1); paint(); } }
+          else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(0, active - 1); paint(); }
+          else if (e.key === 'Enter' && !list.hidden) { e.preventDefault(); choose(active); }
+          else if (e.key === 'Escape') { if (!list.hidden) close(); else input.value = ''; }
+          else if (e.key === 'Tab') close();
+        });
+        input.addEventListener('blur', () => setTimeout(close, 0));
+        // pointerdown + preventDefault keeps focus in the input while picking with the mouse.
+        list.addEventListener('pointerdown', (e) => { e.preventDefault(); const o = e.target.closest('[role="option"]'); if (o) choose([...list.children].indexOf(o)); });
+        list.addEventListener('pointermove', (e) => { const o = e.target.closest('[role="option"]'); if (o) { const i = [...list.children].indexOf(o); if (i !== active) { active = i; paint(); } } });
+        root.querySelector('.ov-combo-box button').addEventListener('pointerdown', (e) => { e.preventDefault(); if (list.hidden) { input.focus(); open(); } else close(); });
+      },
+    },
+    {
+      name: 'Galeria em lightbox', sel: '.ov-gallery',
+      html: `<div class="ov-gallery"><ul class="ov-thumbs" aria-label="Galeria"></ul><dialog class="ov-lightbox" aria-label="Imagem ampliada"><figure><div class="ov-lightbox-img"></div><figcaption><span></span><small aria-live="polite"></small></figcaption></figure><button type="button" class="ov-nav prev" aria-label="Anterior">←</button><button type="button" class="ov-nav next" aria-label="Próxima">→</button><button type="button" class="ov-x" aria-label="Fechar">✕</button></dialog></div>`,
+      css: `
+.ov-gallery { ${FONT} }
+.ov-thumbs { display: grid; grid-template-columns: repeat(3, 4.6em); gap: .4em; margin: 0; padding: 0; list-style: none; }
+.ov-thumbs button { display: block; width: 100%; aspect-ratio: 4 / 3; padding: 0; border: 0; border-radius: calc(${R} * .5); overflow: hidden; cursor: zoom-in; transition: transform .15s; }
+.ov-thumbs button:hover { transform: scale(1.05); }
+.ov-thumbs button:focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }
+.ov-thumbs svg, .ov-lightbox svg { display: block; width: 100%; height: 100%; }
+.ov-lightbox { width: min(56rem, 94vw); max-width: none; max-height: 92dvh; padding: 0; border: 0; background: transparent; color: #e9e6dd; overflow: visible;
+  opacity: 0; scale: .96; transition: opacity .2s, scale .2s, overlay .2s allow-discrete, display .2s allow-discrete; }
+.ov-lightbox[open] { opacity: 1; scale: 1; }
+@starting-style { .ov-lightbox[open] { opacity: 0; scale: .96; } }
+.ov-lightbox::backdrop { background: rgb(0 0 0 / .88); }
+.ov-lightbox figure { margin: 0; touch-action: pan-y; }
+.ov-lightbox-img { aspect-ratio: 4 / 3; max-height: 80dvh; margin: 0 auto; border-radius: ${R}; overflow: hidden; }
+.ov-lightbox-img.swap { animation: ov-swap .25s ease-out; }
+.ov-lightbox figcaption { display: flex; justify-content: space-between; padding: .7em .2em 0; font-size: 14px; }
+.ov-lightbox figcaption small { font-family: ui-monospace, monospace; color: #8a94a0; }
+.ov-nav, .ov-x { position: absolute; display: grid; place-items: center; width: 2.6em; height: 2.6em; border: 0; border-radius: 50%; background: rgb(19 23 28 / .85); color: #e9e6dd; font-size: 1em; cursor: pointer; }
+.ov-nav { top: 40%; } .ov-nav.prev { left: .6em; } .ov-nav.next { right: .6em; }
+.ov-x { top: .6em; right: .6em; }
+.ov-nav:hover, .ov-x:hover { background: ${A}; color: #0e0e0c; }
+.ov-lightbox :focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }
+@keyframes ov-swap { from { opacity: .3; transform: translateX(calc(var(--dir, 1) * 18px)); } }`,
+      js: function (root) {
+        const PICS = ['Lagoa ao amanhecer', 'Estúdio azul', 'Jardim lilás', 'Duna', 'Noturno', 'Mata'];
+        // Placeholder art: swap for <img> with your own sources.
+        const art = (i) => {
+          const h = [28, 205, 285, 40, 240, 140][i];
+          return `<svg viewBox="0 0 160 120" aria-hidden="true"><rect width="160" height="120" fill="hsl(${h} 40% 13%)"/><circle cx="${42 + (i * 23) % 80}" cy="${44 + (i * 17) % 30}" r="${22 + i * 3}" fill="hsl(${h} 85% 62%)"/><rect x="${60 - i * 4}" y="${58 + i * 3}" width="${64 + i * 5}" height="${12 + i * 2}" fill="hsl(${(h + 50) % 360} 70% 72%)" transform="rotate(${-14 + i * 6} 100 70)"/><path d="M0 ${96 - i * 3}Q80 ${70 + i * 5} 160 ${88 - i * 2}V120H0Z" fill="hsl(${h} 45% 28%)"/></svg>`;
+        };
+        const thumbs = root.querySelector('.ov-thumbs'), dialog = root.querySelector('dialog');
+        const img = dialog.querySelector('.ov-lightbox-img'), title = dialog.querySelector('figcaption span'), counter = dialog.querySelector('figcaption small');
+        let at = 0, opener = null;
+        thumbs.innerHTML = PICS.map((p, i) => `<li><button type="button" data-i="${i}" aria-label="Ampliar: ${p}">${art(i)}</button></li>`).join('');
+        const show = (i, dir = 0) => {
+          at = (i + PICS.length) % PICS.length;
+          img.innerHTML = art(at);
+          img.style.setProperty('--dir', String(dir || 1));
+          if (dir) { img.classList.remove('swap'); void img.offsetWidth; img.classList.add('swap'); }
+          title.textContent = PICS[at];
+          counter.textContent = `${at + 1} / ${PICS.length}`;
+        };
+        thumbs.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; opener = b; show(Number(b.dataset.i)); dialog.showModal(); });
+        dialog.querySelector('.prev').addEventListener('click', () => show(at - 1, -1));
+        dialog.querySelector('.next').addEventListener('click', () => show(at + 1, 1));
+        dialog.querySelector('.ov-x').addEventListener('click', () => dialog.close());
+        dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+        dialog.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(at - 1, -1); if (e.key === 'ArrowRight') show(at + 1, 1); });
+        // Return focus to the thumbnail that opened it (the dialog would go back to the body otherwise in some browsers).
+        dialog.addEventListener('close', () => (thumbs.querySelector(`[data-i="${at}"]`) || opener)?.focus({ preventScroll: true }));
+        let x0 = null;
+        const fig = dialog.querySelector('figure');
+        fig.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+        fig.addEventListener('pointerup', (e) => { if (x0 === null) return; const dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 50) show(at + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1); });
+      },
+    },
+    {
+      name: 'Banner de cookies', sel: '.ov-cookie-demo', card: true, wide: true,
+      html: `<div class="ov-cookie-demo"><div class="ov-cookie-page" aria-hidden="true"><i></i><i></i><i></i></div><section class="ov-cookie" aria-label="Aviso de cookies" hidden><p><b>Cookies.</b> Usamos os essenciais para o site funcionar e, se você permitir, métricas anônimas.</p><div class="ov-cookie-actions"><button type="button" data-choice="essential">Só essenciais</button><button type="button" data-choice="prefs" class="link">Preferências</button><button type="button" data-choice="all">Aceitar todos</button></div></section><button type="button" class="ov-cookie-reopen" hidden>Cookies</button><dialog class="ov-cookie-prefs" aria-labelledby="ov-cookie-pt"><form method="dialog"><h2 id="ov-cookie-pt">Preferências de cookies</h2><label><span><b>Essenciais</b><small>Login, carrinho, segurança.</small></span><input type="checkbox" checked disabled></label><label><span><b>Métricas</b><small>Páginas vistas, sem identificar você.</small></span><input type="checkbox" name="metrics"></label><label><span><b>Marketing</b><small>Anúncios em outros sites.</small></span><input type="checkbox" name="marketing"></label><footer><button value="cancel">Cancelar</button><button value="save" class="primary">Salvar escolhas</button></footer></form></dialog><output aria-live="polite"></output></div>`,
+      css: `
+.ov-cookie-demo { ${FONT} position: relative; width: 100%; height: 100%; min-height: 12em; overflow: hidden; }
+.ov-cookie-page { position: absolute; inset: 0; padding: 1em; display: grid; gap: .6em; align-content: start; }
+.ov-cookie-page i { height: .7em; border-radius: 3px; background: #14181d; }
+.ov-cookie-page i:first-child { width: 40%; height: 1.2em; }
+.ov-cookie-page i:nth-child(3) { width: 70%; }
+.ov-cookie-demo output { position: absolute; left: 1em; top: 3.6em; font: 12px ui-monospace, monospace; color: ${A}; }
+/* In a real page: position fixed at the bottom of the viewport. */
+.ov-cookie { position: fixed; left: .8em; right: .8em; bottom: .8em; z-index: 40; display: flex; flex-wrap: wrap; align-items: center; gap: .8em 1.2em; padding: .9em 1em; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; box-shadow: 0 16px 40px rgba(0, 0, 0, .5); font-size: 14px; animation: ov-cookie-in .35s cubic-bezier(.2, .8, .2, 1); }
+.ov-cookie[hidden] { display: none; }
+.ov-cookie p { flex: 1 1 16em; margin: 0; color: #c9ced4; }
+.ov-cookie p b { color: #e9e6dd; }
+.ov-cookie-actions { display: flex; flex-wrap: wrap; gap: .4em; }
+/* Reject and accept have the same weight: consent has to be a free choice. */
+.ov-cookie-actions button { font: 600 13px/1 system-ui, sans-serif; padding: .7em .9em; border: 1.5px solid #e9e6dd; border-radius: calc(${R} * .6); background: none; color: #e9e6dd; cursor: pointer; }
+.ov-cookie-actions [data-choice="all"] { background: #e9e6dd; color: #0e0e0c; }
+.ov-cookie-actions .link { border-color: transparent; text-decoration: underline; text-underline-offset: 3px; }
+.ov-cookie-actions button:focus-visible, .ov-cookie-reopen:focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }
+.ov-cookie-reopen { position: absolute; left: .8em; bottom: .8em; font: 600 12px/1 system-ui, sans-serif; padding: .55em .75em; border: 1px solid #2a2f37; border-radius: 999px; background: #13171c; color: #c9ced4; cursor: pointer; }
+.ov-cookie-prefs { width: min(26rem, calc(100vw - 2rem)); ${FONT} }
+${DIALOG('.ov-cookie-prefs')}
+.ov-cookie-prefs label { display: flex; justify-content: space-between; align-items: center; gap: 1em; padding: .7em 0; border-top: 1px solid #2a2f37; cursor: pointer; }
+.ov-cookie-prefs label span { display: grid; }
+.ov-cookie-prefs small { color: #8a94a0; font-size: .82em; }
+.ov-cookie-prefs input { width: 1.2em; height: 1.2em; accent-color: ${A}; }
+${BTN('.ov-cookie-prefs')}
+@keyframes ov-cookie-in { from { transform: translateY(120%); } }`,
+      js: function (root) {
+        const KEY = 'consent.v1';
+        const banner = root.querySelector('.ov-cookie'), reopen = root.querySelector('.ov-cookie-reopen');
+        const dialog = root.querySelector('dialog'), out = root.querySelector('output');
+        const read = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } };
+        const save = (c) => {
+          try { localStorage.setItem(KEY, JSON.stringify(c)); } catch {}
+          document.dispatchEvent(new CustomEvent('consent', { detail: c }));
+          out.textContent = `métricas: ${c.metrics ? 'sim' : 'não'} · marketing: ${c.marketing ? 'sim' : 'não'}`;
+          banner.hidden = true; reopen.hidden = false;
+        };
+        const showBanner = () => { banner.hidden = false; reopen.hidden = true; };
+        banner.addEventListener('click', (e) => {
+          const c = e.target.closest('[data-choice]')?.dataset.choice;
+          if (c === 'essential') save({ metrics: false, marketing: false, at: Date.now() });
+          if (c === 'all') save({ metrics: true, marketing: true, at: Date.now() });
+          if (c === 'prefs') {
+            const cur = read() || {};
+            dialog.querySelector('[name="metrics"]').checked = !!cur.metrics;
+            dialog.querySelector('[name="marketing"]').checked = !!cur.marketing;
+            dialog.showModal();
+          }
+        });
+        dialog.addEventListener('close', () => {
+          if (dialog.returnValue === 'save') save({ metrics: dialog.querySelector('[name="metrics"]').checked, marketing: dialog.querySelector('[name="marketing"]').checked, at: Date.now() });
+          dialog.returnValue = '';
+        });
+        reopen.addEventListener('click', showBanner);
+        const prev = read();
+        if (prev) { banner.hidden = true; reopen.hidden = false; out.textContent = `métricas: ${prev.metrics ? 'sim' : 'não'} · marketing: ${prev.marketing ? 'sim' : 'não'}`; }
+        else showBanner();
+        root.replay = showBanner;
+      },
+    },
+    {
+      name: 'Tour guiado', sel: '.ov-tour', card: true, wide: true,
+      html: `<div class="ov-tour"><div class="ov-tour-app" aria-hidden="false"><header><b>Loja</b><span class="ov-tour-search" data-step="1">Buscar…</span><span class="ov-tour-new" data-step="2">+ Novo pedido</span><span class="ov-tour-me" data-step="4">CA</span></header><nav><span>Início</span><span data-step="3">Relatórios</span><span>Clientes</span></nav><main><i></i><i></i><i></i></main></div><div class="ov-tour-spot" hidden></div><div class="ov-tour-tip" role="dialog" aria-label="Tour" hidden><p aria-live="polite"></p><footer><small></small><button type="button" data-act="skip">Pular</button><button type="button" data-act="back">Voltar</button><button type="button" data-act="next" class="next">Próximo</button></footer></div><button type="button" class="ov-trigger ov-tour-start" data-act="start">Iniciar tour</button></div>`,
+      css: `
+${TRIGGER}
+.ov-tour { ${FONT} position: relative; width: 100%; height: 100%; min-height: 15em; overflow: hidden; font-size: 13px; }
+.ov-tour-app { position: absolute; inset: 0; display: grid; grid-template-columns: 8em 1fr; grid-template-rows: auto 1fr; }
+.ov-tour-app header { grid-column: 1 / -1; display: flex; align-items: center; gap: .8em; padding: .7em .9em; border-bottom: 1px solid #1a1f26; }
+.ov-tour-search { flex: 1; padding: .4em .7em; border: 1px solid #2a2f37; border-radius: 6px; color: #8a94a0; }
+.ov-tour-new { padding: .4em .7em; border-radius: 6px; background: #e9e6dd; color: #0e0e0c; font-weight: 600; white-space: nowrap; }
+.ov-tour-me { display: grid; place-items: center; width: 2em; height: 2em; border-radius: 50%; background: #2a2f37; font-size: .85em; }
+.ov-tour-app nav { display: grid; align-content: start; gap: .2em; padding: .7em; border-right: 1px solid #1a1f26; }
+.ov-tour-app nav span { padding: .35em .5em; border-radius: 5px; color: #8a94a0; }
+.ov-tour-app main { display: grid; align-content: start; gap: .6em; padding: .9em; }
+.ov-tour-app main i { height: 2.4em; border-radius: 6px; background: #11151a; }
+.ov-tour-start { position: absolute; right: .9em; bottom: .9em; }
+/* The spotlight is one element; its giant shadow darkens everything else. */
+.ov-tour-spot { position: absolute; z-index: 2; border-radius: 8px; box-shadow: 0 0 0 9999px rgb(0 0 0 / .68), 0 0 0 2px ${A}; pointer-events: none; transition: left .35s cubic-bezier(.5, 0, .2, 1), top .35s cubic-bezier(.5, 0, .2, 1), width .35s cubic-bezier(.5, 0, .2, 1), height .35s cubic-bezier(.5, 0, .2, 1); }
+.ov-tour-tip { position: absolute; z-index: 3; width: min(17em, calc(100% - 1.6em)); padding: .8em .9em; border-radius: ${R}; background: #e9e6dd; color: #0e0e0c; box-shadow: 0 14px 40px rgba(0, 0, 0, .5); transition: left .35s cubic-bezier(.5, 0, .2, 1), top .35s cubic-bezier(.5, 0, .2, 1); }
+.ov-tour-tip p { margin: 0 0 .7em; line-height: 1.4; }
+.ov-tour-tip footer { display: flex; align-items: center; gap: .3em; }
+.ov-tour-tip small { flex: 1; font-family: ui-monospace, monospace; color: #555; }
+.ov-tour-tip button { font: 600 12px/1 system-ui, sans-serif; padding: .55em .7em; border: 0; border-radius: calc(${R} * .5); background: none; color: #0e0e0c; cursor: pointer; }
+.ov-tour-tip .next { background: #0e0e0c; color: ${A}; }
+.ov-tour-tip button:disabled { opacity: .3; cursor: default; }
+.ov-tour-tip button:focus-visible { outline: 2px solid #0e0e0c; outline-offset: 2px; }`,
+      js: function (root) {
+        const STEPS = [
+          { n: 1, text: 'Busque pedidos por nome, número ou cidade. Atalho: /' },
+          { n: 2, text: 'Crie um pedido manual, para vendas por telefone ou balcão.' },
+          { n: 3, text: 'Relatórios de vendas, com exportação em CSV.' },
+          { n: 4, text: 'Sua conta, plano e preferências ficam aqui.' },
+        ];
+        const spot = root.querySelector('.ov-tour-spot'), tip = root.querySelector('.ov-tour-tip');
+        const text = tip.querySelector('p'), count = tip.querySelector('small');
+        const back = tip.querySelector('[data-act="back"]'), next = tip.querySelector('[data-act="next"]');
+        let at = -1;
+        function place(focus) {
+          const step = STEPS[at], target = root.querySelector(`[data-step="${step.n}"]`);
+          const box = root.getBoundingClientRect(), r = target.getBoundingClientRect(), pad = 5;
+          Object.assign(spot.style, { left: `${r.left - box.left - pad}px`, top: `${r.top - box.top - pad}px`, width: `${r.width + pad * 2}px`, height: `${r.height + pad * 2}px` });
+          text.textContent = step.text;
+          count.textContent = `${at + 1}/${STEPS.length}`;
+          back.disabled = at === 0;
+          next.textContent = at === STEPS.length - 1 ? 'Concluir' : 'Próximo';
+          // Below the target when it fits, otherwise above; always inside the container.
+          const below = r.bottom - box.top + 12, h = tip.offsetHeight;
+          const top = below + h < box.height ? below : r.top - box.top - h - 12;
+          const left = Math.max(8, Math.min(box.width - tip.offsetWidth - 8, r.left - box.left + r.width / 2 - tip.offsetWidth / 2));
+          tip.style.top = `${Math.max(8, top)}px`;
+          tip.style.left = `${left}px`;
+          if (focus) next.focus({ preventScroll: true });
+        }
+        function start(focus = true) { at = 0; spot.hidden = tip.hidden = false; root.querySelector('.ov-tour-start').hidden = true; place(focus); }
+        function end() { at = -1; spot.hidden = tip.hidden = true; const s = root.querySelector('.ov-tour-start'); s.hidden = false; }
+        function go(d, focus = true) { const n = at + d; if (n >= STEPS.length) end(); else if (n >= 0) { at = n; place(focus); } }
+        root.addEventListener('click', (e) => {
+          const act = e.target.closest('[data-act]')?.dataset.act;
+          if (act === 'start') start();
+          if (act === 'next') go(1);
+          if (act === 'back') go(-1);
+          if (act === 'skip') end();
+        });
+        root.addEventListener('keydown', (e) => {
+          if (at < 0) return;
+          if (e.key === 'Escape') end();
+          if (e.key === 'ArrowRight') go(1);
+          if (e.key === 'ArrowLeft') go(-1);
+        });
+        new ResizeObserver(() => { if (at >= 0) place(false); }).observe(root);
+        root.autoplay = () => { if (at < 0) start(false); else go(1, false); };
+      },
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  function snippet(it) {
+    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
+    return s;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}${it.wide ? ' wide' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.querySelectorAll('.demo').forEach((d, n) => { if (ITEMS[n].js) ITEMS[n].js(d.firstElementChild); });
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  $('radius').addEventListener('input', () => { grid.style.setProperty('--radius', $('radius').value + 'px'); $('radius-out').textContent = $('radius').value + ' px'; });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    // Only in-cell overlays play here: modals and popovers would take focus inside the host page.
+    const tour = grid.querySelector('.ov-tour'), cookie = grid.querySelector('.ov-cookie-demo');
+    cookie.replay();
+    tour.autoplay();
+    setInterval(() => tour.autoplay(), 1900);
+    setInterval(() => { const b = cookie.querySelector('.ov-cookie'); if (b.hidden) cookie.replay(); else { b.hidden = true; setTimeout(() => cookie.replay(), 400); } }, 5200);
+  }
+})();
+</script>
+</html>

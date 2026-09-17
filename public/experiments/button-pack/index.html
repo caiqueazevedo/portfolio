@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Button Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --radius: 0px; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(150px, 1fr) auto; min-width: 0; }
+  .demo { display: grid; place-items: center; padding: 28px 12px; min-width: 0; }
+  .cell:has(details[open]) { position: relative; z-index: 2; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field label output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  /* Card-only: run the hover-driven specimens on their own. */
+  .autoplay .bt-orbit { animation: bt-orbit 1.6s linear infinite; }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 1fr; border: 0; font-size: 13px; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .demo { padding: 6px; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Button Pack</h1>
+      <p>Doze botões com comportamento, não só estilo: carregar e confirmar, segurar para excluir, deslizar para pagar, copiar, curtir. Cada um copia com o próprio script.</p>
+    </div>
+    <div class="field"><label for="accent">Cor de destaque</label><input type="color" id="accent" value="#c8f31d"></div>
+    <div class="field">
+      <label for="radius">Cantos <output id="radius-out">0 px</output></label>
+      <input type="range" id="radius" min="0" max="24" step="1" value="0">
+    </div>
+    <p class="note">Todos são <code>&lt;button&gt;</code> de verdade (ou <code>role="slider"</code>, no de deslizar), então teclado e leitor de tela vêm de graça. O de segurar aceita espaço pressionado; o desabilitado usa <code>aria-disabled</code> em vez de <code>disabled</code> para continuar focável e explicar o motivo. Estados vivem em <code>data-state</code>, e o CSS reage a eles — o JS só troca o atributo.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 0px)';
+  const BASE = `font: 600 15px/1 system-ui, sans-serif; cursor: pointer;`;
+
+  const ITEMS = [
+    {
+      name: 'Pressão física', sel: '.bt-press', card: false,
+      html: `<button type="button" class="bt-press">Começar projeto</button>`,
+      css: `
+.bt-press { ${BASE} padding: .95em 1.4em; border: 2px solid #e9e6dd; border-radius: ${R}; background: ${A}; color: #0e0e0c;
+  box-shadow: .3em .3em 0 #e9e6dd; transition: transform 90ms, box-shadow 90ms; }
+.bt-press:hover { transform: translate(-2px, -2px); box-shadow: calc(.3em + 2px) calc(.3em + 2px) 0 #e9e6dd; }
+.bt-press:active { transform: translate(.3em, .3em); box-shadow: 0 0 0 #e9e6dd; }
+.bt-press:focus-visible { outline: 2px solid ${A}; outline-offset: 4px; }`,
+    },
+    {
+      name: 'Carregar → sucesso', sel: '.bt-load', card: true,
+      html: `<button type="button" class="bt-load"><span class="bt-load-label">Salvar alterações</span><i class="bt-load-spin" aria-hidden="true"></i><svg class="bt-load-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" pathLength="1"/></svg><span class="bt-load-sr" aria-live="polite"></span></button>`,
+      css: `
+.bt-load { ${BASE} display: inline-grid; place-items: center; padding: .95em 1.5em; border: 0; border-radius: ${R}; background: #e9e6dd; color: #0e0e0c; transition: background .25s; }
+.bt-load > * { grid-area: 1 / 1; transition: opacity .2s, transform .2s; }
+.bt-load-spin, .bt-load-check { opacity: 0; transform: scale(.6); }
+.bt-load-spin { width: 1.1em; height: 1.1em; border-radius: 50%; border: .16em solid color-mix(in srgb, currentColor 25%, transparent); border-top-color: currentColor; }
+.bt-load-check { width: 1.4em; height: 1.4em; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.bt-load-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.bt-load[data-state="loading"] { cursor: progress; }
+.bt-load[data-state="loading"] .bt-load-label, .bt-load[data-state="done"] .bt-load-label { opacity: 0; transform: scale(.9); }
+.bt-load[data-state="loading"] .bt-load-spin { opacity: 1; transform: none; animation: bt-load-spin .7s linear infinite; }
+.bt-load[data-state="done"] { background: ${A}; }
+.bt-load[data-state="done"] .bt-load-check { opacity: 1; transform: none; stroke-dashoffset: 0; transition: stroke-dashoffset .35s .1s, opacity .2s, transform .2s; }
+.bt-load:focus-visible { outline: 2px solid ${A}; outline-offset: 4px; }
+@keyframes bt-load-spin { to { transform: rotate(1turn); } }`,
+      // The label stays in the grid cell, so the button never changes width between states.
+      js: function (btn) {
+        const sr = btn.querySelector('.bt-load-sr');
+        btn.addEventListener('click', () => {
+          if (btn.dataset.state === 'loading' || btn.dataset.state === 'done') return;
+          btn.dataset.state = 'loading'; btn.setAttribute('aria-busy', 'true'); sr.textContent = 'Salvando';
+          // Replace the timeout with your request.
+          setTimeout(() => {
+            btn.dataset.state = 'done'; btn.removeAttribute('aria-busy'); sr.textContent = 'Salvo';
+            setTimeout(() => { btn.dataset.state = ''; sr.textContent = ''; }, 1500);
+          }, 1300);
+        });
+      },
+    },
+    {
+      name: 'Segure para excluir', sel: '.bt-hold', card: true,
+      html: `<button type="button" class="bt-hold"><span>Segure para excluir</span></button>`,
+      css: `
+.bt-hold { ${BASE} position: relative; padding: .95em 1.4em; border: 2px solid #f23e2e; border-radius: ${R}; color: #f23e2e; user-select: none; touch-action: none;
+  background: linear-gradient(#f23e2e 0 0) left / var(--p, 0%) 100% no-repeat, transparent; }
+.bt-hold span { position: relative; display: inline-block; }
+.bt-hold[data-done] span::after { display: none; }
+/* Text flips colour exactly where the fill has reached. */
+.bt-hold span::after { content: attr(data-text); position: absolute; inset: 0; color: #0e0e0c; clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0); white-space: nowrap; }
+.bt-hold[data-done] { background: #f23e2e; color: #0e0e0c; }
+.bt-hold:focus-visible { outline: 2px solid #f23e2e; outline-offset: 4px; }`,
+      js: function (btn) {
+        const label = btn.querySelector('span'), text = label.textContent, HOLD = 1200;
+        let start = 0, raf = 0, p = 0;
+        const set = (v) => {
+          p = v;
+          // The overlay text is clipped to the label's own box, so map the button fill onto it.
+          const b = btn.getBoundingClientRect(), l = label.getBoundingClientRect();
+          const inLabel = Math.max(0, Math.min(1, (v * b.width - (l.left - b.left)) / l.width));
+          btn.style.setProperty('--p', (v * 100).toFixed(2) + '%');
+          label.style.setProperty('--p', (inLabel * 100).toFixed(2) + '%');
+        };
+        const sync = () => label.setAttribute('data-text', label.textContent);
+        sync();
+        // Completion runs on a timer; rAF only paints. A throttled tab still finishes the hold on time.
+        let holding = false, finish = 0;
+        const complete = () => {
+          holding = false;
+          cancelAnimationFrame(raf);
+          set(1);
+          btn.dataset.done = ''; label.textContent = 'Excluído'; sync();
+          setTimeout(() => { delete btn.dataset.done; label.textContent = text; sync(); set(0); }, 1500);
+        };
+        const tick = () => {
+          if (!holding) return;
+          set(Math.min(1, (performance.now() - start) / HOLD));
+          raf = requestAnimationFrame(tick);
+        };
+        const down = () => {
+          if ('done' in btn.dataset || holding) return;
+          cancelAnimationFrame(raf);
+          holding = true;
+          start = performance.now() - p * HOLD;
+          finish = setTimeout(complete, (1 - p) * HOLD);
+          raf = requestAnimationFrame(tick);
+        };
+        const up = () => {
+          if (!holding) return;
+          holding = false;
+          clearTimeout(finish);
+          cancelAnimationFrame(raf);
+          const from = Math.min(1, (performance.now() - start) / HOLD), t0 = performance.now();
+          set(from);
+          const back = (now) => { set(Math.max(0, from * (1 - (now - t0) / 300))); if (p > 0 && !holding) raf = requestAnimationFrame(back); };
+          raf = requestAnimationFrame(back);
+        };
+        btn.addEventListener('pointerdown', down);
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => btn.addEventListener(t, up));
+        btn.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); down(); } });
+        btn.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') up(); });
+      },
+    },
+    {
+      name: 'Contorno em órbita', sel: '.bt-orbit', card: false,
+      html: `<button type="button" class="bt-orbit">Ver planos</button>`,
+      css: `
+@property --bt-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.bt-orbit { ${BASE} padding: .95em 1.6em; border: 2px solid transparent; border-radius: ${R}; color: #e9e6dd;
+  background: linear-gradient(#0e0e0c, #0e0e0c) padding-box,
+    conic-gradient(from var(--bt-a), #2a2f37 0 62%, ${A} 80%, #2a2f37 98%) border-box; }
+.bt-orbit:hover, .bt-orbit:focus-visible { animation: bt-orbit 1.6s linear infinite; outline: none; }
+@keyframes bt-orbit { to { --bt-a: 1turn; } }`,
+    },
+    {
+      name: 'Seta que atravessa', sel: '.bt-arrow', card: false,
+      html: `<button type="button" class="bt-arrow">Ver projetos <span class="bt-arrow-i" aria-hidden="true"><b>→</b><b>→</b></span></button>`,
+      css: `
+.bt-arrow { ${BASE} display: inline-flex; align-items: center; gap: .7em; padding: .5em .5em .5em 1.3em; border: 0; border-radius: ${R}; background: #e9e6dd; color: #0e0e0c; }
+.bt-arrow-i { position: relative; display: grid; width: 2em; height: 2em; overflow: hidden; border-radius: calc(${R} * .6); background: #0e0e0c; color: ${A}; }
+.bt-arrow-i b { grid-area: 1 / 1; display: grid; place-items: center; transition: transform .38s cubic-bezier(.7, 0, .2, 1); }
+.bt-arrow-i b + b { transform: translateX(-130%); }
+.bt-arrow:is(:hover, :focus-visible) .bt-arrow-i b:first-child { transform: translateX(130%); }
+.bt-arrow:is(:hover, :focus-visible) .bt-arrow-i b + b { transform: none; }
+.bt-arrow:focus-visible { outline: 2px solid ${A}; outline-offset: 4px; }`,
+    },
+    {
+      name: 'Ação dividida', sel: '.bt-split', card: false,
+      html: `<div class="bt-split"><button type="button" class="bt-split-main">Publicar</button><details class="bt-split-more"><summary aria-label="Mais opções de publicação">▾</summary><div class="bt-split-menu"><button type="button">Agendar…</button><button type="button">Salvar rascunho</button><button type="button">Publicar só para mim</button></div></details></div>`,
+      css: `
+.bt-split { position: relative; display: inline-flex; font: 600 15px/1 system-ui, sans-serif; }
+.bt-split-main, .bt-split summary { ${BASE} display: grid; place-items: center; padding: .95em 1.2em; border: 0; background: ${A}; color: #0e0e0c; }
+.bt-split-main { border-radius: ${R} 0 0 ${R}; }
+.bt-split summary { list-style: none; padding: .95em .8em; border-left: 1px solid rgba(0, 0, 0, .25); border-radius: 0 ${R} ${R} 0; transition: background .15s; }
+.bt-split summary::-webkit-details-marker { display: none; }
+.bt-split details[open] summary { background: color-mix(in srgb, ${A} 80%, #000); }
+.bt-split-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 5; display: grid; min-width: 13em; padding: 4px; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; box-shadow: 0 12px 30px rgba(0, 0, 0, .5); }
+.bt-split-menu button { ${BASE} font-weight: 500; font-size: 14px; text-align: left; padding: .7em .8em; border: 0; border-radius: calc(${R} * .6); background: none; color: #e9e6dd; }
+.bt-split-menu button:hover, .bt-split-menu button:focus-visible { background: #1f252d; outline: none; }
+.bt-split :focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }`,
+      js: function (root) {
+        const more = root.querySelector('details'), main = root.querySelector('.bt-split-main');
+        root.querySelectorAll('.bt-split-menu button').forEach((b) => b.addEventListener('click', () => {
+          main.textContent = b.textContent.replace('…', '');
+          more.open = false;
+        }));
+        document.addEventListener('click', (e) => { if (!root.contains(e.target)) more.open = false; });
+        root.addEventListener('keydown', (e) => { if (e.key === 'Escape' && more.open) { more.open = false; more.querySelector('summary').focus(); } });
+      },
+    },
+    {
+      name: 'Ícone com dica', sel: '.bt-refresh', card: false,
+      html: `<button type="button" class="bt-refresh" aria-label="Atualizar lista" data-tip="Atualizar lista"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg></button>`,
+      css: `
+.bt-refresh { ${BASE} position: relative; display: grid; place-items: center; width: 2.9em; height: 2.9em; padding: 0; border: 2px solid #2a2f37; border-radius: ${R}; background: transparent; color: #e9e6dd; transition: border-color .15s; }
+.bt-refresh:hover { border-color: ${A}; }
+.bt-refresh svg { width: 1.3em; height: 1.3em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.bt-refresh.spin svg { animation: bt-refresh .7s cubic-bezier(.3, 0, .2, 1); }
+/* Tooltip from the same text as the accessible name, shown on hover and keyboard focus. */
+.bt-refresh::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 4px; padding: .45em .65em; border-radius: 4px; background: #e9e6dd; color: #0e0e0c; font-size: 12px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
+.bt-refresh:is(:hover, :focus-visible)::after { opacity: 1; translate: -50% 0; transition-delay: .25s; }
+.bt-refresh:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
+@keyframes bt-refresh { to { transform: rotate(1turn); } }`,
+      js: function (btn) {
+        btn.addEventListener('click', () => {
+          btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin');
+        });
+        btn.addEventListener('animationend', () => btn.classList.remove('spin'));
+      },
+    },
+    {
+      name: 'Copiar comando', sel: '.bt-copy', card: false,
+      html: `<button type="button" class="bt-copy" data-copy="pnpm add @caique/ui"><code>pnpm add @caique/ui</code><span class="bt-copy-state" aria-live="polite">copiar</span></button>`,
+      css: `
+.bt-copy { ${BASE} display: inline-flex; align-items: stretch; padding: 0; border: 1px solid #2a2f37; border-radius: ${R}; background: #0f1319; color: #e9e6dd; overflow: hidden; }
+.bt-copy code { padding: .85em 1em; font: 13px ui-monospace, monospace; }
+.bt-copy code::before { content: "$ "; color: #8a94a0; }
+.bt-copy-state { display: grid; place-items: center; min-width: 6.2em; padding: 0 .9em; border-left: 1px solid #2a2f37; font-size: 12px; transition: background .2s, color .2s; }
+.bt-copy:hover .bt-copy-state { background: #1a1f26; }
+.bt-copy[data-copied] .bt-copy-state { background: ${A}; color: #0e0e0c; }
+.bt-copy:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }`,
+      js: function (btn) {
+        const state = btn.querySelector('.bt-copy-state');
+        let timer = 0;
+        btn.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(btn.dataset.copy); state.textContent = 'copiado ✓'; }
+          catch { state.textContent = 'sem acesso'; }
+          btn.dataset.copied = '';
+          clearTimeout(timer);
+          timer = setTimeout(() => { delete btn.dataset.copied; state.textContent = 'copiar'; }, 1600);
+        });
+      },
+    },
+    {
+      name: 'Curtir com explosão', sel: '.bt-like', card: true,
+      html: `<button type="button" class="bt-like" aria-pressed="false" aria-label="Curtir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20z"/></svg><span class="bt-like-n">128</span></button>`,
+      css: `
+.bt-like { ${BASE} position: relative; display: inline-flex; align-items: center; gap: .5em; padding: .7em 1.1em; border: 2px solid #2a2f37; border-radius: max(${R}, 0px); background: transparent; color: #e9e6dd; font-variant-numeric: tabular-nums; transition: border-color .2s, color .2s; }
+.bt-like svg { width: 1.3em; height: 1.3em; fill: transparent; stroke: currentColor; stroke-width: 2; overflow: visible; transition: fill .2s; }
+.bt-like[aria-pressed="true"] { border-color: ${A}; color: ${A}; }
+.bt-like[aria-pressed="true"] svg { fill: currentColor; animation: bt-like-pop .45s cubic-bezier(.3, 1.8, .5, 1); }
+/* Eight sparks drawn with one element's box-shadows. */
+.bt-like::before { content: ""; position: absolute; left: 1.75em; top: 50%; width: .28em; height: .28em; margin: -.14em; border-radius: 50%; opacity: 0; pointer-events: none;
+  box-shadow: 0 -1.5em ${A}, 1.06em -1.06em ${A}, 1.5em 0 ${A}, 1.06em 1.06em ${A}, 0 1.5em ${A}, -1.06em 1.06em ${A}, -1.5em 0 ${A}, -1.06em -1.06em ${A}; }
+.bt-like.burst::before { animation: bt-like-burst .55s ease-out; }
+.bt-like:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
+@keyframes bt-like-pop { 0% { transform: scale(.5); } 100% { transform: scale(1); } }
+@keyframes bt-like-burst { 0% { opacity: 1; transform: scale(.35); } 100% { opacity: 0; transform: scale(1.25); } }`,
+      js: function (btn) {
+        const n = btn.querySelector('.bt-like-n');
+        let count = Number(n.textContent);
+        btn.addEventListener('click', () => {
+          const on = btn.getAttribute('aria-pressed') !== 'true';
+          btn.setAttribute('aria-pressed', String(on));
+          count += on ? 1 : -1;
+          n.textContent = count.toLocaleString('pt-BR');
+          btn.classList.remove('burst');
+          if (on) { void btn.offsetWidth; btn.classList.add('burst'); }
+        });
+      },
+    },
+    {
+      name: 'Deslize para confirmar', sel: '.bt-slide', card: true,
+      html: `<div class="bt-slide" role="slider" tabindex="0" aria-label="Deslize para confirmar o pagamento" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="bt-slide-text">deslize para pagar</span><span class="bt-slide-knob" aria-hidden="true">→</span></div>`,
+      css: `
+.bt-slide { position: relative; display: grid; place-items: center; width: 16em; height: 3.2em; padding: 4px; border-radius: ${R}; background: #1a1f26; color: #8a94a0; font: 600 14px/1 system-ui, sans-serif; user-select: none; overflow: hidden;
+  background-image: linear-gradient(${A} 0 0); background-repeat: no-repeat; background-size: calc(var(--p, 0) * 100% + 2.6em) 100%; }
+.bt-slide-text { opacity: calc(1 - var(--p, 0) * 1.6); letter-spacing: .02em; }
+.bt-slide-knob { position: absolute; left: 4px; top: 4px; bottom: 4px; width: 2.6em; display: grid; place-items: center; border-radius: calc(${R} * .8); background: #e9e6dd; color: #0e0e0c; font-size: 1.1em; cursor: grab; touch-action: none; }
+.bt-slide[data-done] { color: #0e0e0c; background-size: 100% 100%; }
+.bt-slide[data-done] .bt-slide-text { opacity: 1; }
+.bt-slide:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }`,
+      js: function (track) {
+        const knob = track.querySelector('.bt-slide-knob'), text = track.querySelector('.bt-slide-text'), label = text.textContent;
+        let p = 0, drag = null;
+        const max = () => track.clientWidth - knob.offsetWidth - 8;
+        const set = (v, animate) => {
+          p = Math.max(0, Math.min(1, v));
+          knob.style.transition = animate ? 'transform .35s cubic-bezier(.3, 1.3, .5, 1)' : 'none';
+          track.style.transition = animate ? 'background-size .35s' : 'none';
+          track.style.setProperty('--p', p.toFixed(3));
+          knob.style.transform = `translateX(${p * max()}px)`;
+          track.setAttribute('aria-valuenow', String(Math.round(p * 100)));
+        };
+        const finish = () => {
+          if (p < 0.9) { set(0, true); return; }
+          set(1, true); track.dataset.done = ''; text.textContent = 'pago ✓';
+          setTimeout(() => { delete track.dataset.done; text.textContent = label; set(0, true); }, 1800);
+        };
+        knob.addEventListener('pointerdown', (e) => { if ('done' in track.dataset) return; drag = { x: e.clientX, p }; knob.setPointerCapture(e.pointerId); });
+        knob.addEventListener('pointermove', (e) => { if (drag) set(drag.p + (e.clientX - drag.x) / max()); });
+        knob.addEventListener('pointerup', () => { if (drag) { drag = null; finish(); } });
+        track.addEventListener('keydown', (e) => {
+          if ('done' in track.dataset) return;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); set(p + 0.25, true); if (p >= 1) finish(); }
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); set(p - 0.25, true); }
+          if (e.key === 'End') { e.preventDefault(); set(1, true); finish(); }
+        });
+      },
+    },
+    {
+      name: 'Brilho que segue', sel: '.bt-glow', card: false,
+      html: `<button type="button" class="bt-glow"><span>Falar com vendas</span></button>`,
+      css: `
+.bt-glow { ${BASE} position: relative; padding: 1em 1.7em; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; color: #e9e6dd; overflow: hidden; }
+.bt-glow::before { content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .25s;
+  background: radial-gradient(7em circle at var(--x, 50%) var(--y, 50%), color-mix(in srgb, ${A} 40%, transparent), transparent 70%); }
+/* A second, tighter light on the border only, masked to a 1px ring. */
+.bt-glow::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; opacity: 0; transition: opacity .25s;
+  background: radial-gradient(4em circle at var(--x, 50%) var(--y, 50%), ${A}, transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.bt-glow:hover::before, .bt-glow:hover::after { opacity: 1; }
+.bt-glow span { position: relative; }
+.bt-glow:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }`,
+      js: function (btn) {
+        btn.addEventListener('pointermove', (e) => {
+          const r = btn.getBoundingClientRect();
+          btn.style.setProperty('--x', `${e.clientX - r.left}px`);
+          btn.style.setProperty('--y', `${e.clientY - r.top}px`);
+        });
+      },
+    },
+    {
+      name: 'Bloqueado com motivo', sel: '.bt-why', card: false,
+      html: `<span class="bt-why"><button type="button" aria-disabled="true" aria-describedby="bt-why-tip">Finalizar pedido</button><span role="tooltip" id="bt-why-tip">Informe o CEP para calcular o frete</span></span>`,
+      css: `
+.bt-why { position: relative; display: inline-block; }
+.bt-why button { ${BASE} padding: .95em 1.4em; border: 2px dashed #3a414b; border-radius: ${R}; background: transparent; color: #8a94a0; cursor: not-allowed; }
+.bt-why button.shake { animation: bt-why-shake .35s; }
+.bt-why [role="tooltip"] { position: absolute; top: calc(100% + 8px); left: 50%; translate: -50% -4px; width: max-content; max-width: 16em; padding: .5em .7em; border-radius: 4px; background: #e9e6dd; color: #0e0e0c; font: 500 12px/1.35 system-ui, sans-serif; text-align: center; opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
+.bt-why:is(:hover, :focus-within) [role="tooltip"] { opacity: 1; translate: -50% 0; }
+.bt-why button:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
+@keyframes bt-why-shake { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }`,
+      // aria-disabled keeps the button focusable, so the reason can be read; the click is still blocked.
+      js: function (root) {
+        const btn = root.querySelector('button');
+        btn.addEventListener('click', (e) => {
+          if (btn.getAttribute('aria-disabled') !== 'true') return;
+          e.preventDefault();
+          btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
+        });
+      },
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  function snippet(it) {
+    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
+    return s;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.querySelectorAll('.demo').forEach((d, n) => { if (ITEMS[n].js) ITEMS[n].js(d.firstElementChild); });
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  $('radius').addEventListener('input', () => { grid.style.setProperty('--radius', $('radius').value + 'px'); $('radius-out').textContent = $('radius').value + ' px'; });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    grid.classList.add('autoplay');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    // Play each specimen's own interaction on a loop, through the same event paths a user would hit.
+    const q = (s) => grid.querySelector(s);
+    setInterval(() => q('.bt-load').click(), 3200);
+    setInterval(() => q('.bt-like').click(), 1700);
+    const hold = () => {
+      const b = q('.bt-hold');
+      b.dispatchEvent(new PointerEvent('pointerdown'));
+      setTimeout(() => b.dispatchEvent(new PointerEvent('pointerup')), 1400);
+    };
+    hold(); setInterval(hold, 3400);
+    const slide = () => {
+      const t = q('.bt-slide');
+      t.dispatchEvent(new KeyboardEvent('keydown', { key: 'End' }));
+    };
+    setTimeout(slide, 600); setInterval(slide, 2600);
+    const press = q('.bt-press');
+    setInterval(() => { press.classList.toggle('pressed'); }, 900);
+    const style2 = document.createElement('style');
+    style2.textContent = '.bt-press.pressed{transform:translate(.3em,.3em);box-shadow:0 0 0 #e9e6dd}';
+    document.head.appendChild(style2);
+  }
+})();
+</script>
+</html>

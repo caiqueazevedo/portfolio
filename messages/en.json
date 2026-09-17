@@ -162,7 +162,8 @@
       "interaction": "Interaction & UI",
       "data": "Data & Charts",
       "security": "Security",
-      "media": "Media & Files"
+      "media": "Media & Files",
+      "kits": "UI Kits"
     }
   }
 }

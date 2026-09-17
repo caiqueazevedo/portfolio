@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Progress Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(180px, 1fr) auto; min-width: 0; }
+  @media (min-width: 560px) { .cell.wide { grid-column: span 2; } }
+  .demo { display: grid; place-items: center; padding: 22px 18px; min-width: 0; }
+  .demo > * { width: 100%; max-width: 22rem; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  .panel input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .panel input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  .panel :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: 1.2fr 1fr 1fr; border: 0; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell.wide { grid-column: span 2; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .demo { padding: 8px 12px; }
+  html.card .demo > * { zoom: .78; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Progress Pack</h1>
+      <p>Doze formas de dizer "quanto falta": barra, gomos, anel, medidor, etapas de checkout, upload com tempo restante, leitura, meta, sessão expirando e rastreio de pedido.</p>
+    </div>
+    <div class="field">
+      <label for="value">Valor <output id="value-out">42%</output></label>
+      <input type="range" id="value" min="0" max="100" step="1" value="42">
+    </div>
+    <div class="field"><label for="accent">Cor de destaque</label><input type="color" id="accent" value="#c8f31d"></div>
+    <button type="button" class="plain" id="sweep">Animar de 0 a 100</button>
+    <p class="note">Onde existe elemento nativo, ele é usado: <code>&lt;progress&gt;</code> na barra e <code>&lt;ol&gt;</code> com <code>aria-current="step"</code> nas etapas. O resto usa <code>role="progressbar"</code> com <code>aria-valuenow</code> e um <code>aria-valuetext</code> legível ("12 de 50 GB"), não só o número. A barra de leitura é uma <code>animation-timeline: scroll()</code> pura, com fallback em JS onde o navegador não suporta. O upload calcula velocidade por média móvel, para o tempo restante não pular a cada pacote.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)';
+  const FONT = 'font: 14px/1.4 system-ui, sans-serif; color: #e9e6dd;';
+  const MONO = 'font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums;';
+  const BTN = (s) => `${s} button { font: 600 13px/1 system-ui, sans-serif; padding: .6em .85em; border: 1.5px solid #3a414b; border-radius: 6px; background: none; color: #e9e6dd; cursor: pointer; }
+${s} button:hover:not(:disabled) { border-color: ${A}; }
+${s} button:disabled { opacity: .35; cursor: default; }
+${s} button.primary { border-color: ${A}; background: ${A}; color: #0e0e0c; }
+${s} button:focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }`;
+
+  const ITEMS = [
+    {
+      name: 'Barra nativa', sel: '.pg-bar',
+      html: `<div class="pg-bar"><div class="pg-bar-head"><label for="pg-bar-1">Enviando fotos</label><output for="pg-bar-1">0%</output></div><progress id="pg-bar-1" max="100" value="0">0%</progress></div>`,
+      css: `
+.pg-bar { ${FONT} }
+.pg-bar-head { display: flex; justify-content: space-between; margin-bottom: .45em; font-size: .9em; }
+.pg-bar output { ${MONO} color: ${A}; }
+.pg-bar progress { display: block; width: 100%; height: .6em; appearance: none; border: 0; border-radius: 99px; background: #1f252d; overflow: hidden; }
+.pg-bar progress::-webkit-progress-bar { background: #1f252d; }
+.pg-bar progress::-webkit-progress-value { border-radius: 99px; background: ${A} repeating-linear-gradient(-45deg, transparent 0 .35em, rgb(0 0 0 / .14) .35em .7em); transition: width .25s; }
+.pg-bar progress::-moz-progress-bar { border-radius: 99px; background: ${A}; }`,
+      js: function (root) {
+        const bar = root.querySelector('progress'), out = root.querySelector('output');
+        root.setValue = (v) => { bar.value = v; bar.textContent = out.textContent = `${Math.round(v)}%`; };
+      },
+    },
+    {
+      name: 'Gomos', sel: '.pg-seg',
+      html: `<div class="pg-seg"><div class="pg-seg-track" role="progressbar" aria-label="Perfil completo" aria-valuemin="0" aria-valuemax="10">${'<i></i>'.repeat(10)}</div><small></small></div>`,
+      css: `
+.pg-seg { ${FONT} }
+.pg-seg-track { display: grid; grid-template-columns: repeat(10, 1fr); gap: .25em; }
+.pg-seg i { height: .7em; border-radius: 2px; background: #1f252d; transition: background .2s; }
+/* Filled cells warm from the accent to a lighter tone toward the end. */
+.pg-seg i.on { background: color-mix(in srgb, ${A} calc(55% + var(--k) * 4.5%), #fff); }
+.pg-seg small { display: block; margin-top: .5em; ${MONO} color: #8a94a0; font-size: .82em; }`,
+      js: function (root) {
+        const cells = [...root.querySelectorAll('i')], track = root.querySelector('[role="progressbar"]'), note = root.querySelector('small');
+        cells.forEach((c, i) => c.style.setProperty('--k', String(i)));
+        root.setValue = (v) => {
+          const n = Math.round(v / 10);
+          cells.forEach((c, i) => c.classList.toggle('on', i < n));
+          track.setAttribute('aria-valuenow', String(n));
+          track.setAttribute('aria-valuetext', `${n} de 10 itens do perfil`);
+          note.textContent = `perfil ${n}/10`;
+        };
+      },
+    },
+    {
+      name: 'Anel', sel: '.pg-ring', card: true,
+      html: `<div class="pg-ring" role="progressbar" aria-label="Meta mensal" aria-valuemin="0" aria-valuemax="100"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="bar" cx="50" cy="50" r="42" pathLength="100"/></svg><b></b><small>da meta</small></div>`,
+      css: `
+.pg-ring { ${FONT} position: relative; display: grid; place-items: center; width: 9em; aspect-ratio: 1; }
+.pg-ring svg { position: absolute; inset: 0; rotate: -90deg; }
+.pg-ring circle { fill: none; stroke-width: 9; }
+.pg-ring .track { stroke: #1f252d; }
+.pg-ring .bar { stroke: ${A}; stroke-linecap: round; stroke-dasharray: var(--v, 0) 100; transition: stroke-dasharray .3s; }
+.pg-ring b { ${MONO} font-size: 1.9em; line-height: 1; margin-top: .3em; }
+.pg-ring small { align-self: start; margin-top: -1.6em; font-size: .75em; color: #8a94a0; }`,
+      js: function (root) {
+        const b = root.querySelector('b');
+        root.setValue = (v) => {
+          // A rounded cap on a 0-length dash still draws a dot; hide it at zero.
+          root.style.setProperty('--v', v < 0.5 ? '0.001' : String(v));
+          b.textContent = `${Math.round(v)}%`;
+          root.setAttribute('aria-valuenow', String(Math.round(v)));
+        };
+      },
+    },
+    {
+      name: 'Medidor', sel: '.pg-gauge', card: true,
+      html: `<div class="pg-gauge" role="meter" aria-label="Uso de CPU" aria-valuemin="0" aria-valuemax="100"><svg viewBox="0 0 120 70" aria-hidden="true"><path class="zone ok" d="M10 62 A50 50 0 0 1 110 62" pathLength="100"/><path class="zone warn" d="M10 62 A50 50 0 0 1 110 62" pathLength="100"/><path class="zone hot" d="M10 62 A50 50 0 0 1 110 62" pathLength="100"/><path class="fill" d="M10 62 A50 50 0 0 1 110 62" pathLength="100"/><g class="needle"><line x1="60" y1="62" x2="60" y2="20"/><circle cx="60" cy="62" r="4"/></g></svg><b></b><small>CPU</small></div>`,
+      css: `
+.pg-gauge { ${FONT} display: grid; justify-items: center; width: 11em; }
+.pg-gauge svg { width: 100%; overflow: visible; }
+.pg-gauge path { fill: none; stroke-width: 9; }
+.pg-gauge .zone { opacity: .22; }
+.pg-gauge .ok { stroke: #c8f31d; stroke-dasharray: 60 100; }
+.pg-gauge .warn { stroke: #f2a52e; stroke-dasharray: 0 60 25 100; }
+.pg-gauge .hot { stroke: #f23e2e; stroke-dasharray: 0 85 15 100; }
+.pg-gauge .fill { stroke: var(--tone, #c8f31d); stroke-dasharray: var(--v, 0) 100; transition: stroke-dasharray .3s, stroke .3s; }
+.pg-gauge .needle { transform-origin: 60px 62px; transform-box: view-box; rotate: calc(-90deg + var(--v, 0) * 1.8deg); transition: rotate .45s cubic-bezier(.3, 1.4, .5, 1); }
+.pg-gauge line { stroke: #e9e6dd; stroke-width: 2.5; stroke-linecap: round; }
+.pg-gauge .needle circle { fill: #e9e6dd; }
+.pg-gauge b { ${MONO} font-size: 1.5em; line-height: 1; margin-top: -.1em; color: var(--tone, #c8f31d); }
+.pg-gauge small { font-size: .75em; color: #8a94a0; letter-spacing: .1em; text-transform: uppercase; }`,
+      js: function (root) {
+        const b = root.querySelector('b');
+        root.setValue = (v) => {
+          const tone = v >= 85 ? '#f23e2e' : v >= 60 ? '#f2a52e' : '#c8f31d';
+          root.style.setProperty('--v', String(v));
+          root.style.setProperty('--tone', tone);
+          b.textContent = `${Math.round(v)}%`;
+          root.setAttribute('aria-valuenow', String(Math.round(v)));
+          root.setAttribute('aria-valuetext', `${Math.round(v)}%, ${v >= 85 ? 'crítico' : v >= 60 ? 'alto' : 'normal'}`);
+        };
+      },
+    },
+    {
+      name: 'Etapas do checkout', sel: '.pg-steps', card: true, wide: true,
+      html: `<nav class="pg-steps" aria-label="Etapas da compra"><ol><li>Carrinho</li><li>Entrega</li><li>Pagamento</li><li>Revisão</li></ol><div class="pg-steps-actions"><button type="button" data-d="-1">Voltar</button><button type="button" data-d="1" class="primary">Continuar</button></div></nav>`,
+      css: `
+.pg-steps { ${FONT} }
+.pg-steps ol { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; padding: 0; list-style: none; counter-reset: pg-step; }
+.pg-steps li { position: relative; display: grid; justify-items: center; gap: .45em; font-size: .8em; color: #8a94a0; counter-increment: pg-step; text-align: center; }
+.pg-steps li::before { content: counter(pg-step); position: relative; z-index: 1; display: grid; place-items: center; width: 2.2em; height: 2.2em; border: 2px solid #3a414b; border-radius: 50%; background: #07090b; font-weight: 700; transition: all .25s; }
+/* The connector is the line to the left of every step but the first, filled when that step is reached. */
+.pg-steps li + li::after { content: ""; position: absolute; top: 1.05em; right: 50%; width: 100%; height: 2px; background: linear-gradient(${A} 0 0) left / var(--fill, 0%) 100% no-repeat, #3a414b; transition: background-size .35s; }
+.pg-steps li.done { color: #c9ced4; }
+.pg-steps li.done::before { content: "✓"; border-color: ${A}; background: ${A}; color: #0e0e0c; }
+.pg-steps li.done::after, .pg-steps li[aria-current]::after { --fill: 100%; }
+.pg-steps li[aria-current] { color: #e9e6dd; font-weight: 600; }
+.pg-steps li[aria-current]::before { border-color: ${A}; color: ${A}; box-shadow: 0 0 0 4px color-mix(in srgb, ${A} 20%, transparent); }
+.pg-steps-actions { display: flex; justify-content: flex-end; gap: .5em; margin-top: 1em; }
+${BTN('.pg-steps')}`,
+      js: function (root) {
+        const steps = [...root.querySelectorAll('li')], [back, next] = root.querySelectorAll('button');
+        let at = 0;
+        const paint = () => {
+          steps.forEach((s, i) => {
+            s.classList.toggle('done', i < at);
+            if (i === at) s.setAttribute('aria-current', 'step'); else s.removeAttribute('aria-current');
+          });
+          back.disabled = at === 0 || at >= steps.length;
+          next.textContent = at >= steps.length ? 'Pedido feito ✓' : at === steps.length - 1 ? 'Finalizar compra' : 'Continuar';
+          next.disabled = at >= steps.length;
+        };
+        root.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+          at = Math.max(0, Math.min(steps.length, at + Number(b.dataset.d)));
+          paint();
+        }));
+        paint();
+        root.setStep = (n) => { at = n; paint(); };
+      },
+    },
+    {
+      name: 'Upload com tempo restante', sel: '.pg-upload', card: true, wide: true,
+      html: `<div class="pg-upload"><div class="pg-upload-file"><i aria-hidden="true">MP4</i><div><b>apresentacao-final.mp4</b><small class="pg-upload-status" aria-live="polite"></small></div><div class="pg-upload-actions"><button type="button" data-act="pause">Pausar</button><button type="button" data-act="cancel" aria-label="Cancelar envio">✕</button></div></div><div class="pg-upload-bar" role="progressbar" aria-label="Envio" aria-valuemin="0" aria-valuemax="100"><span></span></div></div>`,
+      css: `
+.pg-upload { ${FONT} padding: .9em; border: 1px solid #1f252d; border-radius: 8px; }
+.pg-upload-file { display: flex; align-items: center; gap: .7em; }
+.pg-upload-file > div:nth-child(2) { flex: 1; min-width: 0; display: grid; }
+.pg-upload-file i { display: grid; place-items: center; width: 2.6em; height: 2.6em; border-radius: 6px; background: #2e4bf2; color: #fff; font: 700 .7em ui-monospace, monospace; font-style: normal; }
+.pg-upload b { font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pg-upload-status { ${MONO} font-size: .75em; color: #8a94a0; }
+.pg-upload-actions { display: flex; gap: .3em; }
+.pg-upload-bar { height: .35em; margin-top: .8em; border-radius: 99px; background: #1f252d; overflow: hidden; }
+.pg-upload-bar span { display: block; height: 100%; width: var(--p, 0%); border-radius: inherit; background: ${A}; transition: width .2s linear; }
+.pg-upload[data-state="paused"] .pg-upload-bar span { background: #8a94a0; }
+.pg-upload[data-state="error"] .pg-upload-bar span { background: #f23e2e; }
+.pg-upload[data-state="done"] .pg-upload-status { color: ${A}; }
+${BTN('.pg-upload')}
+.pg-upload button { padding: .45em .65em; font-size: 12px; }`,
+      // Simulated transfer; replace the tick with XHR/fetch progress events.
+      js: function (root) {
+        const TOTAL = 248 * 1048576;
+        const status = root.querySelector('.pg-upload-status'), bar = root.querySelector('[role="progressbar"]');
+        const pause = root.querySelector('[data-act="pause"]'), cancel = root.querySelector('[data-act="cancel"]');
+        let sent = 0, speed = 0, timer = 0, last = 0;
+        const mb = (b) => (b / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+        const time = (s) => (s >= 60 ? `${Math.floor(s / 60)} min ${Math.round(s % 60)} s` : `${Math.max(1, Math.round(s))} s`);
+        const paint = () => {
+          const p = sent / TOTAL * 100;
+          root.style.setProperty('--p', `${p}%`);
+          bar.setAttribute('aria-valuenow', String(Math.round(p)));
+          bar.setAttribute('aria-valuetext', `${Math.round(p)}%, ${mb(sent)} de ${mb(TOTAL)} MB`);
+          const st = root.dataset.state;
+          status.textContent = st === 'done' ? `${mb(TOTAL)} MB · enviado`
+            : st === 'paused' ? `${Math.round(p)}% · pausado`
+            : st === 'error' ? 'envio cancelado'
+            : `${Math.round(p)}% · ${mb(speed)} MB/s · ${speed ? time((TOTAL - sent) / speed) : '…'} restantes`;
+        };
+        const tick = () => {
+          const now = performance.now(), dt = (now - last) / 1000;
+          last = now;
+          const chunk = (8 + Math.random() * 14) * 1048576 * dt;
+          sent = Math.min(TOTAL, sent + chunk);
+          // Exponential moving average: the ETA settles instead of jumping every tick.
+          speed = speed ? speed * 0.85 + (chunk / dt) * 0.15 : chunk / dt;
+          if (sent >= TOTAL) { stop(); root.dataset.state = 'done'; pause.textContent = 'Enviar outro'; cancel.hidden = true; }
+          paint();
+        };
+        const run = () => { root.dataset.state = 'running'; pause.textContent = 'Pausar'; cancel.hidden = false; last = performance.now(); timer = setInterval(tick, 250); paint(); };
+        const stop = () => clearInterval(timer);
+        pause.addEventListener('click', () => {
+          const st = root.dataset.state;
+          if (st === 'running') { stop(); root.dataset.state = 'paused'; pause.textContent = 'Retomar'; paint(); }
+          else if (st === 'paused') run();
+          else { sent = 0; speed = 0; run(); }
+        });
+        cancel.addEventListener('click', () => { stop(); root.dataset.state = 'error'; pause.textContent = 'Tentar de novo'; cancel.hidden = true; paint(); });
+        run();
+      },
+    },
+    {
+      name: 'Barra de leitura', sel: '.pg-read',
+      html: `<div class="pg-read" tabindex="0" aria-label="Artigo com barra de leitura"><div class="pg-read-bar" aria-hidden="true"></div><h3>Por que migramos para Workers</h3><p>O servidor antigo custava pouco, mas acordava devagar. Cada deploy era uma janela de manutenção.</p><p>Com a função rodando na borda, o tempo até o primeiro byte caiu para dezenas de milissegundos em qualquer capital.</p><p>O maior ganho, porém, foi operacional: deploy em segundos, rollback em um clique e nenhuma máquina para atualizar.</p><p>O custo ficou previsível, e a equipe voltou a entregar produto em vez de cuidar de infraestrutura.</p><p>Fim.</p></div>`,
+      css: `
+.pg-read { ${FONT} position: relative; height: 11em; overflow-y: auto; padding: 0 .9em .5em; border: 1px solid #1f252d; border-radius: 8px; scrollbar-width: thin; }
+.pg-read:focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }
+.pg-read-bar { position: sticky; top: 0; z-index: 1; height: 3px; margin: 0 -.9em .6em; background: ${A}; transform-origin: left; transform: scaleX(var(--read, 0));
+  animation: pg-read linear both; animation-timeline: scroll(nearest block); }
+.pg-read h3 { margin: 0 0 .4em; font-size: 1em; }
+.pg-read p { margin: 0 0 .7em; font-size: .88em; color: #c9ced4; }
+@keyframes pg-read { from { transform: scaleX(0); } to { transform: scaleX(1); } }`,
+      // Scroll-driven animation does the work; this only covers browsers without it.
+      js: function (root) {
+        if (CSS.supports('animation-timeline: scroll()')) return;
+        const bar = root.querySelector('.pg-read-bar');
+        const update = () => { const max = root.scrollHeight - root.clientHeight; bar.style.setProperty('--read', String(max > 0 ? root.scrollTop / max : 0)); };
+        root.addEventListener('scroll', update, { passive: true });
+        update();
+      },
+    },
+    {
+      name: 'Meta de arrecadação', sel: '.pg-goal',
+      html: `<div class="pg-goal"><p><b class="pg-goal-now"></b> de <span>R$ 10.000</span></p><div class="pg-goal-bar" role="progressbar" aria-label="Arrecadação" aria-valuemin="0" aria-valuemax="10000"><span></span><i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i></div><small class="pg-goal-note" aria-live="polite"></small></div>`,
+      css: `
+.pg-goal { ${FONT} }
+.pg-goal p { margin: 0 0 .5em; color: #8a94a0; font-size: .9em; }
+.pg-goal b { ${MONO} font-size: 1.5em; color: #e9e6dd; }
+.pg-goal-bar { position: relative; height: .8em; border-radius: 99px; background: #1f252d; }
+.pg-goal-bar span { position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, ${A} 55%, #000), ${A}); transition: width .3s; }
+/* Milestone ticks turn solid once the bar has passed them. */
+.pg-goal-bar i { position: absolute; top: -.25em; bottom: -.25em; width: 2px; margin-left: -1px; background: #3a414b; }
+.pg-goal-note { display: block; margin-top: .55em; font-size: .8em; color: #8a94a0; }
+.pg-goal[data-done] .pg-goal-bar span { box-shadow: 0 0 18px color-mix(in srgb, ${A} 70%, transparent); }
+.pg-goal[data-done] .pg-goal-note { color: ${A}; font-weight: 600; }`,
+      js: function (root) {
+        const GOAL = 10000, now = root.querySelector('.pg-goal-now'), note = root.querySelector('.pg-goal-note');
+        const bar = root.querySelector('[role="progressbar"]'), ticks = [...root.querySelectorAll('i')];
+        const brl = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+        root.setValue = (v) => {
+          const amount = Math.round(GOAL * v / 100);
+          root.style.setProperty('--p', `${v}%`);
+          now.textContent = brl(amount);
+          bar.setAttribute('aria-valuenow', String(amount));
+          bar.setAttribute('aria-valuetext', `${brl(amount)} de ${brl(GOAL)}`);
+          ticks.forEach((t, i) => { t.style.background = v >= (i + 1) * 25 ? '#0e0e0c' : ''; });
+          if (v >= 100) { root.dataset.done = ''; note.textContent = 'Meta batida. Obrigado!'; }
+          else { delete root.dataset.done; note.textContent = `Faltam ${brl(GOAL - amount)} · 184 apoiadores`; }
+        };
+      },
+    },
+    {
+      name: 'Sessão expirando', sel: '.pg-session',
+      html: `<div class="pg-session"><p class="pg-session-text"></p><div class="pg-session-bar" aria-hidden="true"><span></span></div><div class="pg-session-actions"><button type="button" class="primary" data-act="extend">Continuar conectado</button></div><span class="pg-session-sr" aria-live="assertive"></span></div>`,
+      css: `
+.pg-session { ${FONT} padding: .9em; border: 1px solid #1f252d; border-left: 3px solid #f2a52e; border-radius: 8px; }
+.pg-session p { margin: 0 0 .6em; font-size: .9em; }
+.pg-session p b { ${MONO} }
+.pg-session-bar { height: .3em; border-radius: 99px; background: #1f252d; overflow: hidden; }
+.pg-session-bar span { display: block; height: 100%; background: #f2a52e; transform-origin: left; transform: scaleX(var(--left, 1)); }
+.pg-session[data-ended] { border-left-color: #f23e2e; }
+.pg-session-actions { margin-top: .8em; }
+.pg-session-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+${BTN('.pg-session')}`,
+      js: function (root) {
+        const LIMIT = 30000;
+        const text = root.querySelector('p'), btn = root.querySelector('button'), sr = root.querySelector('.pg-session-sr');
+        let end = 0, warned = false;
+        const total = Math.ceil(LIMIT / 1000);
+        const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+        const tick = () => {
+          if ('ended' in root.dataset) return;
+          const left = Math.max(0, end - Date.now());
+          root.style.setProperty('--left', String(left / LIMIT));
+          if (left === 0) {
+            root.dataset.ended = '';
+            text.textContent = 'Sua sessão foi encerrada por inatividade.';
+            btn.textContent = 'Entrar de novo';
+            sr.textContent = 'Sessão encerrada.';
+            return;
+          }
+          const s = Math.min(total, Math.ceil(left / 1000));
+          text.innerHTML = `Sua sessão expira em <b>${fmt(s)}</b>`;
+          // The visible countdown changes every second; the screen reader hears it once.
+          if (s <= 10 && !warned) { warned = true; sr.textContent = 'Sua sessão expira em 10 segundos.'; }
+        };
+        const reset = () => { end = Date.now() + LIMIT; warned = false; sr.textContent = ''; delete root.dataset.ended; btn.textContent = 'Continuar conectado'; tick(); };
+        btn.addEventListener('click', reset);
+        setInterval(tick, 250);
+        reset();
+      },
+    },
+    {
+      name: 'Checklist de primeiros passos', sel: '.pg-onboard',
+      html: `<div class="pg-onboard"><div class="pg-onboard-head"><b>Configure sua loja</b><span class="pg-onboard-count"></span></div><div class="pg-onboard-bar" role="progressbar" aria-label="Configuração" aria-valuemin="0" aria-valuemax="5"><span></span></div><ul><li><label><input type="checkbox" checked> Criar conta</label></li><li><label><input type="checkbox" checked> Adicionar logo</label></li><li><label><input type="checkbox"> Cadastrar 1º produto</label></li><li><label><input type="checkbox"> Conectar pagamento</label></li><li><label><input type="checkbox"> Publicar a loja</label></li></ul></div>`,
+      css: `
+.pg-onboard { ${FONT} }
+.pg-onboard-head { display: flex; justify-content: space-between; align-items: baseline; }
+.pg-onboard-count { ${MONO} font-size: .8em; color: #8a94a0; }
+.pg-onboard-bar { height: .35em; margin: .5em 0 .7em; border-radius: 99px; background: #1f252d; overflow: hidden; }
+.pg-onboard-bar span { display: block; height: 100%; width: var(--p, 0%); background: ${A}; transition: width .35s cubic-bezier(.3, 1.3, .5, 1); }
+.pg-onboard ul { display: grid; gap: .35em; margin: 0; padding: 0; list-style: none; }
+.pg-onboard label { display: flex; align-items: center; gap: .55em; font-size: .9em; cursor: pointer; }
+.pg-onboard input { width: 1.05em; height: 1.05em; margin: 0; accent-color: ${A}; }
+.pg-onboard label:has(:checked) { color: #8a94a0; text-decoration: line-through; text-decoration-color: #3a414b; }
+.pg-onboard[data-done] .pg-onboard-count { color: ${A}; }`,
+      js: function (root) {
+        const boxes = [...root.querySelectorAll('input')], count = root.querySelector('.pg-onboard-count'), bar = root.querySelector('[role="progressbar"]');
+        const sync = () => {
+          const n = boxes.filter((b) => b.checked).length;
+          root.style.setProperty('--p', `${n / boxes.length * 100}%`);
+          count.textContent = n === boxes.length ? 'pronto ✓' : `${n} de ${boxes.length}`;
+          bar.setAttribute('aria-valuenow', String(n));
+          bar.setAttribute('aria-valuetext', `${n} de ${boxes.length} etapas`);
+          root.toggleAttribute('data-done', n === boxes.length);
+        };
+        boxes.forEach((b) => b.addEventListener('change', sync));
+        sync();
+      },
+    },
+    {
+      name: 'Armazenamento', sel: '.pg-storage',
+      html: `<div class="pg-storage"><p><b>38,2 GB</b> de 50 GB</p><div class="pg-storage-bar" role="img" aria-label="Fotos 18,4 GB, vídeos 12,1 GB, documentos 5,3 GB, outros 2,4 GB; livre 11,8 GB"><span style="--w:36.8%;--c:#c8f31d" data-k="fotos"></span><span style="--w:24.2%;--c:#6ea8ff" data-k="videos"></span><span style="--w:10.6%;--c:#f2a52e" data-k="docs"></span><span style="--w:4.8%;--c:#8a94a0" data-k="outros"></span></div><ul><li data-k="fotos"><i style="--c:#c8f31d"></i>Fotos<small>18,4 GB</small></li><li data-k="videos"><i style="--c:#6ea8ff"></i>Vídeos<small>12,1 GB</small></li><li data-k="docs"><i style="--c:#f2a52e"></i>Docs<small>5,3 GB</small></li><li data-k="outros"><i style="--c:#8a94a0"></i>Outros<small>2,4 GB</small></li></ul></div>`,
+      css: `
+.pg-storage { ${FONT} }
+.pg-storage p { margin: 0 0 .5em; color: #8a94a0; font-size: .9em; }
+.pg-storage p b { ${MONO} color: #e9e6dd; font-size: 1.3em; }
+.pg-storage-bar { display: flex; gap: 2px; height: .8em; border-radius: 99px; background: #1f252d; overflow: hidden; }
+.pg-storage-bar span { width: var(--w); background: var(--c); transition: opacity .15s; animation: pg-storage-in .6s cubic-bezier(.3, 0, .2, 1) both; }
+.pg-storage-bar span:nth-child(2) { animation-delay: .08s; } .pg-storage-bar span:nth-child(3) { animation-delay: .16s; } .pg-storage-bar span:nth-child(4) { animation-delay: .24s; }
+.pg-storage ul { display: grid; grid-template-columns: 1fr 1fr; gap: .3em 1em; margin: .7em 0 0; padding: 0; list-style: none; font-size: .82em; }
+.pg-storage li { display: flex; align-items: center; gap: .45em; cursor: default; transition: opacity .15s; }
+.pg-storage li i { width: .65em; height: .65em; border-radius: 2px; background: var(--c); }
+.pg-storage li small { margin-left: auto; font-family: ui-monospace, monospace; color: #8a94a0; }
+/* Hovering a legend row dims every other segment, with :has and no JS. */
+.pg-storage:has(li[data-k="fotos"]:hover) .pg-storage-bar span:not([data-k="fotos"]),
+.pg-storage:has(li[data-k="videos"]:hover) .pg-storage-bar span:not([data-k="videos"]),
+.pg-storage:has(li[data-k="docs"]:hover) .pg-storage-bar span:not([data-k="docs"]),
+.pg-storage:has(li[data-k="outros"]:hover) .pg-storage-bar span:not([data-k="outros"]) { opacity: .2; }
+@keyframes pg-storage-in { from { width: 0; } }`,
+    },
+    {
+      name: 'Rastreio do pedido', sel: '.pg-track',
+      html: `<ol class="pg-track" aria-label="Status do pedido 4821"><li><b>Pedido recebido</b><small>12/09 · 09:14</small></li><li><b>Pagamento aprovado</b><small>12/09 · 09:15</small></li><li><b>Em separação</b><small>12/09 · 13:40</small></li><li><b>A caminho</b><small>previsão 14/09</small></li><li><b>Entregue</b><small>—</small></li></ol>`,
+      css: `
+.pg-track { ${FONT} margin: 0; padding: 0; list-style: none; }
+.pg-track li { position: relative; display: grid; padding: 0 0 .75em 1.9em; font-size: .88em; color: #5a626c; }
+.pg-track li::before { content: ""; position: absolute; left: 0; top: .15em; width: .95em; height: .95em; border: 2px solid currentColor; border-radius: 50%; background: #07090b; z-index: 1; }
+.pg-track li:not(:last-child)::after { content: ""; position: absolute; left: calc(.475em + 1px); top: 1.2em; bottom: -.05em; width: 2px; margin-left: -1px; background: linear-gradient(${A} 0 0) top / 100% var(--line, 0%) no-repeat, #2a2f37; transition: background-size .4s; }
+.pg-track small { font-family: ui-monospace, monospace; font-size: .8em; }
+.pg-track li.done { color: #c9ced4; }
+.pg-track li.done::before { border-color: ${A}; background: ${A}; }
+.pg-track li.done::after { --line: 100%; }
+.pg-track li[aria-current] { color: #e9e6dd; }
+.pg-track li[aria-current]::before { border-color: ${A}; animation: pg-track-pulse 1.4s ease-out infinite; }
+@keyframes pg-track-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, ${A} 60%, transparent); } 100% { box-shadow: 0 0 0 .6em transparent; } }
+@media (prefers-reduced-motion: reduce) { .pg-track li[aria-current]::before { animation: none; } }`,
+      js: function (root) {
+        const steps = [...root.querySelectorAll('li')];
+        root.setValue = (v) => {
+          const at = Math.min(steps.length - 1, Math.floor(v / 100 * steps.length));
+          steps.forEach((s, i) => {
+            s.classList.toggle('done', i < at || (v >= 100 && i === at));
+            if (i === at && v < 100) s.setAttribute('aria-current', 'step'); else s.removeAttribute('aria-current');
+          });
+        };
+      },
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  function snippet(it) {
+    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
+    return s;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}${it.wide ? ' wide' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  const roots = [...grid.querySelectorAll('.demo')].map((d, n) => { const r = d.firstElementChild; if (ITEMS[n].js) ITEMS[n].js(r); return r; });
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  const setAll = (v) => {
+    roots.forEach((r) => r.setValue?.(v));
+    $('value').value = String(Math.round(v));
+    $('value-out').textContent = `${Math.round(v)}%`;
+  };
+  $('value').addEventListener('input', () => setAll(Number($('value').value)));
+  let sweep = 0;
+  $('sweep').addEventListener('click', () => {
+    cancelAnimationFrame(sweep);
+    const t0 = performance.now();
+    const step = (now) => { const t = Math.min(1, (now - t0) / 3000); setAll(100 * (1 - (1 - t) ** 2)); if (t < 1) sweep = requestAnimationFrame(step); };
+    sweep = requestAnimationFrame(step);
+  });
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  setAll(42);
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    // A timer, not rAF: it keeps moving while the card is off-screen-throttled and costs little.
+    const steps = grid.querySelector('.pg-steps');
+    let v = 0;
+    setInterval(() => {
+      v = (v + 1.5) % 115;
+      setAll(Math.min(100, v));
+      steps.setStep(Math.min(4, Math.floor(Math.min(100, v) / 22)));
+    }, 60);
+  }
+})();
+</script>
+</html>

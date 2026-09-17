@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Avatar Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --shape: 50%; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(170px, 1fr) auto; min-width: 0; }
+  .cell:has(.av-hover-card:not([hidden])) { position: relative; z-index: 2; }
+  .demo { display: grid; place-items: center; padding: 22px 16px; min-width: 0; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label, .field > span { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .panel input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .panel :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; border: 0; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .cell.wide { grid-column: span 2; }
+  html.card .demo { padding: 8px; }
+  html.card .demo > * { zoom: .8; }
+  html.card .av-presence { grid-template-columns: repeat(2, auto); gap: .9em; }
+  html.card .av-presence li > span:not(.av) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  html.card .av-gen label { display: none; }
+  html.card .av-stack.fanned li, html.card .av-stack.fanned button { margin-left: .15em; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Avatar Pack</h1>
+      <p>Avatares, presença, grupos, badges e contadores — a parte "social" de quase todo produto, sem depender de foto.</p>
+    </div>
+    <div class="field"><label for="accent">Cor de destaque</label><input type="color" id="accent" value="#c8f31d"></div>
+    <div class="field">
+      <span>Formato</span>
+      <div class="seg" role="radiogroup" aria-label="Formato do avatar">
+        <label><input type="radio" name="shape" value="50%" checked><span>círculo</span></label>
+        <label><input type="radio" name="shape" value="28%"><span>squircle</span></label>
+        <label><input type="radio" name="shape" value="4px"><span>quadrado</span></label>
+      </div>
+    </div>
+    <p class="note">A cor das iniciais vem de um hash FNV-1a do nome: a mesma pessoa tem sempre a mesma cor, em qualquer tela, sem guardar nada. O tom é escolhido em <code>oklch</code> com luminosidade fixa, então todas as cores têm o mesmo contraste com o texto. Status de presença nunca depende só da cor: cada um tem um formato (anel, lua, traço, vazado). O contador do sino atualiza o <code>aria-label</code> do botão, não só o número visível.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)', SH = 'var(--shape, 50%)';
+  const FONT = 'font: 14px/1.4 system-ui, sans-serif; color: #e9e6dd;';
+  // Shared by every item that draws initials.
+  const AV = `.av { position: relative; display: inline-grid; place-items: center; flex: none; width: var(--s, 2.6em); height: var(--s, 2.6em); border-radius: ${SH}; background: oklch(.8 .12 var(--h, 120)); color: #0e0e0c; font: 700 calc(var(--s, 2.6em) * .38)/1 system-ui, sans-serif; letter-spacing: .02em; user-select: none; }`;
+
+  const ITEMS = [
+    {
+      name: 'Iniciais com cor estável', sel: '.av-gen', card: true, wide: true,
+      html: `<div class="av-gen"><div class="av-gen-row"></div><label>Nome <input value="Caique Azevedo" autocomplete="off" spellcheck="false"></label></div>`,
+      css: `
+${AV}
+.av-gen { ${FONT} display: grid; gap: .9em; justify-items: center; }
+.av-gen-row { display: flex; flex-wrap: wrap; justify-content: center; gap: .5em; }
+.av-gen-row .av:first-child { --s: 3.4em; box-shadow: 0 0 0 2px #07090b, 0 0 0 4px ${A}; }
+.av-gen label { display: flex; align-items: center; gap: .5em; font-size: .8em; color: #8a94a0; }
+.av-gen input { width: 12em; padding: .45em .6em; border: 1.5px solid #3a414b; border-radius: 6px; background: #0f1319; color: #e9e6dd; font: inherit; font-size: 1.1em; outline: none; }
+.av-gen input:focus { border-color: ${A}; }`,
+      js: function (root) {
+        const hue = (name) => { let h = 0x811c9dc5; for (const c of name) { h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193); } return (h >>> 0) % 360; };
+        const initials = (name) => { const p = name.trim().split(/\s+/); return ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); };
+        const row = root.querySelector('.av-gen-row'), input = root.querySelector('input');
+        const OTHERS = ['Ana Lima', 'Bruno Reis', 'Iara Souza', 'Otávio Nunes', 'Marina Pires'];
+        const make = (name) => {
+          const el = document.createElement('span');
+          el.className = 'av';
+          el.textContent = initials(name) || '?';
+          el.style.setProperty('--h', String(hue(name.trim().toLowerCase())));
+          el.setAttribute('role', 'img');
+          el.setAttribute('aria-label', name || 'Sem nome');
+          el.title = name;
+          return el;
+        };
+        const paint = () => row.replaceChildren(make(input.value), ...OTHERS.map(make));
+        input.addEventListener('input', paint);
+        paint();
+        root.setName = (n) => { input.value = n; paint(); };
+      },
+    },
+    {
+      name: 'Presença', sel: '.av-presence', card: true,
+      html: `<ul class="av-presence"><li><span class="av" style="--h:140" role="img" aria-label="Ana Lima">AL</span><i data-status="online" aria-hidden="true"></i><span>Online</span></li><li><span class="av" style="--h:60" role="img" aria-label="Bruno Reis">BR</span><i data-status="away" aria-hidden="true"></i><span>Ausente</span></li><li><span class="av" style="--h:20" role="img" aria-label="Carla Moura">CM</span><i data-status="busy" aria-hidden="true"></i><span>Ocupada</span></li><li><span class="av" style="--h:250" role="img" aria-label="Diego Souza">DS</span><i data-status="offline" aria-hidden="true"></i><span>Offline</span></li></ul>`,
+      css: `
+${AV}
+.av-presence { ${FONT} display: grid; grid-template-columns: repeat(2, auto); gap: .8em 1.4em; margin: 0; padding: 0; list-style: none; }
+.av-presence li { position: relative; display: flex; align-items: center; gap: .6em; font-size: .85em; }
+/* The dot sits on the avatar's lower-right edge, cut out of it by a ring in the background colour. */
+.av-presence i { position: absolute; left: 1.95em; top: 1.95em; width: .85em; height: .85em; border-radius: 50%; box-shadow: 0 0 0 .18em #07090b; }
+.av-presence [data-status="online"] { background: #3ddc84; }
+.av-presence [data-status="online"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #3ddc84; animation: av-ping 2s ease-out infinite; }
+.av-presence [data-status="away"] { background: radial-gradient(circle at 30% 30%, #07090b .28em, #f2a52e .29em); }
+.av-presence [data-status="busy"] { background: linear-gradient(#fff 0 0) center / 55% 20% no-repeat, #f23e2e; }
+.av-presence [data-status="offline"] { background: #07090b; border: .17em solid #8a94a0; }
+.av-presence li:has([data-status="offline"]) .av { filter: grayscale(1) brightness(.7); }
+@keyframes av-ping { 70%, 100% { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .av-presence [data-status="online"]::after { animation: none; } }`,
+    },
+    {
+      name: 'Grupo com +N', sel: '.av-stack', card: true,
+      html: `<div class="av-stack"><ul aria-label="Pessoas no projeto"></ul><button type="button" aria-expanded="false"></button></div>`,
+      css: `
+${AV}
+.av-stack { ${FONT} display: flex; align-items: center; }
+.av-stack ul { display: flex; margin: 0; padding: 0; list-style: none; }
+.av-stack li { margin-left: -.7em; transition: margin .25s cubic-bezier(.3, 1.3, .5, 1), transform .2s; }
+.av-stack li:first-child { margin-left: 0; }
+.av-stack .av { box-shadow: 0 0 0 .18em #07090b; }
+/* Hover or expansion fans the stack out; each face lifts on its own hover. */
+.av-stack:hover li, .av-stack[data-open] li { margin-left: .15em; }
+.av-stack li:hover { transform: translateY(-.25em); z-index: 1; }
+.av-stack button { display: grid; place-items: center; height: 2.6em; min-width: 2.6em; margin-left: -.7em; padding: 0 .55em; border: 0; border-radius: ${SH}; box-shadow: 0 0 0 .18em #07090b; background: #2a2f37; color: #e9e6dd; font: 700 .85em/1 system-ui, sans-serif; cursor: pointer; transition: margin .25s; }
+.av-stack:hover button, .av-stack[data-open] button { margin-left: .15em; }
+.av-stack button:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }`,
+      js: function (root) {
+        const hue = (name) => { let h = 0x811c9dc5; for (const c of name) { h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193); } return (h >>> 0) % 360; };
+        const initials = (name) => { const p = name.trim().split(/\s+/); return ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); };
+        const PEOPLE = ['Ana Lima', 'Bruno Reis', 'Carla Moura', 'Diego Souza', 'Elisa Rocha', 'Fábio Dias', 'Gabi Melo', 'Heitor Alves', 'Iara Nunes', 'João Pires', 'Karen Costa', 'Lucas Freitas'];
+        const VISIBLE = 4;
+        const list = root.querySelector('ul'), more = root.querySelector('button');
+        const paint = () => {
+          const open = 'open' in root.dataset;
+          const shown = open ? PEOPLE : PEOPLE.slice(0, VISIBLE);
+          list.innerHTML = shown.map((n) => '<li><span class="av" role="img" style="--h:' + hue(n.toLowerCase()) + '" aria-label="' + n + '" title="' + n + '">' + initials(n) + '</span></li>').join('');
+          more.textContent = open ? '−' : '+' + (PEOPLE.length - VISIBLE);
+          more.setAttribute('aria-expanded', String(open));
+          more.setAttribute('aria-label', open ? 'Mostrar menos' : 'Mostrar mais ' + (PEOPLE.length - VISIBLE) + ' pessoas');
+        };
+        more.addEventListener('click', () => { root.toggleAttribute('data-open'); paint(); });
+        paint();
+      },
+    },
+    {
+      name: 'Anel de story', sel: '.av-story',
+      html: `<ul class="av-story"><li><button type="button" aria-label="Story de Ana, não visto"><span class="av" style="--h:140">AL</span></button><small>ana</small></li><li><button type="button" aria-label="Story de Bruno, não visto"><span class="av" style="--h:60">BR</span></button><small>bruno</small></li><li><button type="button" class="seen" aria-label="Story de Carla, visto"><span class="av" style="--h:20">CM</span></button><small>carla</small></li></ul>`,
+      css: `
+${AV}
+.av-story { ${FONT} display: flex; gap: .9em; margin: 0; padding: 0; list-style: none; }
+.av-story li { display: grid; justify-items: center; gap: .3em; }
+.av-story small { font-size: .75em; color: #8a94a0; }
+@property --av-spin { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.av-story button { display: grid; place-items: center; padding: .2em; border: 0; border-radius: ${SH}; cursor: pointer;
+  background: conic-gradient(from var(--av-spin), ${A}, #2e4bf2, #f23e2e, ${A}); transition: transform .15s; }
+.av-story .av { --s: 3em; box-shadow: 0 0 0 .18em #07090b; }
+.av-story button:hover { animation: av-spin 1.2s linear infinite; }
+.av-story button:active { transform: scale(.93); }
+.av-story button.seen { background: #3a414b; animation: none; }
+.av-story button:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
+@keyframes av-spin { to { --av-spin: 1turn; } }`,
+      js: function (root) {
+        root.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+          b.classList.add('seen');
+          b.setAttribute('aria-label', b.getAttribute('aria-label').replace('não visto', 'visto'));
+        }));
+      },
+    },
+    {
+      name: 'Foto com fallback', sel: '.av-photo',
+      html: `<div class="av-photo"><figure><img class="av" alt="Marina Pires" data-name="Marina Pires"><figcaption>foto ok</figcaption></figure><figure><img class="av" src="https://invalid.example/nao-existe.jpg" alt="Otávio Nunes" data-name="Otávio Nunes"><figcaption>foto quebrada</figcaption></figure><figure><img class="av" alt="Rafa Lopes" data-name="Rafa Lopes"><figcaption>sem foto</figcaption></figure></div>`,
+      css: `
+${AV}
+.av-photo { ${FONT} display: flex; gap: 1.2em; }
+.av-photo figure { display: grid; justify-items: center; gap: .4em; margin: 0; }
+.av-photo figcaption { font-size: .72em; color: #8a94a0; }
+.av-photo img.av { --s: 3.2em; object-fit: cover; }`,
+      // A broken or missing src is swapped for initials in the same box, so the layout never shifts.
+      js: function (root) {
+        const hue = (name) => { let h = 0x811c9dc5; for (const c of name) { h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193); } return (h >>> 0) % 360; };
+        const initials = (name) => { const p = name.trim().split(/\s+/); return ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); };
+        const fallback = (img) => {
+          const span = document.createElement('span');
+          span.className = img.className;
+          span.textContent = initials(img.dataset.name);
+          span.style.cssText = img.style.cssText;
+          span.style.setProperty('--h', String(hue(img.dataset.name.toLowerCase())));
+          span.setAttribute('role', 'img');
+          span.setAttribute('aria-label', img.alt);
+          img.replaceWith(span);
+        };
+        // Demo photo: an inline SVG portrait. Use your real URL here.
+        const face = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#2e4bf2"/><circle cx="32" cy="26" r="12" fill="#f2c9a0"/><path d="M20 24q12-16 24 0v-6q-12-10-24 0z" fill="#3a2410"/><path d="M10 64q22-30 44 0z" fill="#c8f31d"/></svg>');
+        root.querySelectorAll('img').forEach((img, i) => {
+          img.addEventListener('error', () => fallback(img), { once: true });
+          if (i === 0) img.src = face;
+          else if (!img.getAttribute('src')) fallback(img);
+          else if (img.complete && !img.naturalWidth) fallback(img);
+        });
+      },
+    },
+    {
+      name: 'Escala de tamanhos', sel: '.av-sizes',
+      html: `<div class="av-sizes">${[['xs', '1.5em'], ['sm', '2em'], ['md', '2.6em'], ['lg', '3.4em'], ['xl', '4.4em']].map(([k, s]) => `<figure><span class="av" style="--s:${s};--h:290" role="img" aria-label="Iara Souza">IS</span><figcaption>${k}</figcaption></figure>`).join('')}</div>`,
+      css: `
+${AV}
+.av-sizes { ${FONT} display: flex; align-items: flex-end; gap: .9em; }
+.av-sizes figure { display: grid; justify-items: center; gap: .35em; margin: 0; }
+.av-sizes figcaption { font: .72em ui-monospace, monospace; color: #8a94a0; }`,
+    },
+    {
+      name: 'Sino com contador', sel: '.av-bell', card: true,
+      html: `<div class="av-bell"><button type="button" class="av-bell-btn" aria-label="Notificações, 3 não lidas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17V11a6 6 0 1 1 12 0v6l1.5 2h-15z"/><path d="M10 21h4"/></svg><b aria-hidden="true">3</b></button><div class="av-bell-actions"><button type="button" data-d="1">+1</button><button type="button" data-d="40">+40</button><button type="button" data-d="0">ler tudo</button></div></div>`,
+      css: `
+.av-bell { ${FONT} display: grid; justify-items: center; gap: .9em; }
+.av-bell-btn { position: relative; display: grid; place-items: center; width: 3em; height: 3em; border: 1.5px solid #2a2f37; border-radius: ${SH}; background: #0f1319; color: #e9e6dd; cursor: pointer; }
+.av-bell-btn svg { width: 1.5em; height: 1.5em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transform-origin: 50% 10%; }
+.av-bell-btn.ring svg { animation: av-ring .6s ease-in-out; }
+.av-bell-btn b { position: absolute; top: -.35em; right: -.35em; display: grid; place-items: center; min-width: 1.45em; height: 1.45em; padding: 0 .35em; border-radius: 99px; background: #f23e2e; color: #fff; font: 700 .72em/1 system-ui, sans-serif; box-shadow: 0 0 0 .2em #07090b; }
+.av-bell-btn b.pop { animation: av-pop .3s cubic-bezier(.3, 1.8, .5, 1); }
+.av-bell-btn b[hidden] { display: none; }
+.av-bell-btn:focus-visible, .av-bell-actions button:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
+.av-bell-actions { display: flex; gap: .3em; }
+.av-bell-actions button { padding: .35em .6em; border: 1px solid #2a2f37; border-radius: 4px; background: none; color: #c9ced4; font: 12px ui-monospace, monospace; cursor: pointer; }
+@keyframes av-pop { from { transform: scale(.4); } }
+@keyframes av-ring { 20% { rotate: 14deg; } 40% { rotate: -12deg; } 60% { rotate: 8deg; } 80% { rotate: -4deg; } }
+@media (prefers-reduced-motion: reduce) { .av-bell-btn.ring svg, .av-bell-btn b.pop { animation: none; } }`,
+      js: function (root) {
+        const bell = root.querySelector('.av-bell-btn'), badge = bell.querySelector('b');
+        let n = 3;
+        const set = (next) => {
+          const grew = next > n;
+          n = next;
+          badge.hidden = n === 0;
+          badge.textContent = n > 99 ? '99+' : String(n);
+          bell.setAttribute('aria-label', n ? `Notificações, ${n} não lidas` : 'Notificações, nenhuma nova');
+          if (!grew) return;
+          for (const [el, cls] of [[badge, 'pop'], [bell, 'ring']]) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+        };
+        root.querySelectorAll('[data-d]').forEach((b) => b.addEventListener('click', () => set(Number(b.dataset.d) ? n + Number(b.dataset.d) : 0)));
+        bell.addEventListener('click', () => set(0));
+        root.bump = (d) => set(d ? n + d : 0);
+      },
+    },
+    {
+      name: 'Badges de status', sel: '.av-badges',
+      html: `<div class="av-badges"><div><span class="av-badge" data-tone="ok">Ativo</span><span class="av-badge" data-tone="warn">Pendente</span><span class="av-badge" data-tone="bad">Falhou</span><span class="av-badge">Rascunho</span></div><div><span class="av-badge line" data-tone="ok">Pago</span><span class="av-badge line" data-tone="info">Em análise</span><span class="av-badge line" data-tone="bad">Estornado</span><span class="av-badge solid" data-tone="new">Novo</span></div></div>`,
+      css: `
+.av-badges { ${FONT} display: grid; gap: .6em; justify-items: center; }
+.av-badges div { display: flex; flex-wrap: wrap; justify-content: center; gap: .4em; }
+.av-badge { --t: #8a94a0; display: inline-flex; align-items: center; gap: .4em; padding: .3em .65em; border-radius: 99px; background: color-mix(in srgb, var(--t) 16%, transparent); color: color-mix(in srgb, var(--t) 80%, #fff); font: 600 .75em/1.2 system-ui, sans-serif; white-space: nowrap; }
+.av-badge::before { content: ""; width: .5em; height: .5em; border-radius: 50%; background: var(--t); }
+.av-badge[data-tone="ok"] { --t: #3ddc84; }
+.av-badge[data-tone="warn"] { --t: #f2a52e; }
+.av-badge[data-tone="bad"] { --t: #f23e2e; }
+.av-badge[data-tone="info"] { --t: #6ea8ff; }
+.av-badge[data-tone="new"] { --t: ${A}; }
+.av-badge.line { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t) 60%, transparent); }
+.av-badge.solid { background: var(--t); color: #0e0e0c; letter-spacing: .06em; text-transform: uppercase; }
+.av-badge.solid::before { display: none; }`,
+    },
+    {
+      name: 'Destinatários removíveis', sel: '.av-chips',
+      html: `<div class="av-chips"><span class="av-chips-label">Para</span><ul aria-live="polite"></ul></div>`,
+      css: `
+${AV}
+.av-chips { ${FONT} display: flex; align-items: flex-start; gap: .5em; width: 100%; max-width: 20em; padding: .45em .5em; border: 1.5px solid #2a2f37; border-radius: 8px; }
+.av-chips-label { padding-top: .3em; font-size: .8em; color: #8a94a0; }
+.av-chips ul { display: flex; flex-wrap: wrap; gap: .3em; margin: 0; padding: 0; list-style: none; }
+.av-chips li { display: inline-flex; align-items: center; gap: .35em; padding: .15em .2em .15em .15em; border-radius: 99px; background: #1f252d; font-size: .85em; animation: av-chip-in .2s ease-out; }
+.av-chips .av { --s: 1.6em; }
+.av-chips li button { display: grid; place-items: center; width: 1.4em; height: 1.4em; padding: 0; border: 0; border-radius: 50%; background: none; color: #8a94a0; font-size: .75em; cursor: pointer; }
+.av-chips li button:hover, .av-chips li button:focus-visible { background: #3a414b; color: #fff; outline: none; }
+.av-chips .undo { padding: .2em .5em; border: 1px dashed #3a414b; border-radius: 99px; background: none; color: ${A}; font: inherit; font-size: .8em; cursor: pointer; }
+@keyframes av-chip-in { from { transform: scale(.8); opacity: 0; } }`,
+      js: function (root) {
+        const hue = (name) => { let h = 0x811c9dc5; for (const c of name) { h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193); } return (h >>> 0) % 360; };
+        const initials = (name) => { const p = name.trim().split(/\s+/); return ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); };
+        const list = root.querySelector('ul');
+        let people = ['Ana Lima', 'Bruno Reis', 'Carla Moura'], removed = null;
+        const paint = () => {
+          list.replaceChildren(...people.map((n, i) => {
+            const li = document.createElement('li');
+            li.innerHTML = '<span class="av" aria-hidden="true" style="--h:' + hue(n.toLowerCase()) + '">' + initials(n) + '</span>';
+            li.append(n.split(' ')[0]);
+            const x = document.createElement('button');
+            x.type = 'button'; x.textContent = '✕'; x.setAttribute('aria-label', 'Remover ' + n);
+            x.addEventListener('click', () => { removed = { n, i }; people.splice(i, 1); paint(); });
+            li.append(x);
+            return li;
+          }));
+          if (removed) {
+            const u = document.createElement('button');
+            u.type = 'button'; u.className = 'undo'; u.textContent = 'desfazer';
+            u.setAttribute('aria-label', 'Desfazer remoção de ' + removed.n);
+            u.addEventListener('click', () => { people.splice(removed.i, 0, removed.n); removed = null; paint(); });
+            const li = document.createElement('li');
+            li.style.background = 'none';
+            li.append(u);
+            list.append(li);
+          }
+        };
+        paint();
+      },
+    },
+    {
+      name: 'Selo de verificado', sel: '.av-verified',
+      html: `<div class="av-verified"><span class="av-verified-av"><span class="av" style="--s:3.6em;--h:95" role="img" aria-label="Estúdio Norte">EN</span><svg viewBox="0 0 24 24" aria-hidden="true"><path class="seal" d="M12 1.5l2.4 1.9 3-.4 1.1 2.8 2.8 1.1-.4 3 1.9 2.4-1.9 2.4.4 3-2.8 1.1-1.1 2.8-3-.4L12 22.5l-2.4-1.9-3 .4-1.1-2.8-2.8-1.1.4-3L1.2 12l1.9-2.4-.4-3 2.8-1.1 1.1-2.8 3 .4z"/><path class="tick" d="M7.8 12.3l2.8 2.8 5.6-5.8"/></svg></span><div><b>Estúdio Norte <svg class="av-verified-inline" viewBox="0 0 24 24" role="img" aria-label="conta verificada"><path class="seal" d="M12 1.5l2.4 1.9 3-.4 1.1 2.8 2.8 1.1-.4 3 1.9 2.4-1.9 2.4.4 3-2.8 1.1-1.1 2.8-3-.4L12 22.5l-2.4-1.9-3 .4-1.1-2.8-2.8-1.1.4-3L1.2 12l1.9-2.4-.4-3 2.8-1.1 1.1-2.8 3 .4z"/><path class="tick" d="M7.8 12.3l2.8 2.8 5.6-5.8"/></svg></b><small>@estudionorte · design de marca</small></div></div>`,
+      css: `
+${AV}
+.av-verified { ${FONT} display: flex; align-items: center; gap: .8em; }
+.av-verified-av { position: relative; display: inline-block; }
+.av-verified-av > svg { position: absolute; right: -.2em; bottom: -.2em; width: 1.5em; height: 1.5em; filter: drop-shadow(0 0 0 #07090b) drop-shadow(0 0 2px #07090b); }
+.av-verified .seal { fill: #2e4bf2; stroke: #07090b; stroke-width: 1.2; }
+.av-verified .tick { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.av-verified > div { display: grid; }
+.av-verified b { display: inline-flex; align-items: center; gap: .3em; }
+.av-verified-inline { width: 1.05em; height: 1.05em; }
+.av-verified-inline .seal { stroke: none; }
+.av-verified small { color: #8a94a0; font-size: .8em; }`,
+    },
+    {
+      name: 'Cartão ao passar o mouse', sel: '.av-hover',
+      html: `<p class="av-hover">Revisado por <a href="#" class="av-hover-link" aria-describedby="av-hc">@caique</a> ontem.<span class="av-hover-card" id="av-hc" role="tooltip" hidden><span class="av" style="--s:2.8em;--h:120">CA</span><b>Caique Azevedo</b><small>Engenheiro de software. Salesforce de dia, produtos próprios à noite.</small><span class="av-hover-stats"><span><b>48</b> projetos</span><span><b>1,2 mil</b> seguidores</span></span></span></p>`,
+      css: `
+${AV}
+.av-hover { ${FONT} position: relative; margin: 0; }
+.av-hover-link { color: ${A}; font-weight: 600; text-decoration: none; }
+.av-hover-link:hover, .av-hover-link:focus-visible { text-decoration: underline; outline: none; }
+.av-hover-card { position: absolute; left: 0; top: calc(100% + .6em); z-index: 10; display: grid; gap: .35em; width: 16em; padding: .9em; border: 1px solid #2a2f37; border-radius: 10px; background: #13171c; box-shadow: 0 16px 40px rgba(0, 0, 0, .55); animation: av-hc-in .16s ease-out; }
+.av-hover-card[hidden] { display: none; }
+.av-hover-card small { color: #9aa3ad; font-size: .82em; line-height: 1.4; }
+.av-hover-stats { display: flex; gap: 1em; font-size: .78em; color: #8a94a0; }
+.av-hover-stats b { color: #e9e6dd; }
+@keyframes av-hc-in { from { opacity: 0; translate: 0 -4px; } }`,
+      // Delay on open avoids flashing cards while the pointer passes over text; a grace period lets it reach the card.
+      js: function (root) {
+        const link = root.querySelector('a'), card = root.querySelector('.av-hover-card');
+        let t = 0;
+        const open = (ms) => { clearTimeout(t); t = setTimeout(() => { card.hidden = false; }, ms); };
+        const close = (ms) => { clearTimeout(t); t = setTimeout(() => { card.hidden = true; }, ms); };
+        link.addEventListener('click', (e) => e.preventDefault());
+        for (const el of [link, card]) { el.addEventListener('pointerenter', () => open(el === link ? 350 : 0)); el.addEventListener('pointerleave', () => close(200)); }
+        link.addEventListener('focus', () => open(0));
+        link.addEventListener('blur', () => close(0));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(0); });
+      },
+    },
+    {
+      name: 'Fita de destaque', sel: '.av-ribbon',
+      html: `<article class="av-ribbon"><span class="av-ribbon-band">Novo</span><b>Plano Pro</b><small>R$ 79/mês</small><span class="av-ribbon-tag">Mais escolhido</span></article>`,
+      css: `
+.av-ribbon { ${FONT} position: relative; display: grid; gap: .2em; width: 12em; padding: 1.2em 1em 1em; border: 1.5px solid #2a2f37; border-radius: 10px;
+  clip-path: inset(0 0 -1em -1.5em); }
+/* A band rotated across the corner; the card's clip-path trims its ends but lets the tag hang out on the left. */
+.av-ribbon-band { position: absolute; top: .9em; right: -2.4em; width: 8em; padding: .25em 0; rotate: 45deg; background: ${A}; color: #0e0e0c; font: 800 .65em/1.3 system-ui, sans-serif; letter-spacing: .14em; text-align: center; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
+.av-ribbon small { font-family: ui-monospace, monospace; color: #8a94a0; }
+/* A tag hanging off the left edge, with a folded corner drawn by borders. */
+.av-ribbon-tag { justify-self: start; position: relative; margin: .6em 0 0 -1.35em; padding: .3em .7em .3em 1.1em; background: #2e4bf2; color: #fff; font-size: .72em; font-weight: 600; }
+.av-ribbon-tag::after { content: ""; position: absolute; left: 0; top: 100%; border-top: .45em solid #1a2c8f; border-left: .45em solid transparent; }`,
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  function snippet(it) {
+    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    if (it.js) {
+      s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
+    }
+    return s;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}${it.wide ? ' wide' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.querySelectorAll('.demo').forEach((d, n) => { if (ITEMS[n].js) ITEMS[n].js(d.firstElementChild); });
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  document.querySelectorAll('input[name="shape"]').forEach((r) => r.addEventListener('change', () => grid.style.setProperty('--shape', r.value)));
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    const gen = grid.querySelector('.av-gen'), bell = grid.querySelector('.av-bell'), stack = grid.querySelector('.av-stack');
+    const NAMES = ['Caique Azevedo', 'Luísa Prado', 'Tiago Moreira', 'Nina Castro', 'Pedro Alves'];
+    const SHAPES = ['50%', '28%', '4px'];
+    let i = 0;
+    setInterval(() => {
+      i++;
+      gen.setName(NAMES[i % NAMES.length]);
+      bell.bump(i % 4 === 3 ? 0 : 1 + (i % 3) * 7);
+      // Fan the four visible faces out and back, as hover would; the list itself stays at four.
+      stack.classList.toggle('fanned', i % 2 === 1);
+      if (i % 5 === 0) grid.style.setProperty('--shape', SHAPES[(i / 5) % 3]);
+    }, 1300);
+  }
+})();
+</script>
+</html>

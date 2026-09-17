@@ -40,6 +40,7 @@ export default async function OpenSourcePage() {
     data: t("filters.data"),
     security: t("filters.security"),
     media: t("filters.media"),
+    kits: t("filters.kits"),
     az: t("filters.az"),
     za: t("filters.za"),
     newest: t("filters.newest"),

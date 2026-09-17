@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Skeleton Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --sk-speed: 1.5s; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(200px, 1fr) auto; min-width: 0; }
+  .demo { display: grid; place-items: center; padding: 20px 16px; min-width: 0; }
+  .demo > * { width: 100%; max-width: 20rem; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+  /* Page-only shimmer modes; the snippets ship with the wave. */
+  .grid.pulse .sk { background: #1d232b; animation: sk-pulse var(--sk-speed) ease-in-out infinite; }
+  .grid.still .sk { background: #1d232b; animation: none; }
+  @keyframes sk-pulse { 50% { opacity: .45; } }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label, .field > span { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.plain { font: inherit; font-size: 13px; padding: 9px 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+  button.plain:hover { border-color: var(--accent); }
+  .panel :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr 1fr; border: 0; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .demo { padding: 10px 14px; }
+  html.card .demo > * { zoom: .8; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Skeleton Pack</h1>
+      <p>Dez telas de carregamento com o formato do conteúdo que vem depois, para a página não pular quando os dados chegam.</p>
+    </div>
+    <div class="field">
+      <span>Efeito</span>
+      <div class="seg" role="radiogroup" aria-label="Efeito">
+        <label><input type="radio" name="fx" value="" checked><span>onda</span></label>
+        <label><input type="radio" name="fx" value="pulse"><span>pulso</span></label>
+        <label><input type="radio" name="fx" value="still"><span>parado</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="speed">Ciclo <output id="speed-out">1,5 s</output></label>
+      <input type="range" id="speed" min="0.6" max="4" step="0.1" value="1.5">
+    </div>
+    <div class="row">
+      <button type="button" class="plain" id="reload">Simular carga</button>
+      <button type="button" class="plain" id="toggle">Mostrar conteúdo</button>
+    </div>
+    <p class="note">A onda usa <code>background-attachment: fixed</code>: o gradiente é medido contra a janela, então todas as barras brilham juntas, como uma luz passando por cima, em vez de cada uma no seu tempo. Cada cena tem as duas camadas no mesmo grid, uma sobre a outra, e o bloco carregando tem <code>aria-busy="true"</code> e um texto só para leitor de tela; o esqueleto é <code>aria-hidden</code>. No iOS o <code>fixed</code> vira <code>scroll</code> e cada barra anima sozinha — continua funcionando.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+
+  const BASE = `
+.sk-scene { position: relative; display: grid; font: 14px/1.4 system-ui, sans-serif; color: #e9e6dd; }
+.sk-scene > * { grid-area: 1 / 1; }
+.sk-skel { display: grid; align-content: start; transition: opacity .25s; }
+.sk-real { opacity: 0; visibility: hidden; transition: opacity .3s .05s, visibility 0s .35s; }
+.sk-scene[aria-busy="false"] .sk-skel { opacity: 0; visibility: hidden; }
+.sk-scene[aria-busy="false"] .sk-real { opacity: 1; visibility: visible; transition: opacity .3s .05s; }
+.sk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.sk { display: block; border-radius: 4px; background: #1d232b linear-gradient(100deg, transparent 40%, rgb(255 255 255 / .07) 50%, transparent 60%) 0 0 / 200vw 100% fixed; animation: sk-wave var(--sk-speed, 1.5s) linear infinite; }
+.sk.round { border-radius: 50%; }
+@keyframes sk-wave { from { background-position: 100vw 0; } to { background-position: -100vw 0; } }
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+.sk-av { display: grid; place-items: center; flex: none; border-radius: 50%; color: #0e0e0c; font-weight: 700; font-size: .8em; }`;
+
+  const ITEMS = [
+    {
+      name: 'Cartão de artigo', sel: '.sk-article', card: true,
+      html: `<article class="sk-scene sk-article" aria-busy="true"><span class="sk-sr">Carregando artigo</span><div class="sk-skel" aria-hidden="true"><i class="sk" style="aspect-ratio:16/9"></i><i class="sk" style="width:90%;height:1em;margin-top:.9em"></i><i class="sk" style="width:65%;height:1em;margin-top:.45em"></i><div class="sk-meta"><i class="sk round" style="width:1.8em;height:1.8em"></i><i class="sk" style="width:40%;height:.7em"></i></div></div><div class="sk-real"><div class="sk-article-img"></div><h3>Como reduzimos o tempo de build em 70%</h3><div class="sk-meta"><span class="sk-av" style="width:1.8em;height:1.8em;background:#c8f31d">CA</span><small>Caique · 6 min</small></div></div></article>`,
+      css: `
+.sk-article h3 { margin: .8em 0 0; font-size: 1.05em; line-height: 1.3; }
+.sk-article-img { aspect-ratio: 16 / 9; border-radius: 4px; background: radial-gradient(circle at 70% 30%, #c8f31d 0 12%, transparent 13%), linear-gradient(135deg, #1f3b52, #0f1a24); }
+.sk-meta { display: flex; align-items: center; gap: .6em; margin-top: .8em; }
+.sk-meta small { color: #8a94a0; }`,
+    },
+    {
+      name: 'Lista de contatos', sel: '.sk-list', card: true,
+      html: `<div class="sk-scene sk-list" aria-busy="true"><span class="sk-sr">Carregando contatos</span><ul class="sk-skel" aria-hidden="true">${[70, 55, 80, 45].map(w => `<li><i class="sk round" style="width:2.4em;height:2.4em"></i><div><i class="sk" style="width:${w}%;height:.85em"></i><i class="sk" style="width:${w - 20}%;height:.65em;margin-top:.4em"></i></div></li>`).join('')}</ul><ul class="sk-real">${[['AL', 'Ana Lima', 'Product designer', '#6ea8ff'], ['BR', 'Bruno Reis', 'Backend', '#f2a52e'], ['CM', 'Carla Moura', 'Engenharia · Líder', '#c8f31d'], ['DS', 'Diego Souza', 'QA', '#b58cff']].map(([i, n, r, c]) => `<li><span class="sk-av" style="width:2.4em;height:2.4em;background:${c}">${i}</span><div><b>${n}</b><small>${r}</small></div></li>`).join('')}</ul></div>`,
+      css: `
+.sk-list ul { margin: 0; padding: 0; list-style: none; gap: .75em; }
+.sk-list li { display: flex; align-items: center; gap: .75em; }
+.sk-list li > div { flex: 1; display: grid; }
+.sk-list small { color: #8a94a0; font-size: .82em; }
+.sk-list .sk-real { display: grid; }`,
+    },
+    {
+      name: 'Tabela', sel: '.sk-table', card: false,
+      html: `<div class="sk-scene sk-table" aria-busy="true"><span class="sk-sr">Carregando pedidos</span><div class="sk-skel" aria-hidden="true">${[0, 1, 2, 3, 4, 5].map(r => `<div class="sk-row">${[30, 90, 60, 45].map((w, c) => `<i class="sk" style="width:${r ? (w + ((r * 7 + c * 13) % 25)) % 100 : 60}%;height:${r ? '.75em' : '.6em'}${r ? '' : ';opacity:.6'}"></i>`).join('')}</div>`).join('')}</div><table class="sk-real"><thead><tr><th>#</th><th>Cliente</th><th>Data</th><th>Valor</th></tr></thead><tbody>${[['4821', 'Loja Pinheiros', '12/09', '312'], ['4820', 'Mariana L.', '12/09', '89'], ['4819', 'Café Aurora', '11/09', '1.240'], ['4818', 'Estúdio Norte', '11/09', '540'], ['4817', 'João P.', '10/09', '72']].map(r => `<tr>${r.map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`,
+      css: `
+.sk-table .sk-row, .sk-table tr { display: grid; grid-template-columns: .6fr 2fr 1fr 1fr; gap: .8em; align-items: center; padding: .55em 0; border-bottom: 1px solid #161b21; }
+.sk-table table { display: grid; width: 100%; font-size: .9em; }
+.sk-table thead, .sk-table tbody { display: contents; }
+.sk-table th { font-size: .75em; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #8a94a0; text-align: left; }
+.sk-table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sk-table td:first-child, .sk-table td:last-child { font-family: ui-monospace, monospace; }
+.sk-table th:last-child, .sk-table td:last-child { text-align: right; }`,
+    },
+    {
+      name: 'Perfil', sel: '.sk-profile', card: false,
+      html: `<div class="sk-scene sk-profile" aria-busy="true"><span class="sk-sr">Carregando perfil</span><div class="sk-skel" aria-hidden="true"><i class="sk" style="height:4.5em;border-radius:6px 6px 0 0"></i><i class="sk round sk-profile-av" style="width:4.2em;height:4.2em;border:4px solid #07090b"></i><i class="sk" style="width:50%;height:1em;margin:.6em auto 0"></i><i class="sk" style="width:35%;height:.7em;margin:.4em auto 0"></i><div class="sk-profile-stats">${'<i class="sk" style="height:2.2em"></i>'.repeat(3)}</div></div><div class="sk-real"><div class="sk-profile-cover"></div><span class="sk-av sk-profile-av" style="width:4.2em;height:4.2em;background:#c8f31d;font-size:1.1em;border:4px solid #07090b">CA</span><b class="sk-profile-name">Caique Azevedo</b><small>Engenheiro de software · São Paulo</small><div class="sk-profile-stats"><span><b>48</b>projetos</span><span><b>1,2 mil</b>seguidores</span><span><b>312</b>estrelas</span></div></div></div>`,
+      css: `
+.sk-profile { text-align: center; }
+.sk-profile-cover { height: 4.5em; border-radius: 6px 6px 0 0; background: linear-gradient(120deg, #2e4bf2, #0e0e0c 70%); }
+.sk-profile .sk-skel, .sk-profile .sk-real { display: grid; justify-items: stretch; }
+.sk-profile-av { justify-self: center; margin-top: -2.1em; }
+.sk-profile-name { margin-top: .5em; }
+.sk-profile small { color: #8a94a0; font-size: .82em; }
+.sk-profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5em; margin-top: .9em; }
+.sk-profile-stats span { display: grid; font-size: .75em; color: #8a94a0; }
+.sk-profile-stats b { font-size: 1.25em; color: #e9e6dd; }`,
+    },
+    {
+      name: 'Conversa', sel: '.sk-chat', card: false,
+      html: `<div class="sk-scene sk-chat" aria-busy="true"><span class="sk-sr">Carregando mensagens</span><div class="sk-skel" aria-hidden="true"><i class="sk" style="width:62%;height:2.2em;border-radius:14px 14px 14px 4px"></i><i class="sk me" style="width:48%;height:2.2em;border-radius:14px 14px 4px 14px"></i><i class="sk" style="width:74%;height:3.4em;border-radius:14px 14px 14px 4px"></i><i class="sk me" style="width:30%;height:2.2em;border-radius:14px 14px 4px 14px"></i></div><div class="sk-real"><p>Consegue entregar até sexta?</p><p class="me">Consigo sim</p><p>Perfeito. Mando o briefing hoje à tarde com os acessos.</p><p class="me">Combinado!</p></div></div>`,
+      css: `
+.sk-chat .sk-skel, .sk-chat .sk-real { gap: .5em; }
+.sk-chat .sk-real { display: grid; align-content: start; }
+.sk-chat .me { justify-self: end; }
+.sk-chat p { margin: 0; max-width: 78%; padding: .55em .8em; border-radius: 14px 14px 14px 4px; background: #1f252d; font-size: .9em; }
+.sk-chat p.me { border-radius: 14px 14px 4px 14px; background: #c8f31d; color: #0e0e0c; }`,
+    },
+    {
+      name: 'Produto', sel: '.sk-product', card: false,
+      html: `<div class="sk-scene sk-product" aria-busy="true"><span class="sk-sr">Carregando produto</span><div class="sk-skel" aria-hidden="true"><i class="sk" style="aspect-ratio:1;border-radius:8px"></i><i class="sk" style="width:80%;height:.9em;margin-top:.8em"></i><i class="sk" style="width:35%;height:1.2em;margin-top:.5em"></i><i class="sk" style="height:2.4em;margin-top:.8em;border-radius:6px"></i></div><div class="sk-real"><div class="sk-product-img"><span>-20%</span></div><b>Caneca de cerâmica fosca</b><p><s>R$ 89</s> R$ 71,20</p><button type="button">Adicionar</button></div></div>`,
+      css: `
+.sk-product { max-width: 13rem; }
+.sk-product-img { position: relative; aspect-ratio: 1; border-radius: 8px; background: radial-gradient(ellipse 30% 36% at 50% 55%, #e9e6dd 98%, transparent), radial-gradient(ellipse 12% 16% at 72% 52%, transparent 60%, #e9e6dd 62% 98%, transparent), #2a2f37; }
+.sk-product-img span { position: absolute; top: .5em; left: .5em; padding: .15em .45em; border-radius: 4px; background: #f23e2e; color: #0e0e0c; font-size: .75em; font-weight: 700; }
+.sk-product .sk-real { display: grid; }
+.sk-product b { margin-top: .7em; font-size: .95em; }
+.sk-product p { margin: .2em 0 0; font-family: ui-monospace, monospace; font-size: 1.05em; }
+.sk-product s { color: #8a94a0; font-size: .8em; }
+.sk-product button { margin-top: .7em; padding: .65em; border: 0; border-radius: 6px; background: #c8f31d; color: #0e0e0c; font: 600 .9em system-ui, sans-serif; cursor: pointer; }`,
+    },
+    {
+      name: 'Indicadores', sel: '.sk-stats', card: false,
+      html: `<div class="sk-scene sk-stats" aria-busy="true"><span class="sk-sr">Carregando indicadores</span><div class="sk-skel" aria-hidden="true"><div class="sk-stats-row">${'<div class="sk-tile"><i class="sk" style="width:60%;height:.6em"></i><i class="sk" style="width:80%;height:1.4em;margin-top:.5em"></i></div>'.repeat(3)}</div><i class="sk" style="height:4.2em;margin-top:.7em;border-radius:6px"></i></div><div class="sk-real"><div class="sk-stats-row"><div class="sk-tile"><small>Receita</small><b>R$ 48k</b></div><div class="sk-tile"><small>Pedidos</small><b>612</b></div><div class="sk-tile"><small>Ticket</small><b>R$ 78</b></div></div><svg class="sk-spark" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 48 L20 42 L40 45 L60 30 L80 34 L100 22 L120 26 L140 14 L160 18 L180 8 L200 12 L200 60 L0 60Z" fill="rgb(200 243 29 / .15)"/><path d="M0 48 L20 42 L40 45 L60 30 L80 34 L100 22 L120 26 L140 14 L160 18 L180 8 L200 12" fill="none" stroke="#c8f31d" stroke-width="2" vector-effect="non-scaling-stroke"/></svg></div></div>`,
+      css: `
+.sk-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5em; }
+.sk-tile { display: grid; padding: .7em; border: 1px solid #1a1f26; border-radius: 6px; }
+.sk-tile small { font-size: .7em; letter-spacing: .08em; text-transform: uppercase; color: #8a94a0; }
+.sk-tile b { font-family: ui-monospace, monospace; font-size: 1.15em; }
+.sk-stats .sk-real { display: grid; }
+.sk-spark { width: 100%; height: 4.2em; margin-top: .7em; border: 1px solid #1a1f26; border-radius: 6px; }`,
+    },
+    {
+      name: 'Comentários', sel: '.sk-thread', card: false,
+      html: `<div class="sk-scene sk-thread" aria-busy="true"><span class="sk-sr">Carregando comentários</span><div class="sk-skel" aria-hidden="true">${[[0, 85], [1, 70], [1, 50], [0, 75]].map(([d, w]) => `<div class="sk-c" style="--d:${d}"><i class="sk round" style="width:1.9em;height:1.9em"></i><div><i class="sk" style="width:35%;height:.7em"></i><i class="sk" style="width:${w}%;height:.7em;margin-top:.4em"></i></div></div>`).join('')}</div><div class="sk-real">${[[0, 'RM', 'Rafa', 'Dá pra exportar em CSV também?', '#6ea8ff'], [1, 'CA', 'Caique', 'Dá sim, no menu de relatórios.', '#c8f31d'], [1, 'RM', 'Rafa', 'Achei, valeu!', '#6ea8ff'], [0, 'IS', 'Iara', 'O filtro por data ficou ótimo.', '#b58cff']].map(([d, i, n, t, c]) => `<div class="sk-c" style="--d:${d}"><span class="sk-av" style="width:1.9em;height:1.9em;background:${c}">${i}</span><div><b>${n}</b><p>${t}</p></div></div>`).join('')}</div></div>`,
+      css: `
+.sk-thread .sk-skel, .sk-thread .sk-real { display: grid; align-content: start; gap: .7em; }
+.sk-c { display: flex; gap: .6em; padding-left: calc(var(--d, 0) * 2.4em); }
+.sk-c > div { flex: 1; min-width: 0; }
+.sk-c b { font-size: .82em; }
+.sk-c p { margin: .1em 0 0; font-size: .88em; color: #c9ced4; }`,
+    },
+    {
+      name: 'Texto longo', sel: '.sk-prose', card: false,
+      html: `<div class="sk-scene sk-prose" aria-busy="true"><span class="sk-sr">Carregando texto</span><div class="sk-skel" aria-hidden="true"><i class="sk" style="width:70%;height:1.3em"></i>${[100, 96, 99, 60, 0, 98, 94, 40].map(w => w ? `<i class="sk" style="width:${w}%;height:.7em;margin-top:.55em"></i>` : '<i style="height:.6em"></i>').join('')}</div><div class="sk-real"><h3>Termos de uso</h3><p>Ao usar o serviço você concorda com estas condições, que podem ser atualizadas com aviso prévio de trinta dias.</p><p>Seus dados ficam no Brasil e não são vendidos a terceiros.</p></div></div>`,
+      css: `
+.sk-prose h3 { margin: 0 0 .4em; font-size: 1.1em; }
+.sk-prose p { margin: 0 0 .6em; font-size: .9em; line-height: 1.55; color: #c9ced4; }`,
+    },
+    {
+      name: 'Vídeo', sel: '.sk-video', card: false,
+      html: `<div class="sk-scene sk-video" aria-busy="true"><span class="sk-sr">Carregando vídeo</span><div class="sk-skel" aria-hidden="true"><i class="sk" style="aspect-ratio:16/9;border-radius:8px"></i><div class="sk-meta"><i class="sk round" style="width:2.2em;height:2.2em"></i><div style="flex:1"><i class="sk" style="width:85%;height:.85em"></i><i class="sk" style="width:50%;height:.65em;margin-top:.4em"></i></div></div></div><div class="sk-real"><div class="sk-video-player"><span aria-hidden="true">▶</span><small>12:48</small></div><div class="sk-meta"><span class="sk-av" style="width:2.2em;height:2.2em;background:#f2a52e">DV</span><div><b>Deploy sem medo: feature flags na prática</b><small>Dev Vivo · 8,1 mil visualizações</small></div></div></div></div>`,
+      css: `
+.sk-video .sk-meta { display: flex; align-items: flex-start; gap: .6em; margin-top: .7em; }
+.sk-video .sk-meta > div { display: grid; min-width: 0; }
+.sk-video b { font-size: .9em; line-height: 1.3; }
+.sk-video .sk-meta small { color: #8a94a0; font-size: .78em; }
+.sk-video-player { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 9; border-radius: 8px; background: linear-gradient(160deg, #3a2410, #0e0e0c); }
+.sk-video-player span { display: grid; place-items: center; width: 2.6em; height: 2.6em; border-radius: 50%; background: rgb(255 255 255 / .9); color: #0e0e0c; padding-left: .2em; }
+.sk-video-player small { position: absolute; right: .5em; bottom: .5em; padding: .1em .35em; border-radius: 3px; background: rgb(0 0 0 / .75); font-family: ui-monospace, monospace; font-size: .75em; }`,
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>';
+  function snippet(it) {
+    return `<!-- ${it.name} — troque aria-busy para "false" quando os dados chegarem -->\n${S_OPEN}\n${BASE.trim()}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = BASE + ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  const scenes = [...grid.querySelectorAll('.sk-scene')];
+  let timers = [];
+  const setAll = (busy) => scenes.forEach((s) => s.setAttribute('aria-busy', String(busy)));
+  // Each scene "arrives" at its own time, like independent requests.
+  function simulate() {
+    timers.forEach(clearTimeout);
+    setAll(true);
+    $('toggle').textContent = 'Mostrar conteúdo';
+    timers = scenes.map((s) => setTimeout(() => s.setAttribute('aria-busy', 'false'), 1200 + Math.random() * 2200));
+  }
+  $('reload').addEventListener('click', simulate);
+  $('toggle').addEventListener('click', () => {
+    timers.forEach(clearTimeout);
+    const busy = scenes.some((s) => s.getAttribute('aria-busy') === 'true');
+    setAll(!busy);
+    $('toggle').textContent = busy ? 'Mostrar esqueleto' : 'Mostrar conteúdo';
+  });
+  document.querySelectorAll('input[name="fx"]').forEach((r) => r.addEventListener('change', () => { grid.classList.remove('pulse', 'still'); if (r.value) grid.classList.add(r.value); }));
+  $('speed').addEventListener('input', () => { grid.style.setProperty('--sk-speed', $('speed').value + 's'); $('speed-out').textContent = Number($('speed').value).toFixed(1).replace('.', ',') + ' s'; });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    });
+    const loop = () => { simulate(); setTimeout(() => { setAll(false); }, 3600); };
+    loop();
+    setInterval(loop, 5600);
+  } else {
+    simulate();
+  }
+})();
+</script>
+</html>

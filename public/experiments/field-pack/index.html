@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Field Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --radius: 6px; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(170px, 1fr) auto; min-width: 0; }
+  .demo { display: grid; place-items: center; padding: 26px 18px; min-width: 0; }
+  .demo > * { width: 100%; max-width: 18rem; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field output { font-family: var(--font-mono); font-size: 12px; color: var(--ink); letter-spacing: 0; text-transform: none; }
+  .panel input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .panel input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .panel :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 1fr; border: 0; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .demo { padding: 4px 12px; }
+  html.card .demo > * { zoom: .82; }
+  html.card .demo label, html.card .demo legend, html.card .demo small { display: none; }
+  html.card .demo .fd-range label { display: block; height: 0; margin: 0 0 1.9em; overflow: hidden; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Field Pack</h1>
+      <p>Doze campos que quase todo formulário precisa e quase ninguém acerta: máscara que não trava o cursor, moeda, OTP, tags, upload, senha com aviso de Caps Lock.</p>
+    </div>
+    <div class="field"><label for="accent">Cor de destaque</label><input type="color" id="accent" value="#c8f31d"></div>
+    <div class="field">
+      <label for="radius">Cantos <output id="radius-out">6 px</output></label>
+      <input type="range" id="radius" min="0" max="14" step="1" value="6">
+    </div>
+    <p class="note">Tudo parte de <code>input</code> nativo com <code>label</code> ligado, <code>autocomplete</code> e <code>inputmode</code> certos — é isso que chama o teclado numérico e o preenchimento automático no celular. A máscara de telefone conta dígitos antes do cursor e o recoloca depois de formatar; a de moeda intercepta <code>beforeinput</code> e trabalha em centavos inteiros, sem ponto flutuante. Contadores e validações falam com leitor de tela só quando cruzam um limite, não a cada tecla.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 6px)';
+  const FONT = 'font: 15px/1.3 system-ui, sans-serif; color: #e9e6dd;';
+  const LABEL = 'display: block; margin-bottom: .4em; font-size: .8em; font-weight: 600; letter-spacing: .02em; color: #c9ced4;';
+  const INPUT = `width: 100%; padding: .7em .85em; border: 1.5px solid #3a414b; border-radius: ${R}; background: #0f1319; color: #e9e6dd; font: inherit; outline: none; transition: border-color .15s, box-shadow .15s;`;
+  const FOCUS = `border-color: ${A}; box-shadow: 0 0 0 3px color-mix(in srgb, ${A} 22%, transparent);`;
+  const HINT = 'display: block; margin-top: .4em; font-size: .78em; color: #8a94a0;';
+  const SR = 'position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;';
+
+  const ITEMS = [
+    {
+      name: 'Rótulo flutuante', sel: '.fd-float', card: false,
+      html: `<label class="fd-float"><input type="email" placeholder=" " autocomplete="email" value="caique@exemplo.com"><span>E-mail</span></label>`,
+      css: `
+.fd-float { ${FONT} position: relative; display: block; }
+.fd-float input { ${INPUT} padding: 1.35em .9em .45em; }
+.fd-float span { position: absolute; left: .95em; top: 50%; translate: 0 -50%; color: #8a94a0; pointer-events: none; transform-origin: left center; transition: translate .18s, scale .18s, color .18s; }
+.fd-float input:focus { ${FOCUS} }
+/* placeholder=" " makes :placeholder-shown mean "empty", which is what decides the label's spot. */
+.fd-float input:is(:focus, :not(:placeholder-shown)) + span { translate: 0 calc(-50% - .72em); scale: .75; }
+.fd-float input:focus + span { color: ${A}; }`,
+    },
+    {
+      name: 'Senha com Caps Lock', sel: '.fd-pass', card: false,
+      html: `<div class="fd-pass"><label for="fd-pw">Senha</label><div class="fd-pass-box"><input id="fd-pw" type="password" autocomplete="new-password" value="cavalo-bateria" aria-describedby="fd-pw-caps"><button type="button" aria-pressed="false" aria-controls="fd-pw">mostrar</button></div><small id="fd-pw-caps" class="fd-pass-caps" hidden>⇪ Caps Lock está ativado</small></div>`,
+      css: `
+.fd-pass { ${FONT} }
+.fd-pass label { ${LABEL} }
+.fd-pass-box { display: flex; border: 1.5px solid #3a414b; border-radius: ${R}; background: #0f1319; transition: border-color .15s, box-shadow .15s; }
+.fd-pass-box:focus-within { ${FOCUS} }
+.fd-pass input { flex: 1; min-width: 0; padding: .7em .85em; border: 0; background: none; color: inherit; font: inherit; outline: none; letter-spacing: .04em; }
+.fd-pass button { padding: 0 .9em; border: 0; border-left: 1px solid #2a2f37; background: none; color: #8a94a0; font: 600 .75em/1 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em; cursor: pointer; }
+.fd-pass button:hover, .fd-pass button[aria-pressed="true"] { color: ${A}; }
+.fd-pass button:focus-visible { outline: 2px solid ${A}; outline-offset: -2px; }
+.fd-pass-caps { ${HINT} color: #f2a52e; }
+.fd-pass-caps[hidden] { display: none; }`,
+      js: function (root) {
+        const input = root.querySelector('input'), btn = root.querySelector('button'), caps = root.querySelector('.fd-pass-caps');
+        btn.addEventListener('click', () => {
+          const show = input.type === 'password';
+          input.type = show ? 'text' : 'password';
+          btn.setAttribute('aria-pressed', String(show));
+          btn.textContent = show ? 'ocultar' : 'mostrar';
+        });
+        const check = (e) => { if (e.getModifierState) caps.hidden = !e.getModifierState('CapsLock'); };
+        input.addEventListener('keydown', check);
+        input.addEventListener('keyup', check);
+        input.addEventListener('blur', () => { caps.hidden = true; });
+      },
+    },
+    {
+      name: 'Contador de caracteres', sel: '.fd-count', card: false,
+      html: `<div class="fd-count"><label for="fd-bio">Bio</label><textarea id="fd-bio" maxlength="140" rows="3">Engenheiro de software. Café, código e bicicleta.</textarea><div class="fd-count-meta"><span class="fd-count-bar" aria-hidden="true"></span><output aria-hidden="true"></output></div><span class="fd-count-sr" aria-live="polite"></span></div>`,
+      css: `
+.fd-count { ${FONT} }
+.fd-count label { ${LABEL} }
+.fd-count textarea { ${INPUT} display: block; resize: vertical; min-height: 5.2em; line-height: 1.4; }
+.fd-count textarea:focus { ${FOCUS} }
+.fd-count-meta { display: flex; align-items: center; gap: .7em; margin-top: .45em; }
+.fd-count-bar { flex: 1; height: 3px; border-radius: 2px; background: linear-gradient(var(--tone, ${A}) 0 0) left / var(--fill, 0%) 100% no-repeat, #1f252d; transition: background-size .15s; }
+.fd-count output { font: .78em ui-monospace, monospace; color: var(--tone, #8a94a0); font-variant-numeric: tabular-nums; }
+.fd-count[data-level="near"] { --tone: #f2a52e; }
+.fd-count[data-level="full"] { --tone: #f23e2e; }
+.fd-count-sr { ${SR} }`,
+      js: function (root) {
+        const area = root.querySelector('textarea'), out = root.querySelector('output'), sr = root.querySelector('.fd-count-sr');
+        const max = Number(area.maxLength);
+        let last = '';
+        const update = () => {
+          const n = area.value.length, ratio = n / max;
+          const level = ratio >= 1 ? 'full' : ratio >= 0.8 ? 'near' : '';
+          root.dataset.level = level;
+          root.style.setProperty('--fill', `${Math.min(100, ratio * 100)}%`);
+          out.textContent = `${n}/${max}`;
+          // Speak only when a threshold is crossed, not on every key.
+          if (level !== last) { sr.textContent = level === 'full' ? 'Limite atingido' : level === 'near' ? `Restam ${max - n} caracteres` : ''; last = level; }
+        };
+        area.addEventListener('input', update);
+        update();
+      },
+    },
+    {
+      name: 'E-mail que corrige domínio', sel: '.fd-valid', card: false,
+      html: `<div class="fd-valid"><label for="fd-mail">E-mail de trabalho</label><div class="fd-valid-box"><input id="fd-mail" type="email" required autocomplete="email" placeholder="voce@empresa.com" value="ana@gmial.com" aria-describedby="fd-mail-msg"></div><small id="fd-mail-msg" aria-live="polite">Usamos só para o recibo.</small></div>`,
+      css: `
+.fd-valid { ${FONT} }
+.fd-valid label { ${LABEL} }
+.fd-valid-box { position: relative; }
+.fd-valid input { ${INPUT} padding-right: 2.2em; }
+.fd-valid input:focus { ${FOCUS} }
+.fd-valid-box::after { position: absolute; right: .8em; top: 50%; translate: 0 -50%; font-weight: 700; }
+.fd-valid[data-state="ok"] .fd-valid-box::after { content: "✓"; color: ${A}; }
+.fd-valid[data-state="error"] input { border-color: #f23e2e; }
+.fd-valid[data-state="error"] .fd-valid-box::after { content: "!"; color: #f23e2e; }
+.fd-valid small { ${HINT} }
+.fd-valid[data-state="error"] small { color: #f23e2e; }
+.fd-valid small button { padding: 0; border: 0; background: none; color: ${A}; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }`,
+      // Validates on blur (and live once an error is showing), and offers a fix for common domain typos.
+      js: function (root) {
+        const input = root.querySelector('input'), msg = root.querySelector('small'), hint = msg.textContent;
+        const KNOWN = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com.br', 'icloud.com', 'uol.com.br', 'bol.com.br'];
+        const distance = (a, b) => {
+          const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+          for (let j = 1; j <= b.length; j++) d[0][j] = j;
+          for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+            d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+          return d[a.length][b.length];
+        };
+        const check = () => {
+          const v = input.value.trim();
+          if (!v) { root.dataset.state = ''; msg.textContent = hint; return; }
+          if (!input.checkValidity() || !/\.[a-z]{2,}$/i.test(v)) {
+            root.dataset.state = 'error';
+            msg.textContent = v.includes('@') ? 'Falta o domínio completo, como empresa.com.' : 'Falta o @.';
+            return;
+          }
+          const [user, domain] = v.split('@');
+          const near = KNOWN.find((k) => k !== domain.toLowerCase() && distance(k, domain.toLowerCase()) <= 2);
+          root.dataset.state = near ? '' : 'ok';
+          if (!near) { msg.textContent = hint; return; }
+          msg.textContent = 'Você quis dizer ';
+          const fix = document.createElement('button');
+          fix.type = 'button';
+          fix.textContent = `${user}@${near}`;
+          fix.addEventListener('click', () => { input.value = fix.textContent; check(); });
+          msg.append(fix, '?');
+        };
+        input.addEventListener('blur', check);
+        input.addEventListener('input', () => { if (root.dataset.state) check(); });
+        check();
+      },
+    },
+    {
+      name: 'Busca com limpar', sel: '.fd-search', card: false,
+      html: `<search class="fd-search"><label for="fd-q">Buscar pedidos</label><div class="fd-search-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="fd-q" type="search" placeholder="Nome, número ou cidade" value="rafa" autocomplete="off"><button type="button" aria-label="Limpar busca">✕</button><kbd aria-hidden="true">/</kbd></div></search>`,
+      css: `
+.fd-search { ${FONT} display: block; }
+.fd-search label { ${LABEL} }
+.fd-search-box { display: flex; align-items: center; gap: .5em; padding: 0 .6em 0 .8em; border: 1.5px solid #3a414b; border-radius: ${R}; background: #0f1319; transition: border-color .15s, box-shadow .15s; }
+.fd-search-box:focus-within { ${FOCUS} }
+.fd-search svg { width: 1.1em; height: 1.1em; flex: none; fill: none; stroke: #8a94a0; stroke-width: 2; stroke-linecap: round; }
+.fd-search input { flex: 1; min-width: 0; padding: .7em 0; border: 0; background: none; color: inherit; font: inherit; outline: none; }
+.fd-search input::-webkit-search-cancel-button { appearance: none; }
+.fd-search button { display: grid; place-items: center; width: 1.6em; height: 1.6em; border: 0; border-radius: 50%; background: #2a2f37; color: #e9e6dd; font-size: .65em; cursor: pointer; }
+.fd-search button:focus-visible { outline: 2px solid ${A}; }
+.fd-search kbd { padding: .1em .45em; border: 1px solid #3a414b; border-radius: 4px; font: .75em ui-monospace, monospace; color: #8a94a0; }
+/* Clear button only with text; the shortcut hint only without. */
+.fd-search input:placeholder-shown ~ button, .fd-search input:not(:placeholder-shown) ~ kbd { display: none; }`,
+      js: function (root) {
+        const input = root.querySelector('input');
+        const clear = () => { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); };
+        root.querySelector('button').addEventListener('click', () => { clear(); input.focus(); });
+        input.addEventListener('keydown', (e) => { if (e.key === 'Escape' && input.value) { e.preventDefault(); clear(); } });
+        document.addEventListener('keydown', (e) => {
+          const typing = e.target.closest('input, textarea, select, [contenteditable="true"]');
+          if (e.key === '/' && !typing) { e.preventDefault(); input.focus(); }
+        });
+      },
+    },
+    {
+      name: 'Telefone com máscara', sel: '.fd-phone', card: true,
+      html: `<div class="fd-phone"><label for="fd-tel">Celular</label><div class="fd-phone-box"><span aria-hidden="true">+55</span><input id="fd-tel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="(11) 91234-5678" aria-describedby="fd-tel-hint"></div><small id="fd-tel-hint">Com DDD. Fixo ou celular.</small></div>`,
+      css: `
+.fd-phone { ${FONT} }
+.fd-phone label { ${LABEL} }
+.fd-phone-box { display: flex; align-items: stretch; border: 1.5px solid #3a414b; border-radius: ${R}; background: #0f1319; transition: border-color .15s, box-shadow .15s; }
+.fd-phone-box:focus-within { ${FOCUS} }
+.fd-phone-box span { display: grid; place-items: center; padding: 0 .75em; border-right: 1px solid #2a2f37; color: #8a94a0; font: .85em ui-monospace, monospace; }
+.fd-phone input { flex: 1; min-width: 0; padding: .7em .85em; border: 0; background: none; color: inherit; font: inherit; font-variant-numeric: tabular-nums; outline: none; }
+.fd-phone small { ${HINT} }`,
+      js: function (root) {
+        const input = root.querySelector('input');
+        // 11 digits = mobile, (11) 91234-5678; 10 = landline, (11) 3456-7890.
+        const format = (digits) => {
+          const d = digits.slice(0, 11);
+          if (!d) return '';
+          if (d.length < 3) return `(${d}`;
+          const head = `(${d.slice(0, 2)}) `, rest = d.slice(2), cut = d.length === 11 ? 5 : 4;
+          return rest.length > cut ? `${head}${rest.slice(0, cut)}-${rest.slice(cut)}` : head + rest;
+        };
+        input.addEventListener('keydown', (e) => {
+          // Backspace right after a ")" or "-" should eat the digit before it, not the symbol.
+          if (e.key !== 'Backspace' || input.selectionStart !== input.selectionEnd) return;
+          let p = input.selectionStart;
+          if (p > 0 && /\D/.test(input.value[p - 1])) { while (p > 0 && /\D/.test(input.value[p - 1])) p--; input.setSelectionRange(p, p); }
+        });
+        input.addEventListener('input', () => {
+          const caret = input.selectionStart ?? input.value.length;
+          const before = input.value.slice(0, caret).replace(/\D/g, '').length;
+          const out = format(input.value.replace(/\D/g, ''));
+          input.value = out;
+          if (document.activeElement !== input) return;
+          let i = 0, seen = 0;
+          while (i < out.length && seen < before) { if (/\d/.test(out[i])) seen++; i++; }
+          input.setSelectionRange(i, i);
+        });
+      },
+    },
+    {
+      name: 'Valor em reais', sel: '.fd-money', card: true,
+      html: `<div class="fd-money"><label for="fd-price">Preço do serviço</label><input id="fd-price" inputmode="numeric" autocomplete="off"><small>Digite só números: 1500 vira R$ 15,00.</small></div>`,
+      css: `
+.fd-money { ${FONT} }
+.fd-money label { ${LABEL} }
+.fd-money input { ${INPUT} text-align: right; font-size: 1.25em; font-variant-numeric: tabular-nums; caret-color: ${A}; }
+.fd-money input:focus { ${FOCUS} }
+.fd-money small { ${HINT} }`,
+      // Integer cents only: digits shift in from the right, like a card terminal. No float rounding anywhere.
+      js: function (root) {
+        const input = root.querySelector('input');
+        const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        const MAX = 999999999999;
+        let cents = 0;
+        const paint = () => {
+          input.value = fmt.format(cents / 100);
+          input.dataset.cents = String(cents);
+          if (document.activeElement === input) input.setSelectionRange(input.value.length, input.value.length);
+        };
+        input.addEventListener('beforeinput', (e) => {
+          e.preventDefault();
+          const typed = e.inputType === 'insertFromPaste' ? e.dataTransfer?.getData('text/plain') : e.data;
+          if (e.inputType.startsWith('delete')) cents = e.inputType.includes('Word') || e.inputType.includes('Line') ? 0 : Math.floor(cents / 10);
+          else if (e.inputType === 'insertFromPaste') cents = Math.min(MAX, Number(String(typed ?? '').replace(/\D/g, '') || 0));
+          else if (typed && /^\d+$/.test(typed)) cents = Math.min(MAX, cents * 10 ** typed.length + Number(typed));
+          paint();
+        });
+        input.addEventListener('focus', () => requestAnimationFrame(paint));
+        paint();
+      },
+    },
+    {
+      name: 'Tags', sel: '.fd-tags', card: false,
+      html: `<div class="fd-tags"><label for="fd-tag">Habilidades</label><div class="fd-tags-box"><ul></ul><input id="fd-tag" placeholder="Digite e tecle Enter" autocomplete="off" aria-describedby="fd-tag-hint"></div><small id="fd-tag-hint">Enter ou vírgula adiciona · Backspace remove</small><span class="fd-tags-sr" aria-live="polite"></span></div>`,
+      css: `
+.fd-tags { ${FONT} }
+.fd-tags label { ${LABEL} }
+.fd-tags-box { display: flex; flex-wrap: wrap; align-items: center; gap: .35em; padding: .35em; border: 1.5px solid #3a414b; border-radius: ${R}; background: #0f1319; cursor: text; transition: border-color .15s, box-shadow .15s; }
+.fd-tags-box:focus-within { ${FOCUS} }
+.fd-tags ul { display: contents; }
+.fd-tags li { display: inline-flex; align-items: center; gap: .3em; padding: .3em .35em .3em .65em; border-radius: calc(${R} * .7); background: #1f252d; font-size: .85em; animation: fd-tag-in .18s ease-out; }
+.fd-tags li.armed { background: #f23e2e; color: #0e0e0c; }
+.fd-tags li.dupe { animation: fd-tag-dupe .4s; }
+.fd-tags li button { display: grid; place-items: center; width: 1.3em; height: 1.3em; padding: 0; border: 0; border-radius: 50%; background: none; color: inherit; font-size: .8em; cursor: pointer; opacity: .7; }
+.fd-tags li button:hover, .fd-tags li button:focus-visible { opacity: 1; background: rgba(255, 255, 255, .12); outline: none; }
+.fd-tags input { flex: 1; min-width: 8em; padding: .4em .3em; border: 0; background: none; color: inherit; font: inherit; outline: none; }
+.fd-tags small { ${HINT} }
+.fd-tags-sr { ${SR} }
+@keyframes fd-tag-in { from { transform: scale(.7); opacity: 0; } }
+@keyframes fd-tag-dupe { 30%, 70% { background: ${A}; color: #0e0e0c; } }`,
+      js: function (root) {
+        const list = root.querySelector('ul'), input = root.querySelector('input'), sr = root.querySelector('.fd-tags-sr');
+        const MAX = 8, tags = [];
+        const say = (t) => { sr.textContent = t; };
+        function paint() {
+          list.replaceChildren(...tags.map((t, i) => {
+            const li = document.createElement('li');
+            li.append(t);
+            const x = document.createElement('button');
+            x.type = 'button'; x.textContent = '✕'; x.setAttribute('aria-label', `Remover ${t}`);
+            x.addEventListener('click', () => remove(i));
+            li.append(x);
+            return li;
+          }));
+        }
+        function add(raw) {
+          const dupes = new Set();
+          raw.split(',').map((s) => s.trim()).filter(Boolean).forEach((t) => {
+            const at = tags.findIndex((x) => x.toLowerCase() === t.toLowerCase());
+            if (at >= 0) { dupes.add(at); return; }
+            if (tags.length >= MAX) { say(`Limite de ${MAX} tags`); return; }
+            tags.push(t); say(`${t} adicionada`);
+          });
+          // Repaint first: a duplicate may point at a tag added in this same call.
+          paint();
+          dupes.forEach((at) => { const li = list.children[at]; li.classList.remove('dupe'); void li.offsetWidth; li.classList.add('dupe'); });
+        }
+        function remove(i) { const [t] = tags.splice(i, 1); paint(); say(`${t} removida`); }
+        input.addEventListener('keydown', (e) => {
+          if ((e.key === 'Enter' || e.key === ',') && input.value.trim()) { e.preventDefault(); add(input.value); input.value = ''; }
+          else if (e.key === 'Backspace' && !input.value && tags.length) {
+            // First press arms the last tag, second removes it.
+            const last = list.lastElementChild;
+            if (last.classList.contains('armed')) remove(tags.length - 1); else last.classList.add('armed');
+          } else list.lastElementChild?.classList.remove('armed');
+        });
+        input.addEventListener('paste', (e) => { const t = e.clipboardData.getData('text'); if (t.includes(',')) { e.preventDefault(); add(t); } });
+        input.addEventListener('blur', () => { if (input.value.trim()) { add(input.value); input.value = ''; } });
+        root.querySelector('.fd-tags-box').addEventListener('click', (e) => { if (e.target === e.currentTarget) input.focus(); });
+        add('TypeScript, Salesforce');
+        root.addTag = add;
+      },
+    },
+    {
+      name: 'Código de verificação', sel: '.fd-otp', card: true,
+      html: `<fieldset class="fd-otp"><legend>Código enviado por SMS</legend><div class="fd-otp-row"><input inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="Dígito 1"><input inputmode="numeric" maxlength="1" aria-label="Dígito 2"><input inputmode="numeric" maxlength="1" aria-label="Dígito 3"><span aria-hidden="true">–</span><input inputmode="numeric" maxlength="1" aria-label="Dígito 4"><input inputmode="numeric" maxlength="1" aria-label="Dígito 5"><input inputmode="numeric" maxlength="1" aria-label="Dígito 6"></div><small aria-live="polite">Teste com 246810.</small></fieldset>`,
+      css: `
+.fd-otp { ${FONT} margin: 0; padding: 0; border: 0; }
+.fd-otp legend { ${LABEL} padding: 0; }
+.fd-otp-row { display: flex; align-items: center; gap: .35em; }
+.fd-otp-row span { color: #3a414b; }
+.fd-otp input { flex: 1 1 0; width: 0; max-width: 2.4em; height: 2.8em; min-width: 0; padding: 0; border: 1.5px solid #3a414b; border-radius: ${R}; background: #0f1319; color: #e9e6dd; font: 600 1.15em/1 ui-monospace, monospace; text-align: center; outline: none; caret-color: ${A}; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.fd-otp input:focus { ${FOCUS} }
+.fd-otp input:not(:placeholder-shown), .fd-otp input.filled { border-color: #5a626c; }
+.fd-otp[data-state="ok"] input { border-color: ${A}; }
+.fd-otp[data-state="error"] input { border-color: #f23e2e; animation: fd-otp-shake .35s; }
+.fd-otp[data-state="checking"] input { opacity: .6; }
+.fd-otp small { ${HINT} }
+.fd-otp[data-state="ok"] small { color: ${A}; }
+.fd-otp[data-state="error"] small { color: #f23e2e; }
+@keyframes fd-otp-shake { 25%, 75% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }`,
+      // Focus only moves in answer to the user's own typing.
+      js: function (root) {
+        const boxes = [...root.querySelectorAll('input')], msg = root.querySelector('small'), hint = msg.textContent;
+        const value = () => boxes.map((b) => b.value).join('');
+        const fill = (from, digits) => {
+          [...digits].slice(0, boxes.length - from).forEach((d, k) => { boxes[from + k].value = d; });
+          boxes.forEach((b) => b.classList.toggle('filled', !!b.value));
+          return Math.min(boxes.length - 1, from + digits.length);
+        };
+        const submit = () => {
+          if (value().length < boxes.length) { root.dataset.state = ''; msg.textContent = hint; return; }
+          root.dataset.state = 'checking'; msg.textContent = 'Verificando…';
+          setTimeout(() => {
+            const ok = value() === '246810';
+            root.dataset.state = ok ? 'ok' : 'error';
+            msg.textContent = ok ? 'Telefone confirmado.' : 'Código incorreto. Confira o SMS.';
+          }, 700);
+        };
+        boxes.forEach((box, i) => {
+          box.addEventListener('input', () => {
+            const digits = box.value.replace(/\D/g, '');
+            box.value = '';
+            if (digits) {
+              // A whole code (SMS autofill lands in the first box) spreads over the rest.
+              const last = fill(i, digits);
+              if (document.activeElement === box) boxes[i + digits.length < boxes.length ? i + digits.length : last].focus();
+            }
+            box.classList.toggle('filled', !!box.value);
+            submit();
+          });
+          box.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !box.value && i > 0) { e.preventDefault(); boxes[i - 1].value = ''; boxes[i - 1].classList.remove('filled'); boxes[i - 1].focus(); submit(); }
+            if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); boxes[i - 1].focus(); }
+            if (e.key === 'ArrowRight' && i < boxes.length - 1) { e.preventDefault(); boxes[i + 1].focus(); }
+          });
+          box.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const digits = e.clipboardData.getData('text').replace(/\D/g, '');
+            if (!digits) return;
+            boxes[fill(i, digits)].focus();
+            submit();
+          });
+          box.addEventListener('focus', () => box.select());
+        });
+        root.typeCode = (code) => { boxes.forEach((b) => { b.value = ''; }); fill(0, code); submit(); };
+      },
+    },
+    {
+      name: 'Contador com repetição', sel: '.fd-step', card: false,
+      html: `<div class="fd-step"><span class="fd-step-label" id="fd-step-l">Hóspedes</span><div class="fd-step-box" role="group" aria-labelledby="fd-step-l"><button type="button" data-d="-1" aria-label="Menos um hóspede">−</button><input type="number" value="2" min="1" max="12" inputmode="numeric" aria-labelledby="fd-step-l"><button type="button" data-d="1" aria-label="Mais um hóspede">+</button></div></div>`,
+      css: `
+.fd-step { ${FONT} display: flex; align-items: center; justify-content: space-between; gap: 1em; }
+.fd-step-label { font-weight: 600; }
+.fd-step-box { display: inline-flex; align-items: center; border: 1.5px solid #3a414b; border-radius: ${R}; background: #0f1319; }
+.fd-step-box:focus-within { ${FOCUS} }
+.fd-step button { width: 2.4em; height: 2.4em; border: 0; background: none; color: #e9e6dd; font: 600 1.1em/1 system-ui, sans-serif; cursor: pointer; user-select: none; touch-action: manipulation; }
+.fd-step button:hover { color: ${A}; }
+.fd-step button[aria-disabled="true"] { color: #3a414b; cursor: not-allowed; }
+.fd-step button:focus-visible { outline: 2px solid ${A}; outline-offset: -2px; }
+.fd-step input { width: 2.6em; border: 0; background: none; color: inherit; font: 600 1.05em/1 ui-monospace, monospace; text-align: center; outline: none; -moz-appearance: textfield; }
+.fd-step input::-webkit-inner-spin-button, .fd-step input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.fd-step input.bump { animation: fd-step-bump .18s; }
+@keyframes fd-step-bump { 50% { transform: scale(1.25); } }`,
+      // Hold to repeat: waits 400 ms, then speeds up. aria-disabled keeps a focused button focused at the limit.
+      js: function (root) {
+        const input = root.querySelector('input'), [minus, plus] = root.querySelectorAll('button');
+        const min = Number(input.min), max = Number(input.max);
+        let timer = 0;
+        const set = (v) => {
+          const next = Math.max(min, Math.min(max, Number.isFinite(v) ? v : min));
+          if (next !== Number(input.value)) { input.classList.remove('bump'); void input.offsetWidth; input.classList.add('bump'); }
+          input.value = String(next);
+          minus.setAttribute('aria-disabled', String(next <= min));
+          plus.setAttribute('aria-disabled', String(next >= max));
+        };
+        const stop = () => clearTimeout(timer);
+        [minus, plus].forEach((b) => {
+          const d = Number(b.dataset.d);
+          b.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            set(Number(input.value) + d);
+            let wait = 400;
+            const again = () => { set(Number(input.value) + d); wait = Math.max(40, wait * 0.8); timer = setTimeout(again, wait); };
+            timer = setTimeout(again, wait);
+          });
+          ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => b.addEventListener(t, stop));
+          b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(Number(input.value) + d); } });
+        });
+        input.addEventListener('change', () => set(Number(input.value)));
+        input.addEventListener('keydown', (e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); set(Number(input.value) + (e.key === 'ArrowUp' ? 1 : -1)); } });
+        set(Number(input.value));
+      },
+    },
+    {
+      name: 'Faixa com balão', sel: '.fd-range', card: true,
+      html: `<div class="fd-range"><label for="fd-budget">Orçamento do projeto</label><div class="fd-range-box"><input id="fd-budget" type="range" min="5000" max="100000" step="5000" value="35000"><output for="fd-budget"></output></div><div class="fd-range-scale" aria-hidden="true"><span>R$ 5 mil</span><span>R$ 100 mil</span></div></div>`,
+      css: `
+.fd-range { ${FONT} }
+.fd-range label { ${LABEL} margin-bottom: 2.2em; }
+.fd-range-box { position: relative; --thumb: 1.25em; }
+.fd-range input { width: 100%; height: var(--thumb); margin: 0; appearance: none; background: none; cursor: pointer; }
+.fd-range input::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(${A} 0 0) left / var(--fill, 0%) 100% no-repeat, #2a2f37; }
+.fd-range input::-moz-range-track { height: 6px; border-radius: 3px; background: #2a2f37; }
+.fd-range input::-moz-range-progress { height: 6px; border-radius: 3px; background: ${A}; }
+.fd-range input::-webkit-slider-thumb { appearance: none; width: var(--thumb); height: var(--thumb); margin-top: calc((6px - var(--thumb)) / 2); border: 3px solid #0e0e0c; border-radius: 50%; background: ${A}; transition: transform .12s; }
+.fd-range input::-moz-range-thumb { width: var(--thumb); height: var(--thumb); border: 3px solid #0e0e0c; border-radius: 50%; background: ${A}; }
+.fd-range input:active::-webkit-slider-thumb { transform: scale(1.2); }
+.fd-range input:focus-visible { outline: none; }
+.fd-range input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px color-mix(in srgb, ${A} 35%, transparent); }
+/* The bubble follows the thumb's centre, which moves over (100% - thumb) of the track. */
+.fd-range output { position: absolute; bottom: calc(100% + .5em); left: calc(var(--p, 0) * (100% - var(--thumb)) + var(--thumb) / 2); translate: -50% 0; padding: .3em .55em; border-radius: calc(${R} * .7); background: ${A}; color: #0e0e0c; font: 600 .8em/1 ui-monospace, monospace; white-space: nowrap; pointer-events: none; }
+.fd-range output::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% 0; border: 5px solid transparent; border-top-color: ${A}; }
+.fd-range-scale { display: flex; justify-content: space-between; margin-top: .5em; font: .72em ui-monospace, monospace; color: #8a94a0; }`,
+      js: function (root) {
+        const input = root.querySelector('input'), out = root.querySelector('output');
+        const fmt = (v) => (v >= 1000 ? `R$ ${(v / 1000).toLocaleString('pt-BR')} mil` : `R$ ${v}`);
+        const update = () => {
+          const p = (input.value - input.min) / (input.max - input.min);
+          root.style.setProperty('--p', String(p));
+          root.style.setProperty('--fill', `${p * 100}%`);
+          out.textContent = fmt(Number(input.value));
+          input.setAttribute('aria-valuetext', out.textContent);
+        };
+        input.addEventListener('input', update);
+        update();
+      },
+    },
+    {
+      name: 'Upload com arrastar', sel: '.fd-drop', card: false,
+      html: `<div class="fd-drop"><label class="fd-drop-zone"><input type="file" multiple accept="image/png,image/jpeg,application/pdf"><b>Arraste arquivos ou clique</b><span>PNG, JPG ou PDF · até 5 MB cada</span></label><ul class="fd-drop-list" aria-live="polite"></ul></div>`,
+      css: `
+.fd-drop { ${FONT} }
+.fd-drop-zone { position: relative; display: grid; gap: .25em; justify-items: center; padding: 1.2em; border: 1.5px dashed #3a414b; border-radius: ${R}; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+.fd-drop-zone input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.fd-drop-zone:hover, .fd-drop.over .fd-drop-zone { border-color: ${A}; background: color-mix(in srgb, ${A} 6%, transparent); }
+.fd-drop-zone:has(input:focus-visible) { outline: 2px solid ${A}; outline-offset: 2px; }
+.fd-drop-zone b { font-weight: 600; }
+.fd-drop-zone span { font-size: .78em; color: #8a94a0; }
+.fd-drop-list { display: grid; gap: .4em; margin: .6em 0 0; padding: 0; list-style: none; }
+.fd-drop-list li { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .6em; padding: .5em .6em; border-radius: calc(${R} * .7); background: #13171c; font-size: .82em; overflow: hidden; }
+.fd-drop-list li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-drop-list li small { color: #8a94a0; font-family: ui-monospace, monospace; }
+.fd-drop-list li.error { color: #f23e2e; }
+.fd-drop-list li::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: var(--up, 0%); background: ${A}; transition: width .2s; }
+.fd-drop-list li.done::after { opacity: 0; transition: opacity .4s .3s; }
+.fd-drop-list button { padding: .2em .4em; border: 0; background: none; color: #8a94a0; cursor: pointer; }
+.fd-drop-list button:hover, .fd-drop-list button:focus-visible { color: #e9e6dd; outline: none; }`,
+      js: function (root) {
+        const input = root.querySelector('input'), list = root.querySelector('.fd-drop-list');
+        const MAX = 5 * 1024 * 1024, OK = input.accept.split(',');
+        const size = (b) => (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
+        function addFile(file) {
+          const li = document.createElement('li');
+          const name = document.createElement('span');
+          name.textContent = file.name;
+          const info = document.createElement('small');
+          const x = document.createElement('button');
+          x.type = 'button'; x.textContent = '✕'; x.setAttribute('aria-label', `Remover ${file.name}`);
+          x.addEventListener('click', () => li.remove());
+          li.append(name, info, x);
+          list.append(li);
+          const bad = !OK.includes(file.type) ? 'tipo não aceito' : file.size > MAX ? 'maior que 5 MB' : '';
+          if (bad) { li.classList.add('error'); info.textContent = bad; return; }
+          info.textContent = size(file.size);
+          // Stand-in for a real upload; wire fetch/XHR progress here.
+          let p = 0;
+          const tick = setInterval(() => {
+            p = Math.min(100, p + 8 + Math.random() * 20);
+            li.style.setProperty('--up', `${p}%`);
+            if (p >= 100) { clearInterval(tick); li.classList.add('done'); info.textContent = `${size(file.size)} ✓`; }
+          }, 180);
+        }
+        input.addEventListener('change', () => { [...input.files].forEach(addFile); input.value = ''; });
+        ['dragenter', 'dragover'].forEach((t) => root.addEventListener(t, (e) => { e.preventDefault(); root.classList.add('over'); }));
+        ['dragleave', 'drop'].forEach((t) => root.addEventListener(t, (e) => { e.preventDefault(); if (t === 'drop' || !root.contains(e.relatedTarget)) root.classList.remove('over'); }));
+        root.addEventListener('drop', (e) => [...e.dataTransfer.files].forEach(addFile));
+        root.addFile = addFile;
+      },
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  function snippet(it) {
+    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
+    return s;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.querySelectorAll('.demo').forEach((d, n) => { if (ITEMS[n].js) ITEMS[n].js(d.firstElementChild); });
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  // A sample file so the list is not empty on arrival.
+  grid.querySelector('.fd-drop').addFile(new File([new Uint8Array(284000)], 'contrato-assinado.pdf', { type: 'application/pdf' }));
+  grid.querySelector('.fd-drop').addFile(new File([new Uint8Array(10)], 'planilha.xlsx', { type: 'application/vnd.ms-excel' }));
+
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  $('radius').addEventListener('input', () => { grid.style.setProperty('--radius', $('radius').value + 'px'); $('radius-out').textContent = $('radius').value + ' px'; });
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    // Type into the fields through their own event handlers, without ever focusing them.
+    const tel = grid.querySelector('#fd-tel'), money = grid.querySelector('#fd-price'), range = grid.querySelector('#fd-budget');
+    const otp = grid.querySelector('.fd-otp'), tags = grid.querySelector('.fd-tags');
+    const PHONE = '11987654321', PRICE = '249990', CODES = ['246810', '135790'], SKILLS = ['React', 'Node', 'Figma', 'Apex', 'SQL', 'Go'];
+    let step = 0;
+    setInterval(() => {
+      const k = step % 12;
+      tel.value = tel.value.replace(/\D/g, '').length >= 11 || k === 0 ? '' : tel.value + PHONE[tel.value.replace(/\D/g, '').length];
+      tel.dispatchEvent(new Event('input'));
+      if (k === 0) { money.dispatchEvent(new InputEvent('beforeinput', { inputType: 'deleteContentBackward', cancelable: true })); for (let i = 0; i < 8; i++) money.dispatchEvent(new InputEvent('beforeinput', { inputType: 'deleteContentBackward', cancelable: true })); }
+      else if (k <= PRICE.length) money.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertText', data: PRICE[k - 1], cancelable: true }));
+      range.value = String(5000 + Math.round((Math.sin(step / 4) + 1) / 2 * 19) * 5000);
+      range.dispatchEvent(new Event('input'));
+      if (k === 7) otp.typeCode(CODES[(step / 12 | 0) % 2]);
+      if (k === 1) otp.typeCode('');
+      if (k === 4) {
+        while (tags.querySelectorAll('li').length >= 4) tags.querySelector('li button').click();
+        tags.addTag(SKILLS[(step / 12 | 0) % SKILLS.length]);
+      }
+      step++;
+    }, 380);
+  }
+})();
+</script>
+</html>

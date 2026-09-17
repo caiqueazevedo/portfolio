@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Toggle Pack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root {
+    --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; background: #000; border-radius: 6px; padding: 16px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); --accent: #c8f31d; --radius: 999px; color: #e9e6dd; }
+  .cell { margin: 0; background: #07090b; display: grid; grid-template-rows: minmax(140px, 1fr) auto; min-width: 0; }
+  @media (min-width: 560px) { .cell.wide { grid-column: span 2; } }
+  .demo { display: grid; place-items: center; padding: 24px 14px; min-width: 0; }
+  figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #14181d; font-size: 11.5px; color: var(--muted); min-width: 0; }
+  figcaption span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  figcaption b { font-family: var(--font-mono); font-weight: 400; color: var(--accent); margin-right: 4px; }
+  .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .copy.done { border-color: var(--accent); color: var(--accent); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+  .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
+  .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
+  .field { display: grid; gap: 6px; }
+  .field > label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg label { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 8px 0; cursor: pointer; color: var(--muted); }
+  .seg label + label { border-left: 1px solid var(--line); }
+  .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .seg label:has(input:checked) { background: var(--accent); color: #0e0e0c; }
+  :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+
+  html.card, html.card body { height: 100%; }
+  html.card body { padding: 0; min-height: 0; overflow: hidden; }
+  html.card .wrap { display: block; max-width: none; height: 100%; }
+  html.card .panel { display: none; }
+  html.card .stage { height: 100%; border-radius: 0; padding: 0; }
+  html.card .grid { height: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; border: 0; }
+  html.card .cell { grid-template-rows: 1fr; }
+  html.card .cell:not(.in-card), html.card figcaption { display: none; }
+  html.card .cell.wide { grid-column: span 2; }
+  html.card .demo { padding: 6px; }
+  html.card .demo > * { zoom: .72; }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+
+  <aside class="panel">
+    <div>
+      <h1>Toggle Pack</h1>
+      <p>Switches, checkboxes e radios com personalidade, todos sobre inputs nativos: teclado, formulário e leitor de tela continuam funcionando.</p>
+    </div>
+    <div class="field"><label for="accent">Cor de destaque</label><input type="color" id="accent" value="#c8f31d"></div>
+    <div class="field">
+      <label>Cantos</label>
+      <div class="seg" role="radiogroup" aria-label="Cantos">
+        <label><input type="radio" name="corner" value="0px"><span>retos</span></label>
+        <label><input type="radio" name="corner" value="6px"><span>suaves</span></label>
+        <label><input type="radio" name="corner" value="999px" checked><span>pílula</span></label>
+      </div>
+    </div>
+    <p class="note">O padrão é sempre o mesmo: o <code>input</code> real fica invisível mas presente (não <code>display: none</code>, que o tiraria do teclado), e o visual é um irmão logo depois dele, estilizado por <code>input:checked + i</code> e <code>input:focus-visible + i</code>. Onde o visual não é irmão, entra <code>label:has(input:checked)</code>. JS só aparece onde há estado que o HTML não tem: o "selecionar todos" indeterminado e o switch que salva no servidor.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const grid = $('grid');
+  const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 999px)';
+  const HIDE = 'position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0;';
+  const FONT = 'font: 500 15px/1.2 system-ui, sans-serif; color: #e9e6dd;';
+
+  const ITEMS = [
+    {
+      name: 'Switch clássico', sel: '.tg-sw', card: true,
+      html: `<label class="tg-sw"><input type="checkbox" role="switch" checked><i aria-hidden="true"></i>Notificações</label>`,
+      css: `
+.tg-sw { ${FONT} position: relative; display: inline-flex; align-items: center; gap: .7em; cursor: pointer; }
+.tg-sw input { ${HIDE} }
+.tg-sw i { position: relative; width: 2.8em; height: 1.6em; border-radius: ${R}; background: #2a2f37; transition: background .2s; }
+.tg-sw i::before { content: ""; position: absolute; top: .2em; left: .2em; width: 1.2em; height: 1.2em; border-radius: calc(${R} * .75); background: #e9e6dd; transition: transform .25s cubic-bezier(.3, 1.4, .5, 1), background .2s; }
+.tg-sw input:checked + i { background: ${A}; }
+.tg-sw input:checked + i::before { transform: translateX(1.2em); background: #0e0e0c; }
+.tg-sw input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 3px; }`,
+    },
+    {
+      name: 'Dia e noite', sel: '.tg-sky', card: true,
+      html: `<label class="tg-sky"><input type="checkbox" role="switch" aria-label="Tema escuro"><i aria-hidden="true"></i></label>`,
+      css: `
+.tg-sky { position: relative; display: inline-block; font-size: 15px; cursor: pointer; }
+.tg-sky input { ${HIDE} }
+.tg-sky i { position: relative; display: block; width: 4.2em; height: 2.2em; border-radius: ${R}; overflow: hidden; background: linear-gradient(#6fb6f2, #bfe3ff); transition: background .45s; }
+/* Sun by day; the same disc becomes a moon with an inset shadow for a crater. */
+.tg-sky i::before { content: ""; position: absolute; top: .3em; left: .3em; width: 1.6em; height: 1.6em; border-radius: 50%; background: #ffd23f; box-shadow: 0 0 0 .28em rgba(255, 210, 63, .3); transition: transform .5s cubic-bezier(.5, 0, .2, 1), background .5s, box-shadow .5s; }
+.tg-sky i::after { content: ""; position: absolute; top: .5em; left: .65em; width: .14em; height: .14em; border-radius: 50%; background: #fff; opacity: 0; transform: translateY(.4em);
+  box-shadow: .9em .55em 0 #fff, .35em 1.05em 0 #fff, 1.35em .1em 0 #fff; transition: opacity .4s, transform .5s; }
+.tg-sky input:checked + i { background: linear-gradient(#0b1030, #27306b); }
+.tg-sky input:checked + i::before { transform: translateX(2em); background: #e6e9f5; box-shadow: inset -.45em -.2em 0 #b3bad6, 0 0 0 .28em rgba(230, 233, 245, .12); }
+.tg-sky input:checked + i::after { opacity: 1; transform: none; }
+.tg-sky input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 3px; }`,
+    },
+    {
+      name: 'On / off escrito', sel: '.tg-word', card: false,
+      html: `<label class="tg-word"><input type="checkbox" role="switch" aria-label="Modo manutenção"><i aria-hidden="true"><b>on</b><b>off</b></i></label>`,
+      css: `
+.tg-word { position: relative; display: inline-block; font: 700 12px/1 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.tg-word input { ${HIDE} }
+.tg-word i { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 6.6em; height: 2.7em; border: 2px solid #e9e6dd; border-radius: min(${R}, 6px); font-style: normal; }
+.tg-word i::before { content: ""; position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc(50% - 2px); border-radius: min(${R}, 4px); background: #e9e6dd; transform: translateX(100%); transition: transform .22s cubic-bezier(.5, 0, .2, 1), background .22s; }
+.tg-word b { position: relative; display: grid; place-items: center; color: #8a94a0; transition: color .22s; }
+.tg-word b:last-child { color: #0e0e0c; }
+.tg-word input:checked + i::before { transform: none; background: ${A}; }
+.tg-word input:checked + i b:first-child { color: #0e0e0c; }
+.tg-word input:checked + i b:last-child { color: #8a94a0; }
+.tg-word input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 3px; }`,
+    },
+    {
+      name: 'Switch elástico', sel: '.tg-goo', card: false,
+      html: `<label class="tg-goo"><input type="checkbox" role="switch"><i aria-hidden="true"></i>Modo foco</label>`,
+      css: `
+.tg-goo { ${FONT} position: relative; display: inline-flex; align-items: center; gap: .7em; cursor: pointer; }
+.tg-goo input { ${HIDE} }
+.tg-goo i { position: relative; width: 3.4em; height: 1.6em; border-radius: ${R}; background: #2a2f37; transition: background .25s; }
+.tg-goo i::before { content: ""; position: absolute; top: .2em; left: .2em; width: 1.2em; height: 1.2em; border-radius: calc(${R} * .75); background: #e9e6dd; transition: left .32s cubic-bezier(.6, 0, .2, 1), width .16s; }
+/* Holding the pointer down stretches the knob toward where it is about to go. */
+.tg-goo:active i::before { width: 1.8em; }
+.tg-goo input:checked + i { background: ${A}; }
+.tg-goo input:checked + i::before { left: calc(100% - 1.4em); background: #0e0e0c; }
+.tg-goo:active input:checked + i::before { left: calc(100% - 2em); }
+/* Two identical keyframes with different names, so every change restarts the stretch. */
+.tg-goo input:checked + i::before { animation: tg-goo-on .32s; }
+.tg-goo input:not(:checked) + i::before { animation: tg-goo-off .32s; }
+.tg-goo input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 3px; }
+@keyframes tg-goo-on { 50% { width: 1.9em; } }
+@keyframes tg-goo-off { 50% { width: 1.9em; } }`,
+    },
+    {
+      name: 'Check desenhado', sel: '.tg-check', card: true,
+      html: `<label class="tg-check"><input type="checkbox" checked><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20"/><path d="M6.5 12.5l3.5 3.5 7.5-8" pathLength="1"/></svg>Aceito os termos</label>`,
+      css: `
+.tg-check { ${FONT} position: relative; display: inline-flex; align-items: center; gap: .6em; cursor: pointer; }
+.tg-check input { ${HIDE} }
+.tg-check svg { width: 1.5em; height: 1.5em; flex: none; overflow: visible; }
+.tg-check rect { fill: transparent; stroke: #8a94a0; stroke-width: 2; rx: min(${R}, 5px); transition: fill .2s, stroke .2s; }
+.tg-check path { fill: none; stroke: #0e0e0c; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .3s .05s cubic-bezier(.5, 0, .2, 1); }
+.tg-check input:checked + svg rect { fill: ${A}; stroke: ${A}; }
+.tg-check input:checked + svg path { stroke-dashoffset: 0; }
+.tg-check input:focus-visible + svg { outline: 2px solid ${A}; outline-offset: 2px; }`,
+    },
+    {
+      name: 'Tarefa riscada', sel: '.tg-task', card: true,
+      html: `<label class="tg-task"><input type="checkbox"><i aria-hidden="true"></i><span>Revisar o contrato</span></label>`,
+      css: `
+.tg-task { ${FONT} position: relative; display: inline-flex; align-items: center; gap: .7em; cursor: pointer; }
+.tg-task input { ${HIDE} }
+.tg-task i { display: grid; place-items: center; width: 1.25em; height: 1.25em; border-radius: min(${R}, 50%); border: 2px solid #8a94a0; transition: border-color .2s; }
+.tg-task i::after { content: ""; width: .55em; height: .55em; border-radius: inherit; background: ${A}; transform: scale(0); transition: transform .25s cubic-bezier(.3, 1.6, .5, 1); }
+.tg-task span { position: relative; transition: color .3s .1s; }
+.tg-task span::after { content: ""; position: absolute; left: -.1em; right: -.1em; top: 55%; height: 2px; background: ${A}; transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.6, 0, .2, 1); }
+.tg-task input:checked + i { border-color: ${A}; }
+.tg-task input:checked + i::after { transform: scale(1); }
+.tg-task input:checked ~ span { color: #8a94a0; }
+.tg-task input:checked ~ span::after { transform: scaleX(1); }
+.tg-task input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 2px; }`,
+    },
+    {
+      name: 'Selecionar todos', sel: '.tg-tree', card: false,
+      html: `<fieldset class="tg-tree"><legend><label><input type="checkbox" data-all>Todas as permissões</label></legend><label><input type="checkbox" checked>Ler</label><label><input type="checkbox">Escrever</label><label><input type="checkbox">Excluir</label></fieldset>`,
+      css: `
+.tg-tree { display: grid; gap: .5em; margin: 0; padding: 0; border: 0; font: 500 14px/1.2 system-ui, sans-serif; color: #e9e6dd; }
+.tg-tree legend { padding: 0; margin-bottom: .5em; font-weight: 600; }
+.tg-tree label { display: flex; align-items: center; gap: .55em; cursor: pointer; }
+.tg-tree > label { padding-left: 1.6em; color: #c9ced4; }
+/* The native checkbox already draws the indeterminate dash; accent-color is enough. */
+.tg-tree input { width: 1.1em; height: 1.1em; margin: 0; accent-color: ${A}; }`,
+      js: function (root) {
+        const all = root.querySelector('[data-all]');
+        const items = [...root.querySelectorAll('input:not([data-all])')];
+        const sync = () => {
+          const n = items.filter((i) => i.checked).length;
+          all.checked = n === items.length;
+          all.indeterminate = n > 0 && n < items.length;
+        };
+        all.addEventListener('change', () => { items.forEach((i) => { i.checked = all.checked; }); sync(); });
+        items.forEach((i) => i.addEventListener('change', sync));
+        sync();
+      },
+    },
+    {
+      name: 'Planos em cartão', sel: '.tg-plans', card: true, wide: true,
+      html: `<div class="tg-plans" role="radiogroup" aria-label="Plano"><label><input type="radio" name="tg-plan" value="basic"><b>Básico</b><span>R$ 29/mês</span></label><label><input type="radio" name="tg-plan" value="pro" checked><b>Pro</b><span>R$ 79/mês</span></label><label><input type="radio" name="tg-plan" value="team"><b>Time</b><span>R$ 199/mês</span></label></div>`,
+      css: `
+.tg-plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6em; width: 100%; max-width: 26em; font: 14px/1.3 system-ui, sans-serif; color: #e9e6dd; }
+.tg-plans label { position: relative; display: grid; gap: .25em; padding: .85em; border: 2px solid #2a2f37; border-radius: min(${R}, 10px); cursor: pointer; transition: border-color .15s, background .15s; }
+.tg-plans input { ${HIDE} }
+.tg-plans span { font-size: .8em; color: #8a94a0; }
+.tg-plans label::after { content: "✓"; position: absolute; top: -.6em; right: -.6em; display: grid; place-items: center; width: 1.5em; height: 1.5em; border-radius: 50%; background: ${A}; color: #0e0e0c; font-size: .75em; font-weight: 700; transform: scale(0); transition: transform .22s cubic-bezier(.3, 1.6, .5, 1); }
+.tg-plans label:hover { border-color: #4a525c; }
+.tg-plans label:has(input:checked) { border-color: ${A}; background: color-mix(in srgb, ${A} 8%, transparent); }
+.tg-plans label:has(input:checked)::after { transform: scale(1); }
+.tg-plans label:has(input:focus-visible) { outline: 2px solid ${A}; outline-offset: 2px; }`,
+    },
+    {
+      name: 'Segmentado que desliza', sel: '.tg-seg', card: false,
+      html: `<div class="tg-seg" role="radiogroup" aria-label="Período"><label><input type="radio" name="tg-seg" checked>Dia</label><label><input type="radio" name="tg-seg">Semana</label><label><input type="radio" name="tg-seg">Mês</label><label><input type="radio" name="tg-seg">Ano</label></div>`,
+      css: `
+.tg-seg { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); min-width: 17em; padding: .25em; border-radius: ${R}; background: #1a1f26; font: 600 13px/1 system-ui, sans-serif; }
+.tg-seg::before { content: ""; position: absolute; top: .25em; bottom: .25em; left: .25em; width: calc((100% - .5em) / 4); border-radius: ${R}; background: ${A}; transition: transform .32s cubic-bezier(.5, 0, .2, 1); }
+/* The pill's position comes from which label holds the checked radio. */
+.tg-seg:has(label:nth-child(2) input:checked)::before { transform: translateX(100%); }
+.tg-seg:has(label:nth-child(3) input:checked)::before { transform: translateX(200%); }
+.tg-seg:has(label:nth-child(4) input:checked)::before { transform: translateX(300%); }
+.tg-seg label { position: relative; padding: .75em .4em; text-align: center; color: #8a94a0; cursor: pointer; transition: color .25s; }
+.tg-seg input { ${HIDE} }
+.tg-seg label:has(input:checked) { color: #0e0e0c; }
+.tg-seg label:has(input:focus-visible) { outline: 2px solid ${A}; outline-offset: 2px; border-radius: ${R}; }`,
+    },
+    {
+      name: 'Nota em estrelas', sel: '.tg-stars', card: false,
+      html: `<fieldset class="tg-stars"><legend>Como foi o atendimento?</legend><div><input type="radio" name="tg-star" id="tg-s1" value="1"><label for="tg-s1">★<span>1 estrela</span></label><input type="radio" name="tg-star" id="tg-s2" value="2"><label for="tg-s2">★<span>2 estrelas</span></label><input type="radio" name="tg-star" id="tg-s3" value="3" checked><label for="tg-s3">★<span>3 estrelas</span></label><input type="radio" name="tg-star" id="tg-s4" value="4"><label for="tg-s4">★<span>4 estrelas</span></label><input type="radio" name="tg-star" id="tg-s5" value="5"><label for="tg-s5">★<span>5 estrelas</span></label></div></fieldset>`,
+      css: `
+.tg-stars { margin: 0; padding: 0; border: 0; font: 500 13px/1.2 system-ui, sans-serif; color: #8a94a0; text-align: center; }
+.tg-stars legend { margin: 0 auto .5em; }
+.tg-stars div { display: inline-flex; gap: .1em; }
+.tg-stars input { ${HIDE} }
+.tg-stars label { position: relative; font-size: 2.1em; line-height: 1; color: #2a2f37; cursor: pointer; transition: color .12s, transform .12s; }
+.tg-stars label span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+/* DOM order stays 1 → 5 (so arrow keys go the right way); :has lights every star up to the chosen one. */
+.tg-stars div:has(#tg-s1:checked) label:nth-of-type(-n+1),
+.tg-stars div:has(#tg-s2:checked) label:nth-of-type(-n+2),
+.tg-stars div:has(#tg-s3:checked) label:nth-of-type(-n+3),
+.tg-stars div:has(#tg-s4:checked) label:nth-of-type(-n+4),
+.tg-stars div:has(#tg-s5:checked) label:nth-of-type(-n+5) { color: ${A}; }
+/* Hover preview wins over the saved value while the pointer is on the row. */
+.tg-stars div:hover label { color: #2a2f37; }
+.tg-stars div:has(label:nth-of-type(1):hover) label:nth-of-type(-n+1),
+.tg-stars div:has(label:nth-of-type(2):hover) label:nth-of-type(-n+2),
+.tg-stars div:has(label:nth-of-type(3):hover) label:nth-of-type(-n+3),
+.tg-stars div:has(label:nth-of-type(4):hover) label:nth-of-type(-n+4),
+.tg-stars div:has(label:nth-of-type(5):hover) label:nth-of-type(-n+5) { color: color-mix(in srgb, ${A} 75%, #fff); }
+.tg-stars label:hover { transform: scale(1.15); }
+.tg-stars input:focus-visible + label { outline: 2px solid ${A}; outline-offset: 2px; border-radius: 4px; }`,
+    },
+    {
+      name: 'Chips de filtro', sel: '.tg-chips', card: true, wide: true,
+      html: `<div class="tg-chips" role="group" aria-label="Filtrar vagas"><label><input type="checkbox" checked>Remoto</label><label><input type="checkbox">Híbrido</label><label><input type="checkbox" checked>PJ</label><label><input type="checkbox">CLT</label><label><input type="checkbox">Sênior</label><label><input type="checkbox">Inglês</label></div>`,
+      css: `
+.tg-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: .45em; max-width: 24em; font: 600 13px/1 system-ui, sans-serif; }
+.tg-chips label { position: relative; display: inline-flex; align-items: center; padding: .6em .95em; border: 1.5px solid #3a414b; border-radius: ${R}; color: #c9ced4; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.tg-chips input { ${HIDE} }
+/* The tick is a rotated corner that grows from zero width, pushing the text over. */
+.tg-chips label::before { content: ""; width: 0; height: .55em; margin-right: 0; border: solid #0e0e0c; border-width: 0 .14em .14em 0; transform: translateY(-.08em) rotate(45deg); opacity: 0; transition: width .2s, margin .2s, opacity .2s; }
+.tg-chips label:hover { border-color: #5a626c; }
+.tg-chips label:has(input:checked) { background: ${A}; border-color: ${A}; color: #0e0e0c; }
+.tg-chips label:has(input:checked)::before { width: .28em; margin-right: .6em; opacity: 1; }
+.tg-chips label:has(input:focus-visible) { outline: 2px solid ${A}; outline-offset: 2px; }`,
+    },
+    {
+      name: 'Switch que salva', sel: '.tg-save', card: false,
+      html: `<label class="tg-save"><input type="checkbox" role="switch"><i aria-hidden="true"></i><span>Backup automático</span><small aria-live="polite"></small></label>`,
+      css: `
+.tg-save { ${FONT} position: relative; display: inline-grid; grid-template-columns: auto auto; align-items: center; column-gap: .7em; row-gap: .35em; cursor: pointer; }
+.tg-save input { ${HIDE} }
+.tg-save i { position: relative; width: 2.8em; height: 1.6em; border-radius: ${R}; background: #2a2f37; transition: background .2s; }
+.tg-save i::before { content: ""; position: absolute; top: .2em; left: .2em; width: 1.2em; height: 1.2em; border-radius: calc(${R} * .75); background: #e9e6dd; transition: transform .25s cubic-bezier(.3, 1.4, .5, 1), background .2s; }
+.tg-save input:checked + i { background: ${A}; }
+.tg-save input:checked + i::before { transform: translateX(1.2em); background: #0e0e0c; }
+.tg-save small { grid-column: 2; min-height: 1.2em; font: 12px ui-monospace, monospace; color: #8a94a0; }
+/* While saving, the knob breathes and clicks are ignored. */
+.tg-save[data-state="saving"] { cursor: progress; }
+.tg-save[data-state="saving"] i::before { animation: tg-save-wait .8s ease-in-out infinite; }
+.tg-save[data-state="ok"] small { color: ${A}; }
+.tg-save[data-state="error"] small { color: #f23e2e; }
+.tg-save[data-state="error"] i { animation: tg-save-shake .35s; }
+.tg-save input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 3px; }
+@keyframes tg-save-wait { 50% { opacity: .35; } }
+@keyframes tg-save-shake { 25%, 75% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }`,
+      // Optimistic UI: flip now, confirm later, roll back on failure.
+      js: function (root) {
+        const input = root.querySelector('input'), note = root.querySelector('small');
+        let clear = 0;
+        input.addEventListener('click', (e) => { if (root.dataset.state === 'saving') e.preventDefault(); });
+        input.addEventListener('change', () => {
+          const next = input.checked;
+          clearTimeout(clear);
+          root.dataset.state = 'saving'; root.setAttribute('aria-busy', 'true'); note.textContent = 'salvando…';
+          // Replace with your request; one in four fails here so the rollback shows.
+          setTimeout(() => {
+            root.removeAttribute('aria-busy');
+            if (Math.random() < 0.25) { input.checked = !next; root.dataset.state = 'error'; note.textContent = 'falhou, revertido'; }
+            else { root.dataset.state = 'ok'; note.textContent = next ? 'ativado' : 'desativado'; }
+            clear = setTimeout(() => { root.dataset.state = ''; note.textContent = ''; }, 1600);
+          }, 900);
+        });
+      },
+    },
+  ];
+
+  const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
+  function snippet(it) {
+    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
+    return s;
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(t); t.focus({ preventScroll: true }); t.select();
+    const ok = document.execCommand('copy'); t.remove(); return ok;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = ITEMS.map(i => i.css).join('\n');
+  document.head.appendChild(style);
+  grid.innerHTML = ITEMS.map((it, n) => `<figure class="cell${it.card ? ' in-card' : ''}${it.wide ? ' wide' : ''}"><div class="demo">${it.html}</div><figcaption><span><b>${String(n + 1).padStart(2, '0')}</b>${it.name}</span><button type="button" class="copy" data-i="${n}" aria-label="Copiar ${it.name}">copiar</button></figcaption></figure>`).join('');
+  grid.querySelectorAll('.demo').forEach((d, n) => { if (ITEMS[n].js) ITEMS[n].js(d.firstElementChild); });
+  grid.addEventListener('click', async (e) => {
+    const b = e.target.closest('.copy'); if (!b) return;
+    const ok = await copyText(snippet(ITEMS[Number(b.dataset.i)]));
+    b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
+  });
+
+  $('accent').addEventListener('input', () => grid.style.setProperty('--accent', $('accent').value));
+  document.querySelectorAll('input[name="corner"]').forEach(r => r.addEventListener('change', () => grid.style.setProperty('--radius', r.value)));
+
+  if (new URLSearchParams(location.search).has('card')) {
+    document.documentElement.classList.add('card');
+    const stage = $('stage');
+    let down = null;
+    stage.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
+      down = null;
+    }, true);
+    // Flip the visible controls one after another. .click() on an input toggles it without moving focus.
+    const targets = ['.tg-sw input', '.tg-sky input', '.tg-goo input', '.tg-check input', '.tg-task input', '.tg-chips label:nth-child(2) input', '.tg-chips label:nth-child(5) input'];
+    const plans = [...grid.querySelectorAll('.tg-plans input')];
+    let i = 0, p = 1;
+    setInterval(() => {
+      grid.querySelector(targets[i % targets.length]).click();
+      if (i % 3 === 2) plans[p = (p + 1) % plans.length].click();
+      i++;
+    }, 650);
+  }
+})();
+</script>
+</html>
