@@ -95,13 +95,17 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
       const from = sections[panel];
       // The children, not the panels: a panel is a flat background, and what reads as motion
       // is the type and images inside it leaving and arriving on a stagger.
+      //
+      // `transform`, never the `translate` property: Tailwind v4 centres with `translate`
+      // (`-translate-x-1/2`), so animating that one wipes the centring for the length of the
+      // animation and the hero word and the cutout jump sideways before snapping back.
       for (const [index, child] of [...(from?.children ?? [])].entries()) {
         // Optional: the Web Animations API is absent in jsdom, and the panel change must not
         // depend on the decoration arriving.
         (child as HTMLElement).animate?.(
           [
-            { translate: "0 0", opacity: 1 },
-            { translate: `${-direction * 18}vw 0`, opacity: 0.2 },
+            { transform: "translateX(0)", opacity: 1 },
+            { transform: `translateX(${-direction * 18}vw)`, opacity: 0.2 },
           ],
           { duration: TRANSITION_MS * EXIT_RATIO, easing: "cubic-bezier(.7,0,.3,1)", delay: index * 30 },
         );
@@ -109,8 +113,8 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
       for (const [index, child] of [...target.children].entries()) {
         (child as HTMLElement).animate?.(
           [
-            { translate: `${direction * 24}vw 0`, opacity: 0 },
-            { translate: "0 0", opacity: 1 },
+            { transform: `translateX(${direction * 24}vw)`, opacity: 0 },
+            { transform: "translateX(0)", opacity: 1 },
           ],
           {
             duration: TRANSITION_MS,
