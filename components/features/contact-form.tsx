@@ -59,9 +59,9 @@ export function ContactForm({ siteKey, title }: { siteKey: string; title: string
       onSubmit={onSubmit}
       noValidate
       aria-describedby={`${id}-status`}
-      className="relative flex min-w-0 flex-col gap-4.5 border-2 border-paper-100 bg-ink-900 p-5 shadow-hard-acid sm:p-7"
+      className="relative flex min-w-0 flex-col gap-6 border border-ink/14 bg-paper p-6 sm:p-9"
     >
-      <span className="font-display text-[26px] text-paper-100 uppercase">{title}</span>
+      <span className="text-[clamp(18px,2vw,26px)] font-medium tracking-[0.06em] uppercase">{title}</span>
 
       <Field id={`${id}-name`} label={t("name")} error={errors.name}>
         <Input id={`${id}-name`} name="name" autoComplete="name" placeholder={t("namePlaceholder")} required aria-invalid={errors.name || undefined} />
@@ -84,10 +84,10 @@ export function ContactForm({ siteKey, title }: { siteKey: string; title: string
 
       {/* The widget has a 300px floor; below that it scrolls inside its box instead of pushing the page. */}
       <div className="min-w-0 max-w-full overflow-x-auto">
-        <Turnstile siteKey={siteKey} onSuccess={setToken} onExpire={() => setToken("")} options={{ theme: "dark", size: "flexible" }} />
+        <Turnstile siteKey={siteKey} onSuccess={setToken} onExpire={() => setToken("")} options={{ theme: "light", size: "flexible" }} />
       </div>
 
-      <Button type="submit" size="lg" disabled={status === "sending"} className="self-start">
+      <Button type="submit" disabled={status === "sending"} className="self-start">
         {status === "sending" ? t("sending") : t("submit")}
       </Button>
 
@@ -96,7 +96,7 @@ export function ContactForm({ siteKey, title }: { siteKey: string; title: string
         role="status"
         aria-live="polite"
         className={cn(
-          "inline-flex items-center gap-3 self-start border-2 border-ink-950 px-4 py-3 font-condensed text-[13px] font-bold tracking-[0.08em] uppercase shadow-[4px_4px_0_rgb(0_0_0/0.6)]",
+          "inline-flex items-center gap-3 self-start border border-ink/14 px-4 py-3 text-[12px] font-medium tracking-[0.12em] uppercase",
           toastColor,
           !feedback[status] && "hidden",
         )}

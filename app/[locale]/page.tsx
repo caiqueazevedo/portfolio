@@ -1,19 +1,42 @@
-import { Approach } from "@/components/features/approach";
-import { Hero } from "@/components/features/hero";
-import { SelectedWorks } from "@/components/features/selected-works";
-import { Services } from "@/components/features/services";
-import { StatsBand } from "@/components/features/stats-band";
+import { getTranslations } from "next-intl/server";
+import { HomeRail } from "@/components/features/home-rail";
+import { PanelAbout } from "@/components/home/panel-about";
+import { PanelApproach } from "@/components/home/panel-approach";
+import { PanelCases } from "@/components/home/panel-cases";
+import { PanelContact } from "@/components/home/panel-contact";
+import { PanelFeatured } from "@/components/home/panel-featured";
+import { PanelIntro } from "@/components/home/panel-intro";
+import { PanelOpenSource } from "@/components/home/panel-open-source";
+import { PanelServices } from "@/components/home/panel-services";
+import { PANELS } from "@/content/panels";
 
-export default function HomePage() {
+/**
+ * The home is the rail and nothing else.
+ *
+ * Panels are rendered on the server and handed to the client rail as children, so everything
+ * that can be static stays static: the rail only needs to know how many sections there are and
+ * where each one starts.
+ */
+export default async function HomePage() {
+  const t = await getTranslations("home");
+
   return (
-    <>
-      <Hero />
-      <section className="grid grid-cols-1 border-t-2 border-ink-700 md:grid-cols-[1fr_1.6fr]">
-        <Services />
-        <SelectedWorks />
-      </section>
-      <StatsBand />
-      <Approach />
-    </>
+    <HomeRail
+      labels={{
+        names: PANELS.map((id) => t(`panels.${id}`)),
+        scroll: t("scroll"),
+        prev: t("prev"),
+        next: t("next"),
+      }}
+    >
+      <PanelIntro />
+      <PanelFeatured />
+      <PanelCases />
+      <PanelServices />
+      <PanelAbout />
+      <PanelApproach />
+      <PanelOpenSource />
+      <PanelContact />
+    </HomeRail>
   );
 }

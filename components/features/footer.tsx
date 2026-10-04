@@ -1,51 +1,60 @@
 import { getTranslations } from "next-intl/server";
 import { ButtonLink } from "@/components/ui/button";
-import { Container } from "@/components/ui/container";
-import { Sticker } from "@/components/ui/sticker";
 import { site } from "@/content/site";
+import { Link } from "@/i18n/navigation";
 
-/** The site's closing call: "VAMOS CRIAR / ALGO REAL." with contact and links. */
+/**
+ * The end of a scrolling page: the same offer the home's last panel makes, in one band.
+ *
+ * The home does not use it — it ends in the contact panel — so this is the only place the
+ * invitation is repeated, and it stays short for that reason.
+ */
 export async function Footer() {
-  const t = await getTranslations("footer");
+  const t = await getTranslations("home");
+  const contact = await getTranslations("contact");
+  const chrome = await getTranslations("chrome");
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t-2 border-ink-700">
-      <Container className="grid grid-cols-1 gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr] md:gap-10">
-        <div className="min-w-0">
-          <h2 className="text-[clamp(44px,6vw,64px)] text-paper-100">{t("ctaLine1")}</h2>
-          <h2 className="text-[clamp(44px,6vw,64px)] text-acid-500">{t("ctaLine2")}</h2>
-        </div>
-        <div className="flex min-w-0 flex-col items-start gap-2.5">
-          <span className="label text-acid-500">{t("talk")}</span>
-          <a href={`mailto:${site.email}`} className="break-all text-acid-500 hover:text-white">
-            {site.email}
-          </a>
-          <ButtonLink href="/contact" variant="ghost" size="sm" className="mt-1">
-            {t("form")}
-          </ButtonLink>
-        </div>
-        <div className="flex min-w-0 flex-col items-start gap-2.5">
-          <span className="label text-acid-500">{t("social")}</span>
-          <div className="flex flex-wrap gap-3.5 font-condensed text-[13px] tracking-[0.1em] uppercase">
-            <a href={site.github} target="_blank" rel="me noopener" className="text-acid-500 hover:text-white">
-              {t("github")}
+    <footer className="bg-ink px-edge py-[clamp(56px,12vh,140px)] text-paper">
+      <div className="flex flex-col gap-[clamp(32px,6vh,72px)]">
+        <h2 className="text-[clamp(40px,7vw,120px)] leading-[0.86] font-medium">
+          {t("contactTitle1")}
+          <br />
+          {t("contactTitle2")}
+        </h2>
+
+        <div className="grid gap-[clamp(20px,3vw,56px)] border-t border-paper/30 pt-[clamp(20px,4vh,40px)] md:grid-cols-3">
+          <div className="flex flex-col gap-2.5">
+            <span className="micro opacity-60">{chrome("email")}</span>
+            <a href={`mailto:${site.email}`} className="self-start rule-link text-[clamp(15px,1.5vw,22px)]">
+              {site.email}
             </a>
-            {site.linkedin ? (
-              <a href={site.linkedin} target="_blank" rel="me noopener" className="text-acid-500 hover:text-white">
-                {t("linkedin")}
-              </a>
-            ) : null}
           </div>
-          <Sticker color="paper" marker rotate={-2} className="mt-3">
-            {t("sticker")}
-          </Sticker>
+          <div className="flex flex-col gap-2.5">
+            <span className="micro opacity-60">{t("contactCode")}</span>
+            <a
+              href={site.github}
+              target="_blank"
+              rel="noreferrer"
+              className="self-start rule-link text-[clamp(15px,1.5vw,22px)]"
+            >
+              {site.github.replace("https://", "")}
+            </a>
+          </div>
+          <div className="flex flex-col items-start gap-2.5">
+            <span className="micro opacity-60">{t("contactReply")}</span>
+            <ButtonLink href="/contact" className="bg-paper text-ink hover:bg-paper/80 hover:text-ink">
+              {contact("formTitle")}
+            </ButtonLink>
+          </div>
         </div>
-      </Container>
-      <Container className="flex items-center justify-between border-t-2 border-ink-700 py-4 font-mono text-[12px] text-ink-500">
-        <span>{t("rights", { year })}</span>
-        {site.location ? <span>{site.location}</span> : null}
-      </Container>
+
+        <div className="flex items-center justify-between gap-6 text-[11px] tracking-[0.16em] uppercase opacity-60">
+          <span>© {year} {site.name}</span>
+          <Link href="/">{t("backToStart")}</Link>
+        </div>
+      </div>
     </footer>
   );
 }

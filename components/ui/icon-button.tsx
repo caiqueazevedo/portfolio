@@ -4,13 +4,12 @@ import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "ghost" | "paper";
 
-const BASE =
-  "inline-flex h-11 w-11 shrink-0 items-center justify-center border-2 text-[22px] font-extrabold leading-none transition-all duration-[120ms] ease-snap";
+const BASE = "inline-flex h-11 w-11 shrink-0 items-center justify-center border-2 text-[22px] font-extrabold leading-none transition-all duration-200";
 
 const VARIANT: Record<Variant, string> = {
-  primary: "bg-acid-500 text-ink-950 border-ink-950 hover:-rotate-6 hover:scale-[1.06]",
-  ghost: "bg-transparent text-paper-100 border-paper-100 hover:bg-paper-100 hover:text-ink-950",
-  paper: "bg-paper-100 text-ink-950 border-ink-950 hover:-rotate-6 hover:scale-[1.06]",
+  primary: "bg-ink text-paper border-ink hover:-rotate-6 hover:scale-[1.06]",
+  ghost: "bg-transparent text-ink border-ink/14 hover:bg-ink hover:text-paper",
+  paper: "bg-ink text-paper border-ink hover:-rotate-6 hover:scale-[1.06]",
 };
 
 type Props = ComponentProps<typeof Link> & { glyph?: string; variant?: Variant; label: string };

@@ -12,17 +12,21 @@ export function LocaleSwitch({ className }: { className?: string }) {
   const t = useTranslations("locale");
 
   return (
-    <nav aria-label={t("label")} className={cn("flex items-center font-mono text-[13px]", className)}>
+    <nav aria-label={t("label")} className={cn("flex items-center gap-1.5", className)}>
       {routing.locales.map((l, i) => (
-        <span key={l} className="flex items-center">
-          {i > 0 ? <span aria-hidden="true" className="px-1.5 text-ink-500">/</span> : null}
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 ? (
+            <span aria-hidden="true" className="opacity-40">
+              /
+            </span>
+          ) : null}
           <Link
             href={pathname}
             locale={l}
             hrefLang={l}
             aria-current={l === locale ? "true" : undefined}
             aria-label={t(l)}
-            className={cn("uppercase transition-colors hover:text-acid-500", l === locale ? "text-acid-500" : "text-ink-500")}
+            className={cn("uppercase", l === locale ? "opacity-100" : "opacity-50 hover:opacity-100")}
           >
             {l}
           </Link>

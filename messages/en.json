@@ -15,6 +15,54 @@
     "menu": "Open menu",
     "close": "Close menu"
   },
+  "chrome": {
+    "role": "Software engineer · Web · Mobile · Serverless",
+    "github": "GitHub",
+    "email": "Email"
+  },
+  "home": {
+    "word": "Caique",
+    "statement1": "Systems that leave",
+    "statement2": "the slide and go",
+    "statement3": "into production.",
+    "ctaCases": "See cases",
+    "ctaAbout": "About me",
+    "metaLabel": "Portfolio",
+    "metaSystems": "{count} systems",
+    "portrait": "Caique Azevedo walking",
+    "featuredTitle": "In production — used every day",
+    "casesTitle": "All cases",
+    "casesHintCards": "One person accountable, from first commit to release",
+    "casesHintIndex": "{count} cases · hover to preview",
+    "openCase": "See case →",
+    "servicesTitle1": "From login",
+    "servicesTitle2": "to deploy",
+    "approachTitle1": "How I",
+    "approachTitle2": "work",
+    "openSourceTitle1": "Effects",
+    "openSourceTitle2": "to copy.",
+    "openSourceCount": "{count} experiments",
+    "openSourceCta": "See all →",
+    "contactTitle1": "Let's build",
+    "contactTitle2": "something real.",
+    "contactCode": "Code",
+    "contactReply": "Reply",
+    "contactReplyValue": "Within 48h · remote, worldwide",
+    "backToStart": "← Back to start",
+    "scroll": "Scroll sideways",
+    "prev": "Previous panel",
+    "next": "Next panel",
+    "panels": {
+      "intro": "Start",
+      "featured": "Highlights",
+      "cases": "Cases",
+      "services": "Services",
+      "about": "About",
+      "approach": "Approach",
+      "openSource": "Open source",
+      "contact": "Contact"
+    }
+  },
   "locale": {
     "label": "Language",
     "pt": "Português",
@@ -95,7 +143,12 @@
       "production": "In production",
       "active": "In development",
       "paused": "Paused"
-    }
+    },
+    "counter": "Case {num} / {total}",
+    "nextShort": "Next →",
+    "liveLink": "See it live ↗",
+    "repoLink": "Code ↗",
+    "shot": "Product screen"
   },
   "about": {
     "metaTitle": "About",

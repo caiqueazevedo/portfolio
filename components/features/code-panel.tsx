@@ -24,8 +24,8 @@ export function CodePanel({ views, copyLabel, copiedLabel, linesLabel }: Props) 
   }
 
   return (
-    <div className="flex min-w-0 flex-col border-2 border-paper-100 bg-ink-900">
-      <div className="flex items-center justify-between gap-3 border-b-2 border-paper-100">
+    <div className="flex min-w-0 flex-col border border-ink/14 bg-paper">
+      <div className="flex items-center justify-between gap-3 border-b border-ink/14">
         <div role="tablist" className="flex">
           {views.map((v, i) => (
             <button
@@ -34,10 +34,9 @@ export function CodePanel({ views, copyLabel, copiedLabel, linesLabel }: Props) 
               type="button"
               aria-selected={v.id === view.id}
               onClick={() => setActive(v.id)}
-              className={cn(
-                "px-4 py-2.5 font-condensed text-[13px] font-bold tracking-[0.1em] uppercase transition-all duration-[120ms]",
-                i > 0 && "border-l-2 border-paper-100",
-                v.id === view.id ? "bg-acid-500 text-ink-950" : "text-paper-100 hover:bg-paper-100 hover:text-ink-950",
+              className={cn( "px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] uppercase transition-all duration-200",
+                i > 0 && "border-l border-ink/14",
+                v.id === view.id ? "bg-ink text-paper" : "text-ink hover:bg-ink hover:text-paper",
               )}
             >
               {v.label}
@@ -45,15 +44,14 @@ export function CodePanel({ views, copyLabel, copiedLabel, linesLabel }: Props) 
           ))}
         </div>
         <div className="flex items-center gap-3 pr-2">
-          <span className="hidden font-mono text-[11px] text-ink-500 sm:inline">
+          <span className="hidden font-mono text-[11px] text-muted sm:inline">
             {view.lines} {linesLabel}
           </span>
           <button
             type="button"
             onClick={copy}
-            className={cn(
-              "border-2 px-3 py-1.5 font-condensed text-[12px] font-bold tracking-[0.1em] uppercase transition-all duration-[120ms]",
-              copied ? "border-acid-500 bg-acid-500 text-ink-950" : "border-paper-100 text-paper-100 hover:bg-paper-100 hover:text-ink-950",
+            className={cn( "border-2 px-3 py-1.5 text-[12px] font-bold tracking-[0.1em] uppercase transition-all duration-200",
+              copied ? "border-ink bg-ink text-paper" : "border-ink/14 text-ink hover:bg-ink hover:text-paper",
             )}
           >
             {copied ? copiedLabel : copyLabel}

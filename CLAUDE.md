@@ -42,27 +42,48 @@ Sem coautoria.
 
 ## Regras de UI
 
-Design system **Raw Folio** (fonte: `design/raw-folio/`, gerado no Claude Design a partir de
-uma referência grunge/streetwear). Resumo do que não pode faltar:
+Design system **Editorial** (fonte: handoff `design_handoff_portfolio_editorial`). Monocromático,
+tipografia única, zero raio e zero sombra. Resumo do que não pode faltar:
 
-- **Cores**: fundo `ink-950`, texto `paper-100`, acento primário `acid-500` em blocos e
-  destaques, `blue-500` raro (stickers/selos). Máximo 2 acentos por tela.
-- **Tipo**: `font-display` (Anton) sempre uppercase, line-height .9, tamanhos gigantes;
-  `font-sans` (Archivo) no corpo; `.label` (Archivo Narrow 700 12px tracking .14em) em
-  labels; `font-marker` só 1-2 vezes por tela; `font-mono` em números, anos e meta.
-- **Forma**: canto 0 em tudo. Bordas 2px sólidas. Sombra nunca com blur: `shadow-hard*`
-  (5px 5px 0). Hover desloca -2px com sombra 7px; press entra na sombra.
-- **Textura**: `.grain` sobre preto e ácido; papel sempre `.paper-tex.torn` com
-  `filter: drop-shadow` (nunca `box-shadow`, que seria cortado). Fotos sempre P&B (`.bw`).
-- **Motion**: seca, 120ms, `ease-snap`. Sem fade longo, sem bounce.
-- **Layout**: blocos colados com bordas compartilhadas alternando com respiro grande;
-  faixa de estatísticas full-bleed em ácido; stickers levemente tortos (-3° a 3°).
+- **Cores**: `ink` (#111) e os papéis `paper` (#f4f3f1) e `mist` (#e4e2de). Texto corrido em
+  `strong`/`body`, secundário em `muted`, números em `faint`. Cor só nos pontos de status
+  (`production`/`active`/`paused`). Nenhum acento cromático.
+- **Tipo**: uma família, **Jost**. Display sempre `min(Xvw, Yvh)` — a altura também manda, porque
+  um painel não rola. Trackings fixos: `.32em` kicker, `.2em` micro, `.14em`/`.16em` nav e botões,
+  `.08em` nomes de projeto, `.22em` só na marca. Utilitários `kicker`, `label`, `micro`.
+- **Forma**: raio 0 em tudo (exceto círculos: dots, setas, glifos de serviço). Linhas de 1px:
+  `border-ink` para a divisória forte, `border-ink/14` para a fina. Sombra nenhuma — só a elipse
+  de chão do hero. Link é texto com `rule-link` (1px embaixo), nunca caixa.
+- **Fotos** sempre P&B (`bw`); slot vazio é retângulo `mist` com legenda, nunca um degradê que
+  finge ser foto.
+- **Home**: 8 painéis de uma tela cada (`components/home/`), trilho horizontal em
+  `components/features/home-rail.tsx`, decisões de gesto em `lib/pager.ts`. Abaixo de `md` tudo
+  empilha e o wheel sai do caminho.
 - **Mobile first, sem exceção.** Classe base é a do celular; `sm:`/`md:`/`lg:` adicionam.
   Alvo mínimo 320px. `document.scrollWidth` nunca passa de `clientWidth`. Todo container
   que envolve conteúdo largo leva `min-w-0`.
 - Conteúdo público em `content/*.ts` não carrega detalhe de infra (URLs internas, ids, buckets).
-- Sem emoji. Glifos unicode (✱ ★ ✕ → ↗ ◉) como ícone decorativo.
+- Sem emoji. Glifos unicode (✱ ◉ ✕ → ↗) como ícone decorativo.
 
 ## Invariantes
 
-_(vazio de propósito; entra aqui só o que quebrou uma vez)_
+### A nav inverte por `mix-blend-mode`, então nada pode criar contexto de empilhamento acima dela
+
+A barra de nav é branca com `mix-blend-mode: difference` para ler tanto sobre painel claro quanto
+sobre o escuro que desliza por baixo. Blend só funciona enquanto nenhum ancestral cria contexto de
+empilhamento — `transform`, `opacity`, `filter` — por isso as barras ficam **fora** do trilho, que
+é exatamente o elemento que anima.
+
+**Sintoma quando violada:** a nav some sobre o painel escuro, ou fica cinza-chumbo sobre o claro.
+
+### O trilho não cancela o quadro quando o painel muda
+
+O efeito que registra os listeners depende de `panel`, então ele roda de novo a cada troca. Com um
+`cancelAnimationFrame` na limpeza dele, a animação era abortada no primeiro quadro e o `animating`
+ficava preso em `true` — o teclado e a roda paravam de responder para sempre. O cancelamento mora
+num efeito de unmount, e um `setTimeout` de guarda garante a chegada mesmo quando a aba vai para
+segundo plano e o navegador para de servir quadros.
+
+**Sintoma quando violada:** o primeiro gesto funciona e nenhum outro; a barra de progresso congela
+no meio. Coberto por `components/features/home-rail.test.tsx`.
+

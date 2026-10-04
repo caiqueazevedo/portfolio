@@ -38,7 +38,7 @@ export function ExperimentPreview({ slug, title, href, hint, className }: Props)
   }, [href, router]);
 
   return (
-    <div ref={box} className={cn("group relative aspect-[4/5] w-full min-w-0 overflow-hidden border-2 border-paper-100 bg-ink-900", className)}>
+    <div ref={box} className={cn("group relative aspect-[4/5] w-full min-w-0 overflow-hidden border border-ink/14 bg-paper", className)}>
       {visible ? (
         <iframe
           ref={frame}
@@ -50,7 +50,7 @@ export function ExperimentPreview({ slug, title, href, hint, className }: Props)
       ) : null}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute right-2 bottom-2 bg-ink-950/85 px-2 py-1 font-mono text-[10px] tracking-[0.1em] text-paper-100 uppercase opacity-0 transition-opacity duration-[120ms] group-hover:opacity-100"
+        className="pointer-events-none absolute right-2 bottom-2 bg-ink/85 px-2 py-1 font-mono text-[10px] tracking-[0.1em] text-ink uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100"
       >
         {hint}
       </span>

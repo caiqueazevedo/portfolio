@@ -1,20 +1,13 @@
 import { getTranslations } from "next-intl/server";
 import { ButtonLink } from "@/components/ui/button";
-import { Container } from "@/components/ui/container";
 
 export default async function NotFound() {
   const t = await getTranslations("notFound");
   return (
-    <section className="grain">
-      <Container className="flex flex-col items-start gap-6 py-section lg:py-40">
-        <h1 className="text-hero text-paper-100">
-          404<span className="text-acid-500">.</span>
-        </h1>
-        <p className="text-[19px] font-extrabold uppercase">{t("title")}</p>
-        <ButtonLink href="/" variant="ghost">
-          {t("back")}
-        </ButtonLink>
-      </Container>
+    <section className="flex min-h-svh flex-col items-start justify-center gap-7 bg-mist px-edge pt-[94px]">
+      <h1 className="text-[clamp(72px,18vw,280px)] leading-[0.8] font-medium">404</h1>
+      <p className="text-[clamp(16px,2vw,24px)] font-medium tracking-[0.04em] uppercase">{t("title")}</p>
+      <ButtonLink href="/">{t("back")}</ButtonLink>
     </section>
   );
 }

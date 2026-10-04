@@ -2,92 +2,65 @@
 /* Tailwind scans the project for class names; keep tool state and design sources out of the scan. */
 @source not "../.wrangler";
 @source not "../.open-next";
-@source not "../design";
 
 /*
- * Raw Folio design system (design/raw-folio): charcoal black, paper white, acid green,
- * a rare electric blue. Anton display, Archivo body, Archivo Narrow labels, Permanent
- * Marker as graffiti accent, Space Mono for meta. Zero radius, hard offset shadows,
- * grain, torn paper. Values are lifted verbatim from tokens/*.css.
+ * Editorial design system (handoff: design_handoff_portfolio_editorial). Monochrome ink on
+ * warm paper, one typeface (Jost), zero radius, zero shadow, 1px rules. Values are lifted
+ * verbatim from the handoff README and the prototype's inline styles.
+ *
+ * The home is a horizontal rail of full-screen panels, so sizes are height-aware
+ * (`min(Xvw, Yvh)`): every panel has to fit 924x540 without scrolling.
  */
 @theme {
   --color-*: initial;
-  --color-ink-950: #0e0e0c;
-  --color-ink-900: #161613;
-  --color-ink-800: #211f1c;
-  --color-ink-700: #2e2c28;
-  --color-ink-500: #6f6d66;
-  --color-ink-300: #a3a19a;
-  --color-paper-100: #e9e6dd;
-  --color-paper-50: #f4f2ec;
+  --color-ink: #111111;
+  /* Primary button hover. */
+  --color-ink-soft: #3a3936;
+  /* Hover of a whole dark block (the "next case" band). */
+  --color-ink-block: #1c1c1b;
+  --color-paper: #f4f3f1;
+  --color-mist: #e4e2de;
+  --color-strong: #2b2a28;
+  --color-body: #3d3b38;
+  --color-muted: #5d5b57;
+  --color-faint: #8a8883;
+  --color-production: #3a8f5a;
+  --color-active: #c08a1e;
+  --color-paused: #9a9893;
   --color-white: #ffffff;
-  --color-acid-500: #c8f31d;
-  --color-acid-600: #a8d40e;
-  --color-blue-500: #2e4bf2;
-  --color-blue-600: #2038c9;
-  --color-danger: #f23e2e;
+  --color-danger: #a8321f;
   --color-transparent: transparent;
   --color-current: currentColor;
 
-  --font-display: var(--font-anton), Impact, sans-serif;
-  --font-sans: var(--font-archivo), Helvetica, Arial, sans-serif;
-  --font-condensed: var(--font-archivo-narrow), "Arial Narrow", sans-serif;
-  --font-marker: var(--font-marker-face), cursive;
-  --font-mono: var(--font-space-mono), monospace;
-
-  --text-hero: clamp(64px, 12vw, 160px);
-  --text-hero--line-height: 0.9;
-  --text-hero--letter-spacing: 0.01em;
-  --text-h1: clamp(40px, 6vw, 72px);
-  --text-h1--line-height: 0.9;
-  --text-h2: 34px;
-  --text-h2--line-height: 0.9;
-  --text-h3: 22px;
-  --text-h3--line-height: 1;
-  --text-label: 12px;
-  --text-label--letter-spacing: 0.14em;
-  --text-small: 13px;
+  /* One family, everywhere. Mono exists only for the open-source code panel. */
+  --font-sans: var(--font-jost), Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --radius-*: initial;
   --radius-0: 0px;
-  --radius-pill: 999px;
+  --radius-full: 9999px;
 
   --shadow-*: initial;
-  --shadow-hard: 5px 5px 0 #0e0e0c;
-  --shadow-hard-acid: 5px 5px 0 #c8f31d;
-  --shadow-hard-paper: 5px 5px 0 #e9e6dd;
-  --shadow-hard-lg-paper: 7px 7px 0 #e9e6dd;
-  --shadow-hard-lg-acid: 7px 7px 0 #c8f31d;
-  --shadow-focus-acid: 4px 4px 0 #c8f31d;
   --shadow-none: 0 0 0 transparent;
 
-  --ease-snap: cubic-bezier(0.2, 0.9, 0.2, 1);
-  --default-transition-duration: 120ms;
-  --default-transition-timing-function: cubic-bezier(0.2, 0.9, 0.2, 1);
+  /* Fixed chrome: 30px top bar + 64px nav, 56px bottom bar. Panels pad around these. */
+  --spacing-chrome-top: 94px;
+  --spacing-chrome-bottom: 56px;
+  /* Horizontal padding: panels, then the thinner one the fixed bars use. */
+  --spacing-edge: clamp(20px, 4vw, 64px);
+  --spacing-bar: clamp(16px, 3vw, 40px);
 
-  --breakpoint-xs: 24rem;
-  --spacing-gutter: clamp(16px, 0.5rem + 2.5vw, 40px);
-  --spacing-section: clamp(48px, 2rem + 5vw, 96px);
-}
-
-:root {
-  --edge-torn: polygon(
-    1% 4%, 8% 1%, 17% 3%, 28% 0%, 39% 3%, 52% 1%, 63% 4%, 74% 1%, 86% 3%, 95% 0%, 99% 6%,
-    98% 18%, 100% 32%, 97% 47%, 100% 60%, 98% 74%, 100% 88%, 97% 97%, 88% 99%, 76% 96%,
-    63% 100%, 51% 97%, 38% 100%, 26% 97%, 14% 100%, 5% 97%, 0% 92%, 2% 78%, 0% 63%, 3% 49%,
-    0% 34%, 2% 19%
-  );
-  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --default-transition-duration: 250ms;
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
-    background: var(--color-ink-950);
-    color: var(--color-paper-100);
+    background: var(--color-mist);
+    color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 16px;
     line-height: 1.55;
@@ -97,16 +70,19 @@
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
-    font-weight: 400;
+    font-weight: 500;
     text-transform: uppercase;
     line-height: 0.9;
     letter-spacing: 0.01em;
   }
 
+  a:hover {
+    color: var(--color-muted);
+  }
+
   ::selection {
-    background: var(--color-acid-500);
-    color: var(--color-ink-950);
+    background: var(--color-ink);
+    color: var(--color-paper);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -119,72 +95,40 @@
   }
 }
 
-/* Archivo Narrow 700, 12px, uppercase, wide tracking: the system's label. */
-@utility label {
-  font-family: var(--font-condensed);
-  font-weight: 700;
-  font-size: 12px;
+/* Section kicker: the widest tracking in the system. */
+@utility kicker {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  line-height: 2;
   text-transform: uppercase;
+}
+
+/* Nav, buttons, footer lines. */
+@utility label {
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.14em;
-  line-height: 1.3;
+  text-transform: uppercase;
 }
 
-/* Film grain over black or acid blocks. */
-@utility grain {
-  position: relative;
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--noise);
-    opacity: 0.08;
-    pointer-events: none;
-  }
+/* Field labels and numbers beside them. */
+@utility micro {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
-/* Torn paper edge; pair with paper-tex and a filter: drop-shadow (never box-shadow). */
-@utility torn {
-  clip-path: var(--edge-torn);
+/* A link that reads as a link without leaving the type: 1px under the text. */
+@utility rule-link {
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 4px;
 }
 
-@utility paper-tex {
-  position: relative;
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--noise);
-    opacity: 0.12;
-    pointer-events: none;
-    mix-blend-mode: multiply;
-  }
-}
-
-/* Photos are always black and white, high contrast. */
+/* Photos are always black and white. */
 @utility bw {
   filter: grayscale(1) contrast(1.15);
-}
-
-@utility drop-hard {
-  filter: drop-shadow(5px 5px 0 rgb(0 0 0 / 0.6));
-}
-
-@utility drop-hard-sm {
-  filter: drop-shadow(4px 4px 0 rgb(0 0 0 / 0.55));
-}
-
-@keyframes rf-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.25;
-  }
-}
-
-@utility animate-pulse-dot {
-  animation: rf-pulse 1.2s infinite;
 }
 
 /* Shiki output inside the open-source code panel: the panel owns the background. */

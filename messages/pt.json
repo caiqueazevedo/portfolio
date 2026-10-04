@@ -15,6 +15,54 @@
     "menu": "Abrir menu",
     "close": "Fechar menu"
   },
+  "chrome": {
+    "role": "Engenheiro de software · Web · Mobile · Serverless",
+    "github": "GitHub",
+    "email": "E-mail"
+  },
+  "home": {
+    "word": "Caique",
+    "statement1": "Sistemas que saem",
+    "statement2": "do slide e entram",
+    "statement3": "em produção.",
+    "ctaCases": "Ver cases",
+    "ctaAbout": "Sobre mim",
+    "metaLabel": "Portfólio",
+    "metaSystems": "{count} sistemas",
+    "portrait": "Caique Azevedo caminhando",
+    "featuredTitle": "Em produção — em uso todo dia",
+    "casesTitle": "Todos os cases",
+    "casesHintCards": "Um responsável, do primeiro commit ao release",
+    "casesHintIndex": "{count} cases · passe o mouse para ver",
+    "openCase": "Ver case →",
+    "servicesTitle1": "Do login",
+    "servicesTitle2": "ao deploy",
+    "approachTitle1": "Como eu",
+    "approachTitle2": "trabalho",
+    "openSourceTitle1": "Efeitos",
+    "openSourceTitle2": "pra copiar.",
+    "openSourceCount": "{count} experimentos",
+    "openSourceCta": "Ver todos →",
+    "contactTitle1": "Vamos criar",
+    "contactTitle2": "algo real.",
+    "contactCode": "Código",
+    "contactReply": "Resposta",
+    "contactReplyValue": "Retorno em até 48h · remoto, worldwide",
+    "backToStart": "← Voltar ao início",
+    "scroll": "Role para o lado",
+    "prev": "Painel anterior",
+    "next": "Próximo painel",
+    "panels": {
+      "intro": "Início",
+      "featured": "Destaques",
+      "cases": "Cases",
+      "services": "Serviços",
+      "about": "Sobre",
+      "approach": "Abordagem",
+      "openSource": "Código aberto",
+      "contact": "Contato"
+    }
+  },
   "locale": {
     "label": "Idioma",
     "pt": "Português",
@@ -95,7 +143,12 @@
       "production": "Em produção",
       "active": "Em desenvolvimento",
       "paused": "Pausado"
-    }
+    },
+    "counter": "Case {num} / {total}",
+    "nextShort": "Próximo →",
+    "liveLink": "Ver ao vivo ↗",
+    "repoLink": "Código ↗",
+    "shot": "Tela do produto"
   },
   "about": {
     "metaTitle": "Sobre",
