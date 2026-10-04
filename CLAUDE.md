@@ -76,6 +76,16 @@ empilhamento — `transform`, `opacity`, `filter` — por isso as barras ficam *
 
 **Sintoma quando violada:** a nav some sobre o painel escuro, ou fica cinza-chumbo sobre o claro.
 
+### A transição anima `transform`, nunca a propriedade `translate`
+
+Tailwind v4 centraliza com `translate` (`-translate-x-1/2`, `-translate-y-1/2`), que é uma
+propriedade própria, não parte do `transform`. Animar `translate` na troca de painel apagava a
+centralização enquanto a animação durasse: a palavra gigante e o recorte do hero pulavam para o
+lado e voltavam de supetão no fim. `transform` compõe com `translate` em vez de substituí-la.
+
+**Sintoma quando violada:** elementos centralizados se teletransportam ao trocar de painel, em vez
+de deslizarem.
+
 ### O trilho não cancela o quadro quando o painel muda
 
 O efeito que registra os listeners depende de `panel`, então ele roda de novo a cada troca. Com um
