@@ -8,7 +8,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
-    // Let Vite transform next-intl so the next/navigation alias below applies to it.
+
     server: { deps: { inline: ["next-intl"] } },
     include: ["**/*.test.{ts,tsx}"],
     exclude: ["node_modules", ".next", ".open-next"],
@@ -21,7 +21,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: "@", replacement: fileURLToPath(new URL(".", import.meta.url)) },
-      // next-intl imports the extensionless "next/navigation"; Node ESM needs the ".js".
+
       { find: /^next\/navigation$/, replacement: "next/navigation.js" },
     ],
   },

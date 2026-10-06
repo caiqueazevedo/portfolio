@@ -8,8 +8,6 @@ import { site } from "@/content/site";
 import { LANG_TAG, routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
 import "../globals.css";
-
-/** One family for the whole site; weights 300–700 cover display, body and labels. */
 const jost = Jost({ subsets: ["latin"], variable: "--font-jost", display: "swap" });
 
 export function generateStaticParams() {
@@ -28,14 +26,6 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
     openGraph: { type: "website", siteName: site.name, locale: LANG_TAG[locale].replace("-", "_") },
   };
 }
-
-/**
- * The shell: the two fixed bars, and whatever the route puts under them.
- *
- * No `<main>` or footer here on purpose. The home is a full-screen rail that ends in its own
- * contact panel, and the scrolling pages add both themselves — wrapping everything in a column
- * with a footer would leave the rail with a 56px strip of nothing below it.
- */
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();

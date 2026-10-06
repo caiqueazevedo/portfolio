@@ -4,8 +4,6 @@ import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 import pt from "@/messages/pt.json";
 import { LocaleSwitch } from "./locale-switch";
-
-// Stand-in for next-intl's locale-aware Link: prefixes the target locale.
 vi.mock("@/i18n/navigation", () => ({
   usePathname: () => "/work",
   Link: ({ href, locale, ...rest }: ComponentProps<"a"> & { locale: string }) => (

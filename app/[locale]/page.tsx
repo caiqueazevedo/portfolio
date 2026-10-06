@@ -9,14 +9,6 @@ import { PanelIntro } from "@/components/home/panel-intro";
 import { PanelOpenSource } from "@/components/home/panel-open-source";
 import { PanelServices } from "@/components/home/panel-services";
 import { PANELS } from "@/content/panels";
-
-/**
- * The home is the rail and nothing else.
- *
- * Panels are rendered on the server and handed to the client rail as children, so everything
- * that can be static stays static: the rail only needs to know how many sections there are and
- * where each one starts.
- */
 export default async function HomePage() {
   const t = await getTranslations("home");
 

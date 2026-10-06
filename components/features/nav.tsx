@@ -3,8 +3,6 @@ import { site } from "@/content/site";
 import { PANEL } from "@/content/panels";
 import { SiteChrome } from "./site-chrome";
 import type { NavItem } from "./nav-items";
-
-/** Resolves the chrome's copy on the server; the bars themselves are client-side. */
 export async function Nav() {
   const t = await getTranslations("nav");
   const chrome = await getTranslations("chrome");

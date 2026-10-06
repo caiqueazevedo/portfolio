@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Drag &amp; Drop List</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; padding: 28px; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; }
   .list { width: min(100%, 420px); display: flex; flex-direction: column; gap: 10px; position: relative; }
   .item {
@@ -29,8 +26,6 @@
   .item .pos { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
   .item.dragging { transition: none; z-index: 2; cursor: grabbing; box-shadow: 0 18px 40px rgba(0,0,0,.6); border-color: var(--accent); position: relative; }
   .item.settling { transition: transform 320ms cubic-bezier(.2,.9,.2,1); }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -50,8 +45,7 @@
   html.card body { padding: 0; min-height: 0; overflow: hidden; }
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
-  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 16px; }
-</style>
+  html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 16px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -76,8 +70,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const list = $('list'), log = $('log');
   const NAMES = ['Login com ZenID', 'Upload pra R2', 'Fila de e-mails', 'Cache no KV', 'Deploy no Worker', 'Alerta no Watchtower', 'Backup noturno', 'Relatório mensal', 'Onboarding', 'Limpeza de sessões'];
@@ -98,8 +91,6 @@
     render();
     $('count-out').textContent = n;
   }
-
-  // Drag state: which item, where the pointer grabbed it, and the slot it currently occupies.
   let drag = null;
   list.addEventListener('pointerdown', (e) => {
     const el = e.target.closest('.item');
@@ -116,7 +107,7 @@
     if (!drag) return;
     const dy = e.clientY - drag.startY;
     drag.el.style.transform = `translateY(${dy}px) scale(1.02)`;
-    // Which slot is the dragged item's centre over?
+    
     const centre = drag.rects[drag.from].top + drag.rects[drag.from].height / 2 + dy;
     let to = drag.rects.findIndex(r => centre < r.top + r.height / 2);
     if (to < 0) to = drag.rects.length - 1;
@@ -136,7 +127,7 @@
     if (!drag) return;
     const { el, from, to } = drag;
     const rows = [...list.children];
-    // FLIP: remember where the dragged item is on screen, move it in the DOM, then animate the delta away.
+    
     const before = el.getBoundingClientRect();
     const moved = items.splice(from, 1)[0]; items.splice(to, 0, moved);
     rows.forEach(r => { r.style.transform = ''; });
@@ -158,8 +149,6 @@
   $('shuffle').addEventListener('click', () => { items.sort(() => Math.random() - 0.5); render(); log.textContent = 'Embaralhado.'; });
   $('reset').addEventListener('click', () => { $('count').value = 6; setCount(6); log.textContent = ''; });
   setCount(6);
-
-  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
   if (new URLSearchParams(location.search).has('card')) {
     document.documentElement.classList.add('card');
     const target = $('stage');
@@ -171,6 +160,5 @@
     });
     setCount(5);
   }
-})();
-</script>
+})();</script>
 </html>

@@ -7,14 +7,20 @@ export type Principle = {
 
 export const approach: Principle[] = [
   {
-    title: { pt: "Entendo o problema antes da tela", en: "I understand the problem before the screen" },
+    title: {
+      pt: "Entendo o problema antes da tela",
+      en: "I understand the problem before the screen",
+    },
     body: {
       pt: "No Polaris, 8 plataformas analisadas viraram 45 padrões e 15 antipadrões antes da primeira linha de código.",
       en: "On Polaris, 8 platforms analysed became 45 patterns and 15 anti-patterns before the first line of code.",
     },
   },
   {
-    title: { pt: "Segurança é requisito, não feature", en: "Security is a requirement, not a feature" },
+    title: {
+      pt: "Segurança é requisito, não feature",
+      en: "Security is a requirement, not a feature",
+    },
     body: {
       pt: "RLS no banco, PKCE no login, segredos fora do código. O que não pode vazar não chega a existir no cliente.",
       en: "RLS in the database, PKCE at login, secrets out of the code. What must not leak never exists on the client.",

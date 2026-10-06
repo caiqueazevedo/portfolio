@@ -1,7 +1,5 @@
 import type { ProjectStatus } from "@/content/projects";
 import { cn } from "@/lib/cn";
-
-/** The one place a status becomes a colour. */
 export const STATUS_COLOR: Record<ProjectStatus, string> = {
   production: "bg-production",
   active: "bg-active",
@@ -19,14 +17,12 @@ export function StatusDot({ status, size = 6, className }: Props) {
     />
   );
 }
-
-/** The dot inside a paper disc, as the case cards wear it over an image. */
 export function StatusBadge({ status, className }: { status: ProjectStatus; className?: string }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "pointer-events-none flex h-[26px] w-[26px] items-center justify-center rounded-full bg-paper",
+        "bg-paper pointer-events-none flex h-[26px] w-[26px] items-center justify-center rounded-full",
         className,
       )}
     >

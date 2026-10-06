@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Nav Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -51,8 +50,7 @@
   html.card .cell.wide { grid-column: span 2; }
   html.card .cell:not(.in-card), html.card figcaption { display: none; }
   html.card .demo { padding: 8px; }
-  html.card .demo > * { zoom: .78; }
-</style>
+  html.card .demo > * { zoom: .78; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -71,14 +69,13 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
   const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 8px)';
   const FONT = 'font: 14px/1.4 system-ui, sans-serif; color: #e9e6dd;';
   const FOCUS = (s) => `${s} :focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }`;
-  const T = (g) => g + '\uFE0E'; // text presentation, never emoji
+  const T = (g) => g + '\uFE0E'; 
 
   const ITEMS = [
     {
@@ -93,7 +90,7 @@
 .nv-tabs [role="tabpanel"] { padding: 1em .2em 0; color: #c9ced4; animation: nv-fade .25s ease-out; }
 ${FOCUS('.nv-tabs')}
 @keyframes nv-fade { from { opacity: 0; transform: translateY(4px); } }`,
-      // Automatic activation: arrows move and select together; only the selected tab is in the tab order.
+      
       js: function (root) {
         const list = root.querySelector('[role="tablist"]'), ink = root.querySelector('.nv-tabs-ink');
         const tabs = [...root.querySelectorAll('[role="tab"]')], panels = tabs.map((t) => root.querySelector('#' + t.getAttribute('aria-controls')));
@@ -103,7 +100,7 @@ ${FOCUS('.nv-tabs')}
           const t = tabs[i];
           ink.style.width = `${t.offsetWidth}px`;
           ink.style.transform = `translateX(${t.offsetLeft}px)`;
-          // Keep the tab visible inside a scrolling list, without touching any other scroller.
+          
           if (t.offsetLeft < list.scrollLeft) list.scrollLeft = t.offsetLeft;
           else if (t.offsetLeft + t.offsetWidth > list.scrollLeft + list.clientWidth) list.scrollLeft = t.offsetLeft + t.offsetWidth - list.clientWidth;
           if (focus) t.focus();
@@ -170,7 +167,7 @@ ${FOCUS('.nv-crumbs-demo')}`,
 .nv-pages .gap { display: grid; place-items: end center; width: 1.6em; height: 2.3em; color: #5a626c; }
 .nv-pages p { flex-basis: 100%; margin: .3em 0 0; text-align: center; font: 11px ui-monospace, monospace; color: #8a94a0; }
 ${FOCUS('.nv-pages')}`,
-      // Always seven slots, so the buttons never jump as the page changes.
+      
       js: function (root) {
         const list = root.querySelector('ul'), status = root.querySelector('p');
         const [prev, next] = root.querySelectorAll('.nv-pages-edge');
@@ -191,7 +188,7 @@ ${FOCUS('.nv-pages')}`,
           prev.disabled = cur === 1;
           next.disabled = cur === total;
           status.textContent = `Página ${cur} de ${total}`;
-          // The clicked button was replaced; put focus on its successor instead of losing it.
+          
           if (hadFocus) list.querySelector(`[data-page="${cur}"]`).focus({ preventScroll: true });
         };
         root.addEventListener('click', (e) => {
@@ -222,7 +219,7 @@ ${FOCUS('.nv-pages')}`,
 .nv-more button:disabled:not([aria-busy]) { display: none; }
 ${FOCUS('.nv-more')}
 @keyframes nv-fade { from { opacity: 0; transform: translateY(4px); } }`,
-      // Moves focus to the first new item only when the user pressed the button, so reading continues from there.
+      
       js: function (root) {
         const TOTAL = 24, PAGE = 6;
         const list = root.querySelector('ul'), status = root.querySelector('p'), btn = root.querySelector('button');
@@ -376,7 +373,7 @@ ${FOCUS('.nv-burger')}`,
 .nv-spy-body section { padding-bottom: .6em; }
 @media (prefers-reduced-motion: reduce) { .nv-spy-body { scroll-behavior: auto; } }
 ${FOCUS('.nv-spy')}`,
-      // "Current" is the last section whose top has crossed a line 30% down the scroller, or the last one at the very end.
+      
       js: function (root) {
         const body = root.querySelector('.nv-spy-body'), links = [...root.querySelectorAll('nav a')];
         const sections = links.map((a) => body.querySelector(a.getAttribute('href')));
@@ -391,7 +388,7 @@ ${FOCUS('.nv-spy')}`,
           mark(active.id);
         };
         body.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(pick); }, { passive: true });
-        // A click pins its section while the smooth scroll runs, so the highlight does not flicker through the others.
+        
         const release = () => { clearTimeout(unlock); lock = null; };
         body.addEventListener('scrollend', release);
         links.forEach((a, i) => a.addEventListener('click', (e) => {
@@ -400,7 +397,7 @@ ${FOCUS('.nv-spy')}`,
           mark(lock);
           clearTimeout(unlock);
           unlock = setTimeout(release, 1000);
-          // offsetTop is relative to the scroller (it is position: relative); this scrolls only that box.
+          
           body.scrollTo({ top: sections[i].offsetTop });
         }));
         pick();
@@ -439,7 +436,7 @@ ${FOCUS('.nv-pager')}`,
 .nv-mega-panel b { font-size: .9em; }
 .nv-mega-panel small { font-size: .78em; color: #8a94a0; }
 ${FOCUS('.nv-mega')}`,
-      // Disclosure pattern (button + panel of links), not an ARIA menu: links keep working like links.
+      
       js: function (root) {
         const item = root.querySelector('.has-panel'), btn = item.querySelector('button'), panel = item.querySelector('.nv-mega-panel');
         const hover = matchMedia('(hover: hover)');
@@ -468,7 +465,7 @@ ${FOCUS('.nv-mega')}`,
 .nv-skip main:focus { border-color: ${A}; }
 .nv-skip main i { height: 2em; border-radius: 4px; background: #11151a; }
 .nv-skip-sim { justify-self: center; padding: .4em .7em; border: 1px solid #2a2f37; border-radius: 4px; background: none; color: #8a94a0; font: 12px ui-monospace, monospace; cursor: pointer; }`,
-      // In a real page the link needs no JS: href="#main" plus tabindex="-1" on <main> is the whole feature.
+      
       js: function (root) {
         const link = root.querySelector('.nv-skip-link'), main = root.querySelector('main');
         root.querySelector('.nv-skip-sim').addEventListener('click', () => link.focus());
@@ -480,7 +477,7 @@ ${FOCUS('.nv-mega')}`,
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   function snippet(it) {
-    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    let s = `\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
     if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
     return s;
   }
@@ -516,7 +513,7 @@ ${FOCUS('.nv-mega')}`,
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     }, true);
-    // Everything moves through the components' own APIs, never through focus.
+    
     const tabs = grid.querySelector('.nv-tabs'), pages = grid.querySelector('.nv-pages');
     const phone = grid.querySelector('.nv-phone'), burger = grid.querySelector('.nv-burger');
     const ROUTE = [7, 8, 9, 10, 11, 17, 18, 19, 20, 1, 2, 3, 4, 5];
@@ -529,6 +526,5 @@ ${FOCUS('.nv-mega')}`,
       if (i % 2 === 0) burger.toggle();
     }, 1200);
   }
-})();
-</script>
+})();</script>
 </html>

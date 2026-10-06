@@ -15,7 +15,9 @@ export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/work/[slug]">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/work/[slug]">): Promise<Metadata> {
   const { locale, slug } = await params;
   const project = findProject(slug);
   if (!project || !hasLocale(routing.locales, locale)) return {};
@@ -25,14 +27,6 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/work/[sl
     alternates: localizedAlternates(locale, `/work/${slug}`),
   };
 }
-
-/**
- * A case: the one surface on the site that scrolls.
- *
- * A route rather than the prototype's overlay, so a case can be linked, shared and indexed —
- * and so the back button means what it says. The page keeps the overlay's reading order: who
- * it is, the one-line claim, the three sections, the screen, then the next case.
- */
 export default async function CasePage({ params }: PageProps<"/[locale]/work/[slug]">) {
   const { slug } = await params;
   const project = findProject(slug);
@@ -55,22 +49,22 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
 
   return (
     <article className="bg-paper">
-      {/* The site chrome is already two bars tall; this adds the case's own line, not a
-          second navigation. */}
-      <div className="flex items-center justify-between gap-6 border-b border-ink/12 px-bar py-3 label">
+      <div className="border-ink/12 px-bar label flex items-center justify-between gap-6 border-b py-3">
         <Link href="/work">{t("back")}</Link>
-        <span className="text-[10px] tracking-[0.2em] text-muted">
-          {t("counter", { num: number, total: padNumber(projects.length - 1) })} · {t(`status.${project.status}`)}
+        <span className="text-muted text-[10px] tracking-[0.2em]">
+          {t("counter", { num: number, total: padNumber(projects.length - 1) })} ·{" "}
+          {t(`status.${project.status}`)}
         </span>
         <Link href={`/work/${next.slug}`}>{t("nextShort")}</Link>
       </div>
 
-      <section className="grid min-h-[calc(100svh-94px)] grid-cols-1 bg-mist lg:grid-cols-2">
-        <div className="flex flex-col justify-between gap-12 px-edge py-[clamp(32px,6vh,80px)]">
+      <section className="bg-mist grid min-h-[calc(100svh-94px)] grid-cols-1 lg:grid-cols-2">
+        <div className="px-edge flex flex-col justify-between gap-12 py-[clamp(32px,6vh,80px)]">
           <div className="flex flex-col gap-7">
             <div className="flex flex-col gap-3.5">
               <span className="kicker">
-                {t("counter", { num: number, total: padNumber(projects.length - 1) })} — {project.tags[locale][0]}
+                {t("counter", { num: number, total: padNumber(projects.length - 1) })} —{" "}
+                {project.tags[locale][0]}
               </span>
               <Rule />
             </div>
@@ -82,7 +76,7 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
             </p>
           </div>
 
-          <dl className="grid grid-cols-2 gap-6 border-t border-ink pt-6">
+          <dl className="border-ink grid grid-cols-2 gap-6 border-t pt-6">
             {meta.map((item) => (
               <div key={item.label} className="flex flex-col gap-1.5">
                 <dt className="micro">{item.label}</dt>
@@ -97,32 +91,34 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
         </div>
       </section>
 
-      <section className="bg-ink px-edge py-[clamp(56px,12vh,140px)] text-paper">
+      <section className="bg-ink px-edge text-paper py-[clamp(56px,12vh,140px)]">
         <p className="max-w-[1100px] text-[clamp(22px,2.8vw,42px)] leading-[1.3] font-light text-pretty">
           {project.lead[locale]}
         </p>
       </section>
 
-      <section className="flex flex-col px-edge py-[clamp(56px,10vh,120px)]">
+      <section className="px-edge flex flex-col py-[clamp(56px,10vh,120px)]">
         {project.sections.map((section, i) => (
           <div
             key={section.heading.en}
-            className="grid grid-cols-1 gap-5 border-t border-ink py-10 md:grid-cols-2 md:gap-x-14"
+            className="border-ink grid grid-cols-1 gap-5 border-t py-10 md:grid-cols-2 md:gap-x-14"
           >
             <div className="flex items-baseline gap-5">
-              <span className="text-[clamp(28px,3vw,44px)] leading-none font-light">{padNumber(i)}</span>
+              <span className="text-[clamp(28px,3vw,44px)] leading-none font-light">
+                {padNumber(i)}
+              </span>
               <h2 className="text-[13px] font-semibold tracking-[0.2em] uppercase">
                 {section.heading[locale]}
               </h2>
             </div>
-            <p className="max-w-[640px] text-[clamp(16px,1.3vw,19px)] leading-[1.65] text-pretty text-strong">
+            <p className="text-strong max-w-[640px] text-[clamp(16px,1.3vw,19px)] leading-[1.65] text-pretty">
               {section.body[locale]}
             </p>
           </div>
         ))}
       </section>
 
-      <section className="flex flex-col gap-8 px-edge pb-[clamp(56px,10vh,120px)]">
+      <section className="px-edge flex flex-col gap-8 pb-[clamp(56px,10vh,120px)]">
         <div className="relative aspect-video w-full">
           <Photo src={shot} alt={project.name} label={t("shot")} ratio="fill" />
         </div>
@@ -133,13 +129,18 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
                 href={project.liveUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="label inline-flex h-11 items-center bg-ink px-7 text-paper hover:bg-ink-soft hover:text-paper"
+                className="label bg-ink text-paper hover:bg-ink-soft hover:text-paper inline-flex h-11 items-center px-7"
               >
                 {t("liveLink")}
               </a>
             ) : null}
             {project.repoUrl ? (
-              <a href={project.repoUrl} target="_blank" rel="noreferrer" className="label rule-link">
+              <a
+                href={project.repoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="label rule-link"
+              >
                 {t("repoLink")}
               </a>
             ) : null}
@@ -149,7 +150,7 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
 
       <Link
         href={`/work/${next.slug}`}
-        className="flex items-end justify-between gap-8 bg-ink px-edge py-[clamp(56px,12vh,140px)] text-paper hover:bg-ink-block hover:text-paper"
+        className="bg-ink px-edge text-paper hover:bg-ink-block hover:text-paper flex items-end justify-between gap-8 py-[clamp(56px,12vh,140px)]"
       >
         <span className="flex flex-col gap-5">
           <span className="kicker opacity-60">{t("nextLabel")}</span>

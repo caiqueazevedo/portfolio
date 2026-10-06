@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Frosted Reveal</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10;
     --panel: #13171c;
     --line: #232a32;
@@ -39,8 +38,6 @@
   @media (max-width: 760px) {
     .wrap { grid-template-columns: 1fr; }
   }
-
-  /* ---------- Stage ---------- */
   .stage {
     position: relative;
     aspect-ratio: 4 / 5;
@@ -65,7 +62,7 @@
     pointer-events: none;
     display: block;
   }
-  /* Frosted copy: the filter blurs the image edge inward, so oversize it slightly to hide the halo. */
+  
   .stage .frost {
     filter: url(#frost);
     transform: scale(var(--frost-scale));
@@ -108,9 +105,6 @@
     pointer-events: none;
     white-space: nowrap;
   }
-
-  /* Clear window: an SVG whose mask is a shape or a word. The sharp photo sits inside it,
-     offset so it lines up with the stage; drop-shadow follows whatever the mask draws. */
   .window {
     position: absolute;
     overflow: visible;
@@ -124,8 +118,6 @@
     letter-spacing: 0.12em;
     fill: rgba(255,255,255,0.85);
   }
-
-  /* ---------- Panel ---------- */
   .panel {
     background: var(--panel);
     border: 1px solid var(--line);
@@ -216,7 +208,7 @@
   }
   .check input { accent-color: var(--frost); width: 16px; height: 16px; margin: 0; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  /* Segmented control: one radio per shape. */
+  
   .seg {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -236,7 +228,7 @@
   .seg input { position: absolute; opacity: 0; width: 0; height: 0; }
   .seg label:has(input:checked) { background: var(--frost); color: var(--ground); }
   .seg span { display: block; line-height: 0; }
-  /* Icons take the label colour: filled shapes, solid "T" for the word option. */
+  
   .seg svg { width: 18px; height: 18px; fill: currentColor; }
   button, .upload {
     font: inherit;
@@ -266,16 +258,13 @@
   @media (prefers-reduced-motion: no-preference) {
     .window { transition: width 120ms ease, height 120ms ease; }
   }
-
-  /* ---------- Card mode (?card=1): stage only, filling the frame; the host page embeds it as a live preview. ---------- */
   html.card, html.card body { height: 100%; }
   html.card body { padding: 0; min-height: 0; overflow: hidden; }
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
-  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }
-</style>
+  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }</style>
 
-<!-- The "Distort > Glass" step: turbulence noise drives a displacement map, then a Gaussian blur softens it. -->
+
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <filter id="frost" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
     <feTurbulence id="fx-noise" type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise"/>
@@ -293,10 +282,10 @@
     <div class="word bottom">TRUTH</div>
     <div class="caption" id="caption">The fog doesn't hide the truth</div>
 
-    <!-- White in the mask = sharp photo shows. The same shape is reused for the outline and the gloss. -->
+    
     <svg class="window" id="window" aria-hidden="true">
       <defs>
-        <!-- fill lives on the mask, not on the shapes, so the <use> outline below can inherit fill="none". -->
+        
         <mask id="win-mask" maskUnits="userSpaceOnUse" fill="#fff">
           <g id="win-shape">
             <rect id="shape-rect" rx="3"/>
@@ -346,7 +335,7 @@
 
     <div class="group">
       <h2>Janela</h2>
-      <!-- One icon per shape; the accessible name lives on the input. -->
+      
       <div class="seg" role="radiogroup" aria-label="Forma da janela">
         <label title="Retângulo"><input type="radio" name="shape" value="rect" aria-label="Retângulo" checked><span><svg viewBox="0 0 20 20"><rect x="2" y="5" width="16" height="10" rx="1"/></svg></span></label>
         <label title="Elipse"><input type="radio" name="shape" value="ellipse" aria-label="Elipse"><span><svg viewBox="0 0 20 20"><ellipse cx="10" cy="10" rx="8" ry="5.5"/></svg></span></label>
@@ -380,11 +369,10 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const SVG = 'http://www.w3.org/2000/svg';
-  const CAP_RATIO = 0.72; // Anton cap height as a fraction of font-size
+  const CAP_RATIO = 0.72; 
   const MAX_WORD = 12;
 
   const stage = $('stage');
@@ -407,7 +395,7 @@
 
   const frostScale = parseFloat(getComputedStyle(stage).getPropertyValue('--frost-scale')) || 1;
   const defaults = { blur: 10, disp: 22, grain: 0.9, fog: 22, w: 44, h: 13, word: 'CLEAR', shape: 'rect', cx: 0.60, cy: 0.42 };
-  // Window center as a fraction of the stage, so it survives resizes.
+  
   const pos = { cx: defaults.cx, cy: defaults.cy };
 
   const shape = () => document.querySelector('input[name="shape"]:checked').value;
@@ -422,8 +410,6 @@
     out.grain.textContent = Number(ctl.grain.value).toFixed(2);
     out.fog.textContent = ctl.fog.value + '%';
   }
-
-  // Only the chosen mask element gets geometry; the others collapse to nothing.
   function drawShape(w, h) {
     const kind = shape();
     for (const [k, el] of Object.entries(shapes)) el.setAttribute('visibility', k === kind ? 'visible' : 'hidden');
@@ -435,14 +421,12 @@
 
     const word = ctl.word.value.trim().toUpperCase().slice(0, MAX_WORD) || defaults.word;
     shapes.word.textContent = word;
-    // Caps fill the box height; if that makes the word wider than the box, scale it down
-    // uniformly so the glyphs keep their proportions (no stretching).
     let fs = h / CAP_RATIO;
     shapes.word.setAttribute('font-size', fs);
     const natural = shapes.word.getComputedTextLength();
     if (natural > w) fs = fs * w / natural;
     const capH = fs * CAP_RATIO;
-    // Baseline centred vertically in the box.
+    
     set(shapes.word, { x: w / 2, y: h / 2 + capH / 2, 'font-size': fs });
     out.word.textContent = word.length + '/' + MAX_WORD;
     $('word-field').hidden = kind !== 'word';
@@ -460,8 +444,6 @@
     win.setAttribute('viewBox', `0 0 ${w} ${h}`);
     win.style.left = x + 'px';
     win.style.top = y + 'px';
-    // Sharp copy sized to the whole stage, shifted back so it lines up with the frosted layer,
-    // and scaled about the stage centre like the frosted copy.
     const cx = W / 2 - x, cy = H / 2 - y;
     imgWin.setAttribute('x', -x);
     imgWin.setAttribute('y', -y);
@@ -503,7 +485,7 @@
   ['blur', 'disp', 'grain', 'fog'].forEach(k => ctl[k].addEventListener('input', applyFilter));
   ['w', 'h', 'word'].forEach(k => ctl[k].addEventListener('input', layoutWindow));
   document.querySelectorAll('input[name="shape"]').forEach(r => r.addEventListener('change', () => {
-    // A word needs room: thin strokes show too little photo to read. Open the box up when it is picked.
+    
     if (shape() === 'word') { if (Number(ctl.h.value) < 28) ctl.h.value = 28; if (Number(ctl.w.value) < 80) ctl.w.value = 80; }
     layoutWindow();
     if (shape() === 'word') ctl.word.focus();
@@ -528,14 +510,10 @@
     };
     reader.readAsDataURL(f);
   });
-
-  // Fonts change glyph metrics; re-run once they land so textLength stretches the real face.
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutWindow);
 
   applyFilter();
   layoutWindow();
-
-  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
   if (new URLSearchParams(location.search).has('card')) {
     document.documentElement.classList.add('card');
     const target = stage;
@@ -547,6 +525,5 @@
     });
     ctl.follow.checked = true;
   }
-})();
-</script>
+})();</script>
 </html>

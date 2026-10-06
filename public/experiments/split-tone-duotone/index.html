@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Split Tone Duotone</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,16 +13,12 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; container-type: inline-size; }
   .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* The whole effect is this one line: the filter below remaps luminance to two colours. */
+  
   .stage .toned { filter: url(#duotone); }
   .stage .original { opacity: var(--mix, 0); }
   .stage .caption { position: absolute; left: 6%; bottom: 5%; font-family: var(--font-display); font-size: clamp(28px, 9cqw, 72px); line-height: .9; letter-spacing: .02em; text-transform: uppercase; color: #fff; mix-blend-mode: overlay; pointer-events: none; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -41,16 +36,13 @@
   :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
   .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
-
-  /* ---------- Card mode (?card=1): stage only, filling the frame; the host page embeds it as a live preview. ---------- */
   html.card, html.card body { height: 100%; }
   html.card body { padding: 0; min-height: 0; overflow: hidden; }
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
-  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }
-</style>
+  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }</style>
 
-<!-- Desaturate, then send each channel through a 3-point table: shadow → mid → highlight. -->
+
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <filter id="duotone" color-interpolation-filters="sRGB">
     <feColorMatrix type="saturate" values="0"/>
@@ -95,8 +87,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const ctl = { shadow: $('shadow'), light: $('light'), mid: $('mid'), mix: $('mix') };
   const fn = { r: $('fr'), g: $('fg'), b: $('fb') };
@@ -107,8 +98,6 @@
 
   function apply() {
     const s = rgb(ctl.shadow.value), l = rgb(ctl.light.value), t = Number(ctl.mid.value) / 100;
-    // Three stops: black lands on the shadow colour, white on the light colour,
-    // and the middle stop slides the tonal balance.
     ['r', 'g', 'b'].forEach((c, i) => {
       const m = s[i] + (l[i] - s[i]) * (1 - t);
       fn[c].setAttribute('tableValues', `${s[i]} ${m.toFixed(3)} ${l[i]}`);
@@ -136,8 +125,6 @@
     reader.readAsDataURL(f);
   });
   apply();
-
-  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
   if (new URLSearchParams(location.search).has('card')) {
     document.documentElement.classList.add('card');
     const target = stage;
@@ -149,6 +136,5 @@
     });
     target.addEventListener('pointermove', (e) => { const r = target.getBoundingClientRect(); ctl.mid.value = Math.round(15 + (e.clientX - r.left) / r.width * 70); apply(); });
   }
-})();
-</script>
+})();</script>
 </html>

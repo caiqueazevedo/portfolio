@@ -1,26 +1,22 @@
 import type { Localized } from "./localized";
-
-/**
- * Open-source experiments: self-contained demo pages served from `public/experiments/<slug>/`
- * and embedded live on the open-source page, source shown beside them.
- */
-export type Category = "images" | "typography" | "interaction" | "data" | "security" | "media" | "kits";
+export type Category =
+  "images" | "typography" | "interaction" | "data" | "security" | "media" | "kits";
 
 export type Experiment = {
   slug: string;
   title: string;
   category: Category;
-  /** ISO date; the listing sorts by it. */
+
   createdAt: string;
   summary: Localized<string>;
-  /** One line on the technique, shown under the code. */
+
   technique: Localized<string>;
   tags: string[];
-  /** Iframe height on large screens, px. */
+
   height: number;
-  /** Demo background, so the frame does not flash on load. */
+
   background: string;
-  /** Public URL of the source on GitHub, once the repo exists. */
+
   sourceUrl: string | null;
 };
 
@@ -53,8 +49,8 @@ export const experiments: Experiment[] = [
       en: "A vertical word cuts the photo: where it lands on white it shows the image inside, where it lands on the photo it becomes an outline.",
     },
     technique: {
-      pt: "Um único <svg>: a foto recebe mask=\"url(#reveal)\", e a máscara é o retângulo da direita mais o mesmo <text> em branco. textLength estica a palavra pra altura do cartaz.",
-      en: "A single <svg>: the photo gets mask=\"url(#reveal)\", and the mask is the right-hand rect plus the same <text> in white. textLength stretches the word to the poster height.",
+      pt: 'Um único <svg>: a foto recebe mask="url(#reveal)", e a máscara é o retângulo da direita mais o mesmo <text> em branco. textLength estica a palavra pra altura do cartaz.',
+      en: 'A single <svg>: the photo gets mask="url(#reveal)", and the mask is the right-hand rect plus the same <text> in white. textLength stretches the word to the poster height.',
     },
     tags: ["SVG mask", "Typography", "Vanilla JS"],
     height: 760,
@@ -89,8 +85,8 @@ export const experiments: Experiment[] = [
       en: "Shadows in one colour, highlights in another, midtone wherever you want it. Presets and a blend back to the original.",
     },
     technique: {
-      pt: "Um filtro SVG só: feColorMatrix tira a saturação e feComponentTransfer com type=\"table\" mapeia preto → sombra e branco → luz, com um terceiro ponto no meio-tom. Sem canvas.",
-      en: "One SVG filter: feColorMatrix removes saturation and feComponentTransfer with type=\"table\" maps black → shadow and white → highlight, with a third stop at the midtone. No canvas.",
+      pt: 'Um filtro SVG só: feColorMatrix tira a saturação e feComponentTransfer com type="table" mapeia preto → sombra e branco → luz, com um terceiro ponto no meio-tom. Sem canvas.',
+      en: 'One SVG filter: feColorMatrix removes saturation and feComponentTransfer with type="table" maps black → shadow and white → highlight, with a third stop at the midtone. No canvas.',
     },
     tags: ["SVG filter", "Color", "CSS"],
     height: 760,
@@ -143,8 +139,8 @@ export const experiments: Experiment[] = [
       en: "A giant text runs in a loop and shows the photo inside the letters. The photo stays put; only the mask moves.",
     },
     technique: {
-      pt: "A <image> recebe mask=\"url(#knock)\" e a máscara é um <text> com o texto repetido. A Web Animations API desloca o texto exatamente uma repetição por ciclo, então o loop não pula.",
-      en: "The <image> gets mask=\"url(#knock)\" and the mask is a <text> with the text repeated. The Web Animations API shifts the text exactly one repetition per cycle, so the loop never jumps.",
+      pt: 'A <image> recebe mask="url(#knock)" e a máscara é um <text> com o texto repetido. A Web Animations API desloca o texto exatamente uma repetição por ciclo, então o loop não pula.',
+      en: 'The <image> gets mask="url(#knock)" and the mask is a <text> with the text repeated. The Web Animations API shifts the text exactly one repetition per cycle, so the loop never jumps.',
     },
     tags: ["SVG mask", "Web Animations", "Typography"],
     height: 640,
@@ -373,8 +369,8 @@ export const experiments: Experiment[] = [
     createdAt: "2026-09-16T10:00:00-03:00",
     title: "OAuth PKCE",
     summary: {
-      pt: "O fluxo authorization code + PKCE passo a passo, com criptografia real. Ligue o modo \"código roubado\" e veja a troca ser recusada.",
-      en: "The authorization code + PKCE flow step by step, with real crypto. Flip on \"stolen code\" and watch the exchange get refused.",
+      pt: 'O fluxo authorization code + PKCE passo a passo, com criptografia real. Ligue o modo "código roubado" e veja a troca ser recusada.',
+      en: 'The authorization code + PKCE flow step by step, with real crypto. Flip on "stolen code" and watch the exchange get refused.',
     },
     technique: {
       pt: "O code_verifier vem de crypto.getRandomValues e o desafio de crypto.subtle.digest('SHA-256', …), ambos nativos. Como só o hash viaja na ida, quem interceptar o código no redirect não consegue montar a chamada ao /token.",
@@ -391,8 +387,8 @@ export const experiments: Experiment[] = [
     createdAt: "2026-09-16T10:05:00-03:00",
     title: "Password Strength",
     summary: {
-      pt: "Medidor que conta entropia de verdade e desconta padrão previsível, em vez de exigir um caractere especial e dar \"forte\".",
-      en: "A meter that counts real entropy and discounts predictable patterns, instead of demanding one special character and saying \"strong\".",
+      pt: 'Medidor que conta entropia de verdade e desconta padrão previsível, em vez de exigir um caractere especial e dar "forte".',
+      en: 'A meter that counts real entropy and discounts predictable patterns, instead of demanding one special character and saying "strong".',
     },
     technique: {
       pt: "A base é log2(alfabeto^tamanho). Em cima entram descontos por sequência, repetição, ano, padrão de teclado, palavra de dicionário e troca leet — tudo que um cracker já tem na lista. O tempo de quebra é 2^(bits-1) dividido pelas tentativas por segundo.",
@@ -701,8 +697,8 @@ export const experiments: Experiment[] = [
       en: "Twelve buttons with behaviour: load then confirm, hold to delete, slide to pay, copy, like, disabled with a reason.",
     },
     technique: {
-      pt: "Todos são botões nativos (ou role=\"slider\") e guardam o estado em data-state, que o CSS lê. O de segurar enche com uma variável atualizada por rAF e aceita espaço pressionado; o bloqueado usa aria-disabled para continuar focável e explicar por quê.",
-      en: "All are native buttons (or role=\"slider\") and keep state in data-state, which CSS reads. The hold button fills through a variable driven by rAF and accepts a held space key; the blocked one uses aria-disabled so it stays focusable and can explain why.",
+      pt: 'Todos são botões nativos (ou role="slider") e guardam o estado em data-state, que o CSS lê. O de segurar enche com uma variável atualizada por rAF e aceita espaço pressionado; o bloqueado usa aria-disabled para continuar focável e explicar por quê.',
+      en: 'All are native buttons (or role="slider") and keep state in data-state, which CSS reads. The hold button fills through a variable driven by rAF and accepts a held space key; the blocked one uses aria-disabled so it stays focusable and can explain why.',
     },
     tags: ["Buttons", "a11y", "Kit"],
     height: 860,
@@ -719,7 +715,7 @@ export const experiments: Experiment[] = [
       en: "Switches, checkboxes and radios with character — day and night, plan cards, stars, chips — always on native inputs.",
     },
     technique: {
-      pt: "O input real fica invisível mas presente, e o visual é o irmão seguinte, estilizado por input:checked + i. Onde não há irmão, entra label:has(input:checked). As estrelas mantêm a ordem 1 → 5 no DOM para as setas andarem certo. JS só no \"selecionar todos\" indeterminado e no switch que salva no servidor.",
+      pt: 'O input real fica invisível mas presente, e o visual é o irmão seguinte, estilizado por input:checked + i. Onde não há irmão, entra label:has(input:checked). As estrelas mantêm a ordem 1 → 5 no DOM para as setas andarem certo. JS só no "selecionar todos" indeterminado e no switch que salva no servidor.',
       en: "The real input stays invisible but present, and the visual is its next sibling, styled by input:checked + i. Where there is no sibling, label:has(input:checked) takes over. Stars keep 1 → 5 DOM order so arrow keys go the right way. JS only for the indeterminate select-all and the switch that saves to a server.",
     },
     tags: [":has()", "Forms", "Kit"],
@@ -809,8 +805,8 @@ export const experiments: Experiment[] = [
       en: "Bar, segments, ring, gauge, checkout steps, upload with time left, reading, goal, expiring session and order tracking.",
     },
     technique: {
-      pt: "Usa <progress> e <ol> com aria-current onde existem; o resto é role=\"progressbar\" com aria-valuetext legível. A barra de leitura é animation-timeline: scroll(). O upload estima o tempo restante por média móvel exponencial, para o número não saltar a cada pacote.",
-      en: "Uses <progress> and <ol> with aria-current where they exist; the rest is role=\"progressbar\" with a readable aria-valuetext. The reading bar is animation-timeline: scroll(). The upload estimates time left with an exponential moving average, so the number does not jump on every chunk.",
+      pt: 'Usa <progress> e <ol> com aria-current onde existem; o resto é role="progressbar" com aria-valuetext legível. A barra de leitura é animation-timeline: scroll(). O upload estima o tempo restante por média móvel exponencial, para o número não saltar a cada pacote.',
+      en: 'Uses <progress> and <ol> with aria-current where they exist; the rest is role="progressbar" with a readable aria-valuetext. The reading bar is animation-timeline: scroll(). The upload estimates time left with an exponential moving average, so the number does not jump on every chunk.',
     },
     tags: ["Progress", "scroll-timeline", "Kit"],
     height: 900,

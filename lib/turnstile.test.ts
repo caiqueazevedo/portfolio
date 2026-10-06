@@ -2,13 +2,20 @@ import { describe, expect, it, vi } from "vitest";
 import { verifyTurnstile } from "./turnstile";
 
 function fetchReturning(status: number, json: unknown) {
-  return vi.fn().mockResolvedValue({ ok: status < 400, json: async () => json }) as unknown as typeof fetch;
+  return vi
+    .fn()
+    .mockResolvedValue({ ok: status < 400, json: async () => json }) as unknown as typeof fetch;
 }
 
 describe("verifyTurnstile", () => {
   it("posts secret, token and ip to siteverify and accepts a success", async () => {
     const fetchImpl = fetchReturning(200, { success: true, hostname: "www.caiqueazevedo.com.br" });
-    const ok = await verifyTurnstile({ token: "tok", secret: "sec", remoteIp: "1.2.3.4", fetchImpl });
+    const ok = await verifyTurnstile({
+      token: "tok",
+      secret: "sec",
+      remoteIp: "1.2.3.4",
+      fetchImpl,
+    });
     expect(ok).toBe(true);
     const [url, init] = (fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain("challenges.cloudflare.com");
@@ -19,14 +26,22 @@ describe("verifyTurnstile", () => {
   });
 
   it("rejects when Cloudflare says no", async () => {
-    const fetchImpl = fetchReturning(200, { success: false, "error-codes": ["invalid-input-response"] });
+    const fetchImpl = fetchReturning(200, {
+      success: false,
+      "error-codes": ["invalid-input-response"],
+    });
     expect(await verifyTurnstile({ token: "tok", secret: "sec", fetchImpl })).toBe(false);
   });
 
   it("rejects a token minted for another hostname", async () => {
     const fetchImpl = fetchReturning(200, { success: true, hostname: "evil.example" });
     expect(
-      await verifyTurnstile({ token: "tok", secret: "sec", expectedHostname: "www.caiqueazevedo.com.br", fetchImpl }),
+      await verifyTurnstile({
+        token: "tok",
+        secret: "sec",
+        expectedHostname: "www.caiqueazevedo.com.br",
+        fetchImpl,
+      }),
     ).toBe(false);
   });
 

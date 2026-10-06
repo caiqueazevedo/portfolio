@@ -4,8 +4,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import pt from "@/messages/pt.json";
 import { ContactForm } from "./contact-form";
-
-// The real widget needs Cloudflare's script; stand in with a button that yields a token.
 vi.mock("@marsidev/react-turnstile", () => ({
   Turnstile: ({ onSuccess }: { onSuccess: (t: string) => void }) => (
     <button type="button" onClick={() => onSuccess("tok")}>
@@ -26,7 +24,10 @@ function setup() {
 async function fillValid(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(pt.contact.form.name), "Ana Souza");
   await user.type(screen.getByLabelText(pt.contact.form.email), "ana@example.com");
-  await user.type(screen.getByLabelText(pt.contact.form.message), "Preciso de um app pra minha loja, com login e catálogo.");
+  await user.type(
+    screen.getByLabelText(pt.contact.form.message),
+    "Preciso de um app pra minha loja, com login e catálogo.",
+  );
 }
 
 afterEach(() => vi.unstubAllGlobals());
@@ -52,23 +53,36 @@ describe("ContactForm", () => {
   });
 
   it("posts the payload and shows success", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ ok: true }) });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({ ok: true }) });
     vi.stubGlobal("fetch", fetchMock);
     const user = setup();
     await user.click(screen.getByRole("button", { name: "solve" }));
     await fillValid(user);
     await user.click(screen.getByRole("button", { name: /enviar mensagem/i }));
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(pt.contact.form.success));
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(pt.contact.form.success),
+    );
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body).toMatchObject({ name: "Ana Souza", email: "ana@example.com", turnstileToken: "tok" });
+    expect(body).toMatchObject({
+      name: "Ana Souza",
+      email: "ana@example.com",
+      turnstileToken: "tok",
+    });
   });
 
   it("shows the error state on a failed request", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }),
+    );
     const user = setup();
     await user.click(screen.getByRole("button", { name: "solve" }));
     await fillValid(user);
     await user.click(screen.getByRole("button", { name: /enviar mensagem/i }));
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(pt.contact.form.error));
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(pt.contact.form.error),
+    );
   });
 });

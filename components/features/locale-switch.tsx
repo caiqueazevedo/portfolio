@@ -4,8 +4,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
-
-/** Same route, other language. Links so it works without JS and is crawlable. */
 export function LocaleSwitch({ className }: { className?: string }) {
   const locale = useLocale();
   const pathname = usePathname();
@@ -26,7 +24,10 @@ export function LocaleSwitch({ className }: { className?: string }) {
             hrefLang={l}
             aria-current={l === locale ? "true" : undefined}
             aria-label={t(l)}
-            className={cn("uppercase", l === locale ? "opacity-100" : "opacity-50 hover:opacity-100")}
+            className={cn(
+              "uppercase",
+              l === locale ? "opacity-100" : "opacity-50 hover:opacity-100",
+            )}
           >
             {l}
           </Link>

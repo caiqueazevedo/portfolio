@@ -1,9 +1,8 @@
-/**
- * Splits a self-contained demo page into the three views shown on the open-source
- * page: markup, styles and script. The demos are hand-written single files, so a
- * light split on the top-level <style> and <script> blocks is enough.
- */
-export type SourceView = { id: "html" | "css" | "js"; lang: "html" | "css" | "javascript"; code: string };
+export type SourceView = {
+  id: "html" | "css" | "js";
+  lang: "html" | "css" | "javascript";
+  code: string;
+};
 
 const STYLE = /<style[^>]*>([\s\S]*?)<\/style>/gi;
 const SCRIPT = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;

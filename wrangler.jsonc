@@ -6,26 +6,23 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "images": {
-    "binding": "IMAGES"
+    "binding": "IMAGES",
   },
-  // Cloudflare Email Service (Workers Paid). Destination must be a verified address.
-  // TODO (Caique): destination_address + vars below, after onboarding the domain in
-  // Compute > Email Service.
   "send_email": [
     {
       "name": "EMAIL",
-      "destination_address": "caiqueazevedu@gmail.com"
-    }
+      "destination_address": "caiqueazevedu@gmail.com",
+    },
   ],
   "vars": {
     "CONTACT_TO": "caiqueazevedu@gmail.com",
     "CONTACT_FROM": "site@caiqueazevedo.com.br",
-    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": ""
+    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "",
   },
-  // TURNSTILE_SECRET_KEY: `wrangler secret put TURNSTILE_SECRET_KEY` (never in this file).
+
   "routes": [{ "pattern": "www.caiqueazevedo.com.br", "custom_domain": true }],
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
 }

@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>SVG Sparklines</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage: a small dashboard ---------- */
   .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; padding: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-content: start; }
   .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 8px; min-width: 0; }
   .tile h3 { margin: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
@@ -32,8 +29,6 @@
   @keyframes draw { to { stroke-dashoffset: 0; } }
   .tip { position: absolute; pointer-events: none; background: var(--ink); color: #0e0e0c; font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; border-radius: 4px; transform: translate(-50%, -140%); opacity: 0; white-space: nowrap; z-index: 2; }
   @media (prefers-reduced-motion: reduce) { .spark .draw { animation: none; stroke-dashoffset: 0; } }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -54,8 +49,7 @@
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; grid-template-columns: 1fr; padding: 14px; gap: 10px; }
-  html.card .tile .value { font-size: 26px; }
-</style>
+  html.card .tile .value { font-size: 26px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -85,8 +79,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const NS = 'http://www.w3.org/2000/svg';
   const W = 100, H = 40;
@@ -102,8 +95,6 @@
 
   const el = (name, attrs) => { const e = document.createElementNS(NS, name); Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v)); return e; };
   const scale = (data) => { const min = Math.min(0, ...data), max = Math.max(...data), span = max - min || 1; return { x: (i) => i / (data.length - 1) * W, y: (v) => H - (v - min) / span * H, zero: H - (0 - min) / span * H }; };
-
-  // Smooth path: for each point, control handles point along the direction of its neighbours.
   function smoothPath(pts, t) {
     if (!t) return 'M' + pts.map(p => p.join(',')).join('L');
     let d = `M${pts[0][0]},${pts[0][1]}`;
@@ -164,6 +155,5 @@
     });
     setInterval(regen, 3000);
   }
-})();
-</script>
+})();</script>
 </html>

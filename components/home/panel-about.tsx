@@ -3,11 +3,7 @@ import { Photo } from "@/components/ui/photo";
 import { bio, stack } from "@/content/about";
 import { media } from "@/content/media";
 import { Panel, PANEL_PAD_TIGHT } from "./panel";
-
-/** How many paragraphs of the bio the panel has room for; the rest lives on /about. */
 const PARAGRAPHS = 2;
-
-/** 05 — who is behind the work, portrait and all. */
 export async function PanelAbout() {
   const locale = await getLocale();
   const t = await getTranslations("about");
@@ -40,13 +36,12 @@ export async function PanelAbout() {
           </div>
         </div>
 
-        <div className="grid gap-[clamp(16px,2vw,32px)] border-t border-paper/30 pt-[3vh] md:grid-cols-3">
+        <div className="border-paper/30 grid gap-[clamp(16px,2vw,32px)] border-t pt-[3vh] md:grid-cols-3">
           {stack.map((group) => (
             <div key={group.label.en} className="flex flex-col gap-2">
               <span className="text-[11px] font-semibold tracking-[0.2em] uppercase">
                 {group.label[locale]}
               </span>
-              {/* One line per group, joined by middots: a column of bullets would be a CV. */}
               <span className="text-[clamp(12px,min(1vw,2.2vh),14px)] leading-[1.5] text-pretty opacity-70">
                 {group.items.join(" · ")}
               </span>

@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Color Palette</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
   .photo { position: relative; min-height: 0; display: grid; place-items: center; padding: 20px; }
   .photo img { max-width: 100%; max-height: 420px; display: block; object-fit: contain; }
@@ -26,8 +23,6 @@
   .sw b { font-family: var(--font-mono); font-weight: 400; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sw span { font-family: var(--font-mono); font-size: 10px; opacity: .75; white-space: nowrap; }
   .sw.copied::after { content: "copiado"; position: absolute; top: 8px; left: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -59,8 +54,7 @@
   html.card .stage { grid-template-rows: minmax(0, 1fr) 30%; }
   html.card .swatches { height: auto; }
   html.card .sw { padding: 0; }
-  html.card .sw b, html.card .sw span { display: none; }
-</style>
+  html.card .sw b, html.card .sw span { display: none; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -94,8 +88,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   let pixels = null, palette = [];
 
@@ -111,14 +104,12 @@
     for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 127) out.push(d[i], d[i + 1], d[i + 2]);
     return Float32Array.from(out);
   }
-
-  // Seeded so the same photo and k always give the same palette.
   function rng(seed) { return () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32; }
 
   function kmeans(px, k) {
     const n = px.length / 3, rand = rng(7);
     const dist = (i, c) => { const dr = px[i * 3] - c[0], dg = px[i * 3 + 1] - c[1], db = px[i * 3 + 2] - c[2]; return dr * dr + dg * dg + db * db; };
-    // k-means++: each new centre is drawn with probability proportional to its squared distance.
+    
     const first = Math.floor(rand() * n);
     const centres = [[px[first * 3], px[first * 3 + 1], px[first * 3 + 2]]];
     const near = new Float32Array(n).fill(Infinity);
@@ -155,7 +146,7 @@
   }
   function hue([r, g, b]) {
     const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-    if (!d) return -1; // greys first
+    if (!d) return -1; 
     const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
     return (h * 60 + 360) % 360;
   }
@@ -213,7 +204,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // Breathe between few and many colours; the pointer's x picks k while hovering.
+    
     let k = 3, dir = 1, hovering = false;
     stage.addEventListener('pointermove', (e) => {
       hovering = true;
@@ -228,6 +219,5 @@
       $('k').value = k; extract();
     }, 1200);
   }
-})();
-</script>
+})();</script>
 </html>

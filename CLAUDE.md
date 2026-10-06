@@ -8,29 +8,29 @@ Substitui o `portfolio-web` (v1, estética vaporwave), que fica intocado.
 
 ## Stack
 
-| Peça | Versão | Nota |
-| --- | --- | --- |
-| Next.js (App Router) | 16.3.5 | Turbopack; `AGENTS.md` manda ler `node_modules/next/dist/docs/` antes de codar |
-| React | 19.2 | Server Components por padrão |
-| Tailwind | 4 | tokens em `app/globals.css` via `@theme` |
-| next-intl | 4.14 | `app/[locale]/`, locale lido por `next/root-params`; **sem `proxy.ts`** |
-| Vitest + RTL + jsdom | 4 / 16 | testes co-locados `*.test.tsx` |
-| @opennextjs/cloudflare | 1.20 | deploy em Workers; build no GitHub Actions (Linux) |
-| pnpm | 11.1.2 via corepack | usar sempre `corepack pnpm` |
+| Peça                   | Versão              | Nota                                                                           |
+| ---------------------- | ------------------- | ------------------------------------------------------------------------------ |
+| Next.js (App Router)   | 16.3.5              | Turbopack; `AGENTS.md` manda ler `node_modules/next/dist/docs/` antes de codar |
+| React                  | 19.2                | Server Components por padrão                                                   |
+| Tailwind               | 4                   | tokens em `app/globals.css` via `@theme`                                       |
+| next-intl              | 4.14                | `app/[locale]/`, locale lido por `next/root-params`; **sem `proxy.ts`**        |
+| Vitest + RTL + jsdom   | 4 / 16              | testes co-locados `*.test.tsx`                                                 |
+| @opennextjs/cloudflare | 1.20                | deploy em Workers; build no GitHub Actions (Linux)                             |
+| pnpm                   | 11.1.2 via corepack | usar sempre `corepack pnpm`                                                    |
 
 Dev server: `corepack pnpm dev` na porta 3000.
 
 ## Comandos
 
-| Comando | Faz |
-| --- | --- |
-| `corepack pnpm dev` | dev server |
-| `corepack pnpm lint` | ESLint (`eslint-config-next`) |
+| Comando                   | Faz                                                                           |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| `corepack pnpm dev`       | dev server                                                                    |
+| `corepack pnpm lint`      | ESLint (`eslint-config-next`)                                                 |
 | `corepack pnpm typecheck` | `tsc --noEmit` (precisa de `.next/types`: rode build ou `next typegen` antes) |
-| `corepack pnpm test:run` | Vitest single-run com cobertura |
-| `corepack pnpm build` | `next build` |
-| `corepack pnpm preview` | build OpenNext + preview local no workerd |
-| `corepack pnpm deploy` | build OpenNext + deploy (uso do CI) |
+| `corepack pnpm test:run`  | Vitest single-run com cobertura                                               |
+| `corepack pnpm build`     | `next build`                                                                  |
+| `corepack pnpm preview`   | build OpenNext + preview local no workerd                                     |
+| `corepack pnpm deploy`    | build OpenNext + deploy (uso do CI)                                           |
 
 ## Guardrails
 
@@ -96,4 +96,3 @@ segundo plano e o navegador para de servir quadros.
 
 **Sintoma quando violada:** o primeiro gesto funciona e nenhum outro; a barra de progresso congela
 no meio. Coberto por `components/features/home-rail.test.tsx`.
-

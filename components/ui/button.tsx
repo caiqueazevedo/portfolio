@@ -1,17 +1,10 @@
 import type { ComponentProps } from "react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-
-/**
- * Two buttons, and no third.
- *
- * `solid` is the ink block — 44px tall, 28px of air either side, darkening to ink-soft on
- * hover. `rule` is a word with a hairline under it. The system has no outlines, no radius and
- * no shadow, so anything else would be a new idea rather than a variant.
- */
 type Variant = "solid" | "rule";
 
-const BASE = "inline-flex items-center label select-none transition-colors disabled:pointer-events-none disabled:opacity-40";
+const BASE =
+  "inline-flex items-center label select-none transition-colors disabled:pointer-events-none disabled:opacity-40";
 
 const VARIANT: Record<Variant, string> = {
   solid: "h-11 px-7 bg-ink text-paper hover:bg-ink-soft hover:text-paper",

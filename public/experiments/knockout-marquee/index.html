@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Knockout Marquee</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,14 +13,10 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: #000; border-radius: 6px; }
   .stage svg { display: block; width: 100%; height: 100%; }
   .stage text { font-family: var(--font-display); text-transform: uppercase; }
   .stage .ghost { fill: none; stroke: rgba(232, 236, 239, .22); stroke-width: 1.5; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -42,26 +37,23 @@
   :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
   .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
-
-  /* ---------- Card mode (?card=1): stage only, filling the frame; the host page embeds it as a live preview. ---------- */
   html.card, html.card body { height: 100%; }
   html.card body { padding: 0; min-height: 0; overflow: hidden; }
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
-  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }
-</style>
+  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
     <svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-label="Texto correndo com a foto por dentro">
       <defs>
-        <!-- White = photo shows. The text runs; the photo stays put. -->
+        
         <mask id="knock" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" fill="#fff">
           <text id="run" y="50%" dominant-baseline="central"></text>
         </mask>
       </defs>
       <image id="photo" href="photo.jpg" width="1600" height="900" preserveAspectRatio="xMidYMid slice" mask="url(#knock)"/>
-      <!-- A faint outline copy so the word is readable over the dark parts too. -->
+      
       <text id="ghost" class="ghost" y="50%" dominant-baseline="central"></text>
     </svg>
   </div>
@@ -95,8 +87,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const run = $('run'), ghost = $('ghost');
   const ctl = { text: $('text'), size: $('size'), speed: $('speed') };
@@ -110,7 +101,7 @@
     const word = (ctl.text.value.trim() || defaults.text).toUpperCase() + '  ';
     const size = Number(ctl.size.value);
     for (const t of [run, ghost]) { t.setAttribute('font-size', size); t.textContent = word; }
-    // Width of one repetition, then enough copies to cover the stage plus one spare to scroll into.
+    
     const unit = run.getComputedTextLength();
     const copies = Math.ceil(1600 / unit) + 2;
     for (const t of [run, ghost]) { t.textContent = word.repeat(copies); t.setAttribute('x', 0); }
@@ -143,8 +134,6 @@
   });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
   build();
-
-  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
   if (new URLSearchParams(location.search).has('card')) {
     document.documentElement.classList.add('card');
     const target = stage;
@@ -154,8 +143,6 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    
   }
-})();
-</script>
+})();</script>
 </html>

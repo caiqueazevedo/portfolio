@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Toast Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
-
-  /* ---------- Stage: a fake app the toasts live in ---------- */
   .stage { position: relative; height: 600px; background: #000; border-radius: 6px; overflow: hidden; min-width: 0; }
   .app { position: absolute; inset: 0; display: grid; grid-template-rows: auto auto 1fr; }
   .app header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
@@ -31,8 +28,6 @@
   .rows li span:last-child { font-family: var(--font-mono); color: var(--accent); }
   .rows li.restored { background: color-mix(in srgb, var(--accent) 10%, transparent); }
   .rows li[hidden] { display: none; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -63,8 +58,7 @@
   html.card .stage { height: 100%; border-radius: 0; }
   html.card .rows li { grid-template-columns: 52px 1fr; font-size: 11px; padding: 8px 0; }
   html.card .rows li span:last-child { display: none; }
-  html.card .toaster { font-size: 12px; }
-</style>
+  html.card .toaster { font-size: 12px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -116,8 +110,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
 
   const TOAST_CSS = `
@@ -164,8 +157,6 @@
 @keyframes toast-life { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @keyframes toast-spin { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { .toast { transition: opacity .2s; } }`;
-
-  // ---------- The copyable part ----------
   function createToaster(host, options = {}) {
     const opts = { position: 'bottom-right', duration: 4000, max: 4, expand: false, ...options };
     const ICON = { success: '✓', error: '✕', warning: '!', info: 'i', loading: '' };
@@ -182,7 +173,7 @@
     root.append(list, polite, urgent);
     host.appendChild(root);
 
-    const toasts = []; // newest first
+    const toasts = []; 
     let seq = 0, hovered = false;
 
     function announce(text, isUrgent) {
@@ -200,7 +191,7 @@
       let offset = 0;
       toasts.forEach((t, i) => {
         const el = t.el;
-        // Collapsed back cards take the front card's height, so the deck edge is even.
+        
         el.style.maxHeight = expanded || i === 0 ? '' : `${frontH}px`;
         el.style.setProperty('--y', `${dir * (expanded ? offset : i * 10)}px`);
         el.style.setProperty('--s', expanded ? '1' : String(Math.max(0.85, 1 - i * 0.05)));
@@ -272,7 +263,7 @@
         from = null;
         el.classList.remove('is-dragging');
         el.style.opacity = '';
-        // A long drag or a quick flick dismisses; anything else snaps back.
+        
         if (Math.abs(dx) > 90 || speed > 0.6) { el.style.setProperty('--dx', `${Math.sign(dx) * 120}%`); dismiss(t.id); }
         else el.style.setProperty('--dx', '0px');
       };
@@ -316,7 +307,7 @@
       const hadFocus = t.el.contains(document.activeElement);
       t.el.classList.add('is-leaving');
       setTimeout(() => t.el.remove(), 320);
-      // Keep keyboard users inside the stack instead of dropping focus on <body>.
+      
       if (hadFocus && toasts[0]) toasts[0].el.querySelector('.toast-close').focus({ preventScroll: true });
       layout();
     }
@@ -343,8 +334,6 @@
       configure: (o) => { Object.assign(opts, o); while (toasts.length > opts.max) dismiss(toasts[toasts.length - 1].id); layout(); },
     };
   }
-
-  // ---------- Demo wiring ----------
   const style = document.createElement('style');
   style.textContent = TOAST_CSS;
   document.head.appendChild(style);
@@ -387,7 +376,7 @@
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   $('copy').addEventListener('click', async () => {
     const usage = `\n// Uso\nconst toast = createToaster(document.body, { position: 'bottom-right' });\ntoast.show({ type: 'success', title: 'Salvo', body: 'Tudo certo.' });\ntoast.promise(fetch('/api/report'), { loading: 'Gerando…', success: 'Pronto', error: 'Falhou' });\n`;
-    // In a real page the toaster sits on the viewport: swap absolute for fixed.
+    
     const css = TOAST_CSS.trim().replace('.toaster { position: absolute;', '.toaster { position: fixed;');
     const text = `${S_OPEN}\n${css}\n${S_CLOSE}\n\n${J_OPEN}\n${createToaster.toString()}\n${usage}${J_CLOSE}\n`;
     let ok = true;
@@ -412,6 +401,5 @@
     DEMOS.success();
     setInterval(() => DEMOS[SEQ[i = (i + 1) % SEQ.length]](), 1500);
   }
-})();
-</script>
+})();</script>
 </html>

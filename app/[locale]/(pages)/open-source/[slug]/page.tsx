@@ -14,7 +14,9 @@ export function generateStaticParams() {
   return experiments.map((e) => ({ slug: e.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/open-source/[slug]">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/open-source/[slug]">): Promise<Metadata> {
   const { locale, slug } = await params;
   const experiment = experiments.find((e) => e.slug === slug);
   if (!experiment || !hasLocale(routing.locales, locale)) return {};
@@ -25,7 +27,9 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/open-sou
   };
 }
 
-export default async function ExperimentPage({ params }: PageProps<"/[locale]/open-source/[slug]">) {
+export default async function ExperimentPage({
+  params,
+}: PageProps<"/[locale]/open-source/[slug]">) {
   const { slug } = await params;
   const index = experiments.findIndex((e) => e.slug === slug);
   if (index < 0) notFound();
@@ -43,12 +47,15 @@ export default async function ExperimentPage({ params }: PageProps<"/[locale]/op
       <div className="mt-6">
         <ExperimentCard experiment={experiment} index={index} />
       </div>
-      <section className="border-t border-ink/14">
+      <section className="border-ink/14 border-t">
         <Container className="flex items-center justify-between gap-4 py-7">
           <span className="label text-muted">
             {t("next")}: {next.title}
           </span>
-          <IconButtonLink href={`/open-source/${next.slug}`} label={`${t("next")}: ${next.title}`} />
+          <IconButtonLink
+            href={`/open-source/${next.slug}`}
+            label={`${t("next")}: ${next.title}`}
+          />
         </Container>
       </section>
     </>

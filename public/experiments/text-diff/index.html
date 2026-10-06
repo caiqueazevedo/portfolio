@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Text Diff</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --add: #c8f31d; --add-bg: rgba(200, 243, 29, .09); --add-hi: rgba(200, 243, 29, .3);
     --del: #f23e2e; --del-bg: rgba(242, 62, 46, .1); --del-hi: rgba(242, 62, 46, .35);
@@ -16,8 +15,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 600px; background: #000; border-radius: 6px; padding: 16px; display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 12px; }
   .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (max-width: 560px) { .inputs { grid-template-columns: 1fr; } }
@@ -38,8 +35,6 @@
   ins, del { text-decoration: none; border-radius: 2px; }
   ins { background: var(--add-hi); } del { background: var(--del-hi); }
   .same { color: var(--muted); padding: 8px; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -65,8 +60,7 @@
   html.card .out { max-height: none; font-size: 10.5px; overflow: hidden; }
   html.card td { white-space: pre; }
   html.card td.n { display: none; }
-  html.card .stats { font-size: 10px; }
-</style>
+  html.card .stats { font-size: 10px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -98,8 +92,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
 
@@ -132,11 +125,9 @@ Alterações de escopo serão cobradas à parte.
 Suporte incluso por 90 dias após a entrega.
 Este contrato vale por um ano, renovável.`],
   };
-
-  // Myers O(ND): returns [{t: '=', '-' or '+', a, b}] in order.
   function diff(a, b, eq = (x, y) => x === y) {
     const n = a.length, m = b.length, max = n + m, off = max + 1;
-    // The trace costs O(D × (n + m)) memory; past this size, show a full replace instead.
+    
     if (max > 4000) return [...a.map((x, i) => ({ t: '-', a: x, ai: i })), ...b.map((y, i) => ({ t: '+', b: y, bi: i }))];
     const v = new Int32Array(2 * max + 3), trace = [];
     let found = false;
@@ -167,8 +158,6 @@ Este contrato vale por um ano, renovável.`],
   }
 
   const tokens = (s) => s.split(/(\s+|[.,;:!?()[\]{}"'`<>=+\-*/])/).filter(Boolean);
-
-  // Word-level diff of one changed pair; returns the two sides as HTML.
   function inline(before, after) {
     if (!$('words').checked) return [esc(before), esc(after)];
     const ops = diff(tokens(before), tokens(after));
@@ -180,8 +169,6 @@ Este contrato vale por um ano, renovável.`],
     }
     return [l, r];
   }
-
-  // Collapse the op list into rows, pairing each run of '-' with the '+' run after it.
   function rows(ops) {
     const out = [];
     for (let i = 0; i < ops.length;) {
@@ -223,7 +210,7 @@ Este contrato vale por um ano, renovável.`],
         if (r.add) html += `<tr class="add"><td class="n"></td><td class="n">${r.add.bi + 1}</td><td class="s">+</td><td>${rr}</td></tr>`;
       }
     }
-    // Unified view lists all deletions of a block before its additions, like git.
+    
     if (!split) html = regroup(html);
     $('out').innerHTML = html + '</table>';
   }
@@ -255,7 +242,7 @@ Este contrato vale por um ano, renovável.`],
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // Replay the edit: the "after" text grows line by line from the "before" one.
+    
     const [from, to] = PRESETS.code, target = to.split('\n');
     let step = 0;
     setInterval(() => {
@@ -266,6 +253,5 @@ Este contrato vale por um ano, renovável.`],
       render();
     }, 700);
   }
-})();
-</script>
+})();</script>
 </html>

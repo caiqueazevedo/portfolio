@@ -6,15 +6,19 @@ import { Rule } from "@/components/ui/rule";
 import { site } from "@/content/site";
 import { routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
-
-// Cloudflare's always-passing test key; the real site key comes from the environment.
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA";
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/contact">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/contact">): Promise<Metadata> {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "contact" });
-  return { title: t("metaTitle"), description: t("metaDescription"), alternates: localizedAlternates(locale, "/contact") };
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: localizedAlternates(locale, "/contact"),
+  };
 }
 
 export default async function ContactPage() {
@@ -23,7 +27,7 @@ export default async function ContactPage() {
   const chrome = await getTranslations("chrome");
 
   return (
-    <section className="grid grid-cols-1 gap-12 bg-mist px-edge pt-[calc(94px+6vh)] pb-[clamp(56px,10vh,120px)] lg:grid-cols-[1.1fr_1fr] lg:gap-20">
+    <section className="bg-mist px-edge grid grid-cols-1 gap-12 pt-[calc(94px+6vh)] pb-[clamp(56px,10vh,120px)] lg:grid-cols-[1.1fr_1fr] lg:gap-20">
       <div className="flex min-w-0 flex-col gap-7">
         <div className="flex flex-col gap-3.5">
           <span className="kicker">{t("metaTitle")}</span>
@@ -34,11 +38,11 @@ export default async function ContactPage() {
           <br />
           {home("contactTitle2")}
         </h1>
-        <p className="max-w-[440px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty text-strong">
+        <p className="text-strong max-w-[440px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">
           {t("lead")}
         </p>
 
-        <dl className="mt-4 grid grid-cols-1 gap-6 border-t border-ink pt-7 sm:grid-cols-3">
+        <dl className="border-ink mt-4 grid grid-cols-1 gap-6 border-t pt-7 sm:grid-cols-3">
           <div className="flex flex-col gap-2">
             <dt className="micro text-muted">{chrome("email")}</dt>
             <dd>
@@ -50,7 +54,12 @@ export default async function ContactPage() {
           <div className="flex flex-col gap-2">
             <dt className="micro text-muted">{home("contactCode")}</dt>
             <dd>
-              <a href={site.github} target="_blank" rel="me noreferrer" className="rule-link text-[15px]">
+              <a
+                href={site.github}
+                target="_blank"
+                rel="me noreferrer"
+                className="rule-link text-[15px]"
+              >
                 {site.github.replace("https://", "")}
               </a>
             </dd>

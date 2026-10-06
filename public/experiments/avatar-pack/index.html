@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Avatar Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -56,8 +55,7 @@
   html.card .av-presence { grid-template-columns: repeat(2, auto); gap: .9em; }
   html.card .av-presence li > span:not(.av) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   html.card .av-gen label { display: none; }
-  html.card .av-stack.fanned li, html.card .av-stack.fanned button { margin-left: .15em; }
-</style>
+  html.card .av-stack.fanned li, html.card .av-stack.fanned button { margin-left: .15em; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -80,13 +78,12 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
   const A = 'var(--accent, #c8f31d)', SH = 'var(--shape, 50%)';
   const FONT = 'font: 14px/1.4 system-ui, sans-serif; color: #e9e6dd;';
-  // Shared by every item that draws initials.
+  
   const AV = `.av { position: relative; display: inline-grid; place-items: center; flex: none; width: var(--s, 2.6em); height: var(--s, 2.6em); border-radius: ${SH}; background: oklch(.8 .12 var(--h, 120)); color: #0e0e0c; font: 700 calc(var(--s, 2.6em) * .38)/1 system-ui, sans-serif; letter-spacing: .02em; user-select: none; }`;
 
   const ITEMS = [
@@ -207,7 +204,7 @@ ${AV}
 .av-photo figure { display: grid; justify-items: center; gap: .4em; margin: 0; }
 .av-photo figcaption { font-size: .72em; color: #8a94a0; }
 .av-photo img.av { --s: 3.2em; object-fit: cover; }`,
-      // A broken or missing src is swapped for initials in the same box, so the layout never shifts.
+      
       js: function (root) {
         const hue = (name) => { let h = 0x811c9dc5; for (const c of name) { h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193); } return (h >>> 0) % 360; };
         const initials = (name) => { const p = name.trim().split(/\s+/); return ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); };
@@ -221,7 +218,7 @@ ${AV}
           span.setAttribute('aria-label', img.alt);
           img.replaceWith(span);
         };
-        // Demo photo: an inline SVG portrait. Use your real URL here.
+        
         const face = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#2e4bf2"/><circle cx="32" cy="26" r="12" fill="#f2c9a0"/><path d="M20 24q12-16 24 0v-6q-12-10-24 0z" fill="#3a2410"/><path d="M10 64q22-30 44 0z" fill="#c8f31d"/></svg>');
         root.querySelectorAll('img').forEach((img, i) => {
           img.addEventListener('error', () => fallback(img), { once: true });
@@ -365,7 +362,7 @@ ${AV}
 .av-hover-stats { display: flex; gap: 1em; font-size: .78em; color: #8a94a0; }
 .av-hover-stats b { color: #e9e6dd; }
 @keyframes av-hc-in { from { opacity: 0; translate: 0 -4px; } }`,
-      // Delay on open avoids flashing cards while the pointer passes over text; a grace period lets it reach the card.
+      
       js: function (root) {
         const link = root.querySelector('a'), card = root.querySelector('.av-hover-card');
         let t = 0;
@@ -395,7 +392,7 @@ ${AV}
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   function snippet(it) {
-    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    let s = `\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
     if (it.js) {
       s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
     }
@@ -441,11 +438,10 @@ ${AV}
       i++;
       gen.setName(NAMES[i % NAMES.length]);
       bell.bump(i % 4 === 3 ? 0 : 1 + (i % 3) * 7);
-      // Fan the four visible faces out and back, as hover would; the list itself stays at four.
+      
       stack.classList.toggle('fanned', i % 2 === 1);
       if (i % 5 === 0) grid.style.setProperty('--shape', SHAPES[(i / 5) % 3]);
     }, 1300);
   }
-})();
-</script>
+})();</script>
 </html>

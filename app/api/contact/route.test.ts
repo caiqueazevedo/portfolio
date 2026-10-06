@@ -18,7 +18,9 @@ const valid = {
 };
 
 function post(body: unknown) {
-  return POST(new NextRequest("http://localhost/api/contact", { method: "POST", body: JSON.stringify(body) }));
+  return POST(
+    new NextRequest("http://localhost/api/contact", { method: "POST", body: JSON.stringify(body) }),
+  );
 }
 
 describe("POST /api/contact", () => {

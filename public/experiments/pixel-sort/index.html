@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Pixel Sort</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,13 +13,9 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; aspect-ratio: 4 / 5; width: 100%; max-width: min(100%, calc(82vh * 4 / 5)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; container-type: inline-size; }
   .stage canvas { display: block; width: 100%; height: 100%; }
   .stage .caption { position: absolute; left: 6%; bottom: 5%; font-family: var(--font-display); font-size: clamp(28px, 9cqw, 72px); line-height: .9; letter-spacing: .02em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; pointer-events: none; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -40,14 +35,11 @@
   :is(input, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
   .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
-
-  /* ---------- Card mode (?card=1): stage only, filling the frame; the host page embeds it as a live preview. ---------- */
   html.card, html.card body { height: 100%; }
   html.card body { padding: 0; min-height: 0; overflow: hidden; }
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
-  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }
-</style>
+  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -84,8 +76,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), out = $('out'), ctx = out.getContext('2d', { willReadFrequently: true });
   const ctl = { lo: $('lo'), hi: $('hi') };
@@ -116,7 +107,7 @@
     for (let line = 0; line < lines; line++) {
       let k = 0;
       while (k < len) {
-        // Find the next run of pixels inside the brightness window.
+        
         while (k < len && (bright(d, idx(line, k)) < lo || bright(d, idx(line, k)) > hi)) k++;
         const start = k;
         while (k < len && bright(d, idx(line, k)) >= lo && bright(d, idx(line, k)) <= hi) k++;
@@ -131,8 +122,6 @@
     $('lo-out').textContent = ctl.lo.value;
     $('hi-out').textContent = ctl.hi.value;
   }
-
-  // Sorting a full frame is a few milliseconds; debounce so slider drags stay smooth.
   const schedule = () => { clearTimeout(timer); timer = setTimeout(render, 30); };
 
   Object.values(ctl).forEach(el => el.addEventListener('input', schedule));
@@ -154,8 +143,6 @@
     document.querySelector(`input[name="order"][value="${defaults.order}"]`).checked = true;
     render();
   });
-
-  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
   if (new URLSearchParams(location.search).has('card')) {
     document.documentElement.classList.add('card');
     const target = stage;
@@ -167,6 +154,5 @@
     });
     target.addEventListener('pointermove', (e) => { const r = target.getBoundingClientRect(); ctl.lo.value = Math.round(40 + (e.clientX - r.left) / r.width * 150); schedule(); });
   }
-})();
-</script>
+})();</script>
 </html>

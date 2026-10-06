@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>OAuth PKCE</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; padding: 24px; display: grid; align-content: start; gap: 12px; overflow: hidden; }
   .step { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; opacity: .35; transition: opacity 240ms, border-color 240ms, transform 240ms; transform: translateY(6px); }
   .step[data-on] { opacity: 1; transform: none; }
@@ -28,8 +25,6 @@
   .verdict { margin-top: 4px; font-family: var(--font-mono); font-size: 13px; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--line); }
   .verdict.ok { color: var(--accent); border-color: var(--accent); }
   .verdict.bad { color: #f23e2e; border-color: #f23e2e; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -49,8 +44,7 @@
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 14px; gap: 8px; align-content: center; }
   html.card .step { padding: 8px 10px; gap: 5px; }
   html.card .step .hint, html.card .verdict { display: none; }
-  html.card .step .val { min-height: 0; padding: 5px 7px; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-</style>
+  html.card .step .val { min-height: 0; padding: 5px 7px; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -94,8 +88,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), steps = [$('s1'), $('s2'), $('s3'), $('s4'), $('s5')];
   const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -139,7 +132,7 @@
     await wait(700);
 
     show(4);
-    // The attacker has the code from the redirect, but has to guess a verifier.
+    
     const stolen = $('attack').checked;
     const sent = stolen ? makeVerifier() : verifier;
     $('tokenreq').textContent = `POST https://id.exemplo.com/token\n  grant_type=authorization_code\n  code=${code}\n  code_verifier=${sent.slice(0, 22)}…`;
@@ -168,6 +161,5 @@
     });
     setInterval(() => run({ paced: true }), 7000);
   }
-})();
-</script>
+})();</script>
 </html>

@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Negative Poster</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c9d8e6;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -15,15 +14,12 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage (a 9:16 poster) ---------- */
   .stage { position: relative; aspect-ratio: 9 / 16; width: 100%; max-width: min(100%, calc(84vh * 9 / 16)); justify-self: center; overflow: hidden; background: #000; border-radius: 6px; touch-action: none; user-select: none; container-type: inline-size; }
   .stage .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; transform-origin: center; }
-  /* A grey background makes `difference` land on pure black and white; colour would tint the letters. */
+  
   .stage.bw .bg { filter: grayscale(1) contrast(1.1); }
   .stage .grain { position: absolute; inset: 0; background: var(--noise); opacity: .09; pointer-events: none; }
-  /* The headline: one colour, one blend mode. With `difference` and white text the letters
-     invert against whatever is behind them: black over light areas, white over dark. */
+  
   .stage .headline {
     position: absolute; left: 0; right: 0; top: var(--y, 44%); margin: 0; padding: 0 3%;
     font-family: var(--font-display); font-size: var(--size, 38cqw); line-height: .84; letter-spacing: var(--tracking, 0em);
@@ -37,8 +33,6 @@
   .stage .cap::before { content: ""; display: block; width: 2.6em; height: 2px; background: currentColor; margin-bottom: .9em; }
   .stage .cap.tl { top: 4%; left: 6%; }
   .stage .cap.br { right: 6%; bottom: 5%; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel > div > p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -66,14 +60,11 @@
   :is(input, textarea, button, .upload):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; margin: 0; }
   .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
-
-  /* ---------- Card mode (?card=1): stage only, filling the frame; the host page embeds it as a live preview. ---------- */
   html.card, html.card body { height: 100%; }
   html.card body { padding: 0; min-height: 0; overflow: hidden; }
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
-  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }
-</style>
+  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }</style>
 
 <div class="wrap">
   <div class="stage bw" id="stage">
@@ -81,7 +72,7 @@
     <p class="cap tl" id="cap-tl">Some leave
 a trace.</p>
     <h1 class="headline" id="headline">Ghosted</h1>
-    <!-- front.png (transparent cutout) if present; falls back to the background photo. -->
+    
     <div class="fg" id="fg"><img id="fg-img" src="front.png" alt="Imagem da frente" onerror="this.onerror = null; this.src = 'photo.jpg';"></div>
     <p class="cap br" id="cap-br">No name.
 No trace.</p>
@@ -166,8 +157,7 @@ No trace.</textarea></div>
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), headline = $('headline'), bg = $('bg'), fg = $('fg');
   const ctl = {
@@ -183,10 +173,8 @@ No trace.</textarea></div>
   };
 
   const blend = () => document.querySelector('input[name="blend"]:checked').value;
-
-  // The size slider is a ceiling: the word shrinks until it fits the poster width.
   function fitHeadline(max) {
-    // Measure the glyphs themselves (a Range), not the block, which always spans the poster.
+    
     const textWidth = () => { const r = document.createRange(); r.selectNodeContents(headline); return r.getBoundingClientRect().width; };
     let size = max;
     stage.style.setProperty('--size', size + 'cqw');
@@ -218,8 +206,6 @@ No trace.</textarea></div>
     $('ox-out').textContent = ctl.ox.value;
     $('fg-w-out').textContent = ctl['fg-w'].value + '%';
   }
-
-  // Drag the foreground image; keep the grab offset so it does not jump under the pointer.
   let drag = null;
   fg.addEventListener('pointerdown', (e) => {
     const r = fg.getBoundingClientRect(), s = stage.getBoundingClientRect();
@@ -237,8 +223,6 @@ No trace.</textarea></div>
   const drop = () => { drag = null; fg.classList.remove('dragging'); };
   fg.addEventListener('pointerup', drop);
   fg.addEventListener('pointercancel', drop);
-
-  // Drag the headline vertically; the slider follows so both stay in sync.
   let hdrag = null;
   headline.addEventListener('pointerdown', (e) => {
     const s = stage.getBoundingClientRect();
@@ -278,8 +262,6 @@ No trace.</textarea></div>
   upload($('fg-file'), $('fg-img'), 'src');
 
   placeFg(); apply();
-
-  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
   if (new URLSearchParams(location.search).has('card')) {
     document.documentElement.classList.add('card');
     const target = stage;
@@ -289,8 +271,6 @@ No trace.</textarea></div>
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    
   }
-})();
-</script>
+})();</script>
 </html>

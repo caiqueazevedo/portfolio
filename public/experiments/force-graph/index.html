@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Force Graph</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,16 +13,12 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; height: 580px; background: #000; border-radius: 6px; overflow: hidden; touch-action: none; }
   canvas { display: block; width: 100%; height: 100%; }
   .info { position: absolute; left: 14px; top: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; display: grid; gap: 3px; }
   .info b { color: var(--accent); font-weight: 400; }
   .legend { position: absolute; left: 14px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
   .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -45,8 +40,7 @@
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
   html.card .stage { height: 100%; border-radius: 0; }
-  html.card .info, html.card .legend { display: none; }
-</style>
+  html.card .info, html.card .legend { display: none; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -85,8 +79,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), canvas = $('c'), ctx = canvas.getContext('2d');
   const GROUPS = [
@@ -110,7 +103,7 @@
         x: W / 2 + (rand() - 0.5) * W * 0.6, y: H / 2 + (rand() - 0.5) * H * 0.6, vx: 0, vy: 0, deg: 0 };
     });
     links = [];
-    // Each node depends on its group's hub, plus an occasional cross-module edge.
+    
     for (let i = GROUPS.length; i < n; i++) {
       links.push({ a: i, b: nodes[i].g });
       if (rand() < 0.45) links.push({ a: i, b: GROUPS.length + Math.floor(rand() * (i - GROUPS.length || 1)) });
@@ -134,7 +127,7 @@
         const b = nodes[j];
         let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
         if (d2 < 0.01) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 0.5; }
-        if (d2 > 160000) continue; // beyond 400px the push is negligible
+        if (d2 > 160000) continue; 
         const f = charge * k / d2, d = Math.sqrt(d2);
         const fx = dx / d * f, fy = dy / d * f;
         a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
@@ -247,7 +240,7 @@
     $('nodes').value = 40; $('dist').value = 26; $('charge').value = 320; $('gravity').value = 0.05;
     $('labels').checked = false;
     generate();
-    // The pointer repels the graph while hovering, so the card reacts; otherwise it breathes.
+    
     stage.addEventListener('pointermove', (e) => {
       const p = at(e);
       for (const n of nodes) { const dx = n.x - p.x, dy = n.y - p.y, d2 = dx * dx + dy * dy + 30; n.vx += dx / d2 * 60; n.vy += dy / d2 * 60; }
@@ -255,6 +248,5 @@
     });
     setInterval(() => { seed++; generate(); }, 6000);
   }
-})();
-</script>
+})();</script>
 </html>

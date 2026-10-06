@@ -7,8 +7,6 @@ export const routing = defineRouting({
 });
 
 export type Locale = (typeof routing.locales)[number];
-
-/** BCP 47 tag for `<html lang>` and hreflang. */
 export const LANG_TAG: Record<Locale, string> = {
   pt: "pt-BR",
   en: "en",

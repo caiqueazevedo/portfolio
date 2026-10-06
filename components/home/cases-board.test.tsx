@@ -33,7 +33,6 @@ describe("CasesBoard", () => {
   });
 
   it("turns into an index once there are more than eight", () => {
-    // Twelve cards would each be a stamp; the index is the layout that survives thirty.
     render(<CasesBoard items={list(12)} labels={labels} />);
     expect(screen.getByTestId("case-index")).toBeInTheDocument();
     expect(screen.queryByTestId("case-cards")).not.toBeInTheDocument();

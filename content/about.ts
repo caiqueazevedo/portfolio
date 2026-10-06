@@ -1,9 +1,4 @@
 import type { Localized } from "./localized";
-
-/**
- * Career content. Bracketed placeholders are facts only Caique can fill.
- * TODO (Caique): current role, dates, achievements, years of experience.
- */
 export const bio: Localized<string[]> = {
   pt: [
     "Engenheiro de software. No trabalho vivo no ecossistema Salesforce: Apex no servidor, Lightning Web Components no cliente, e a disciplina que plataforma com deploy versionado exige.",
@@ -21,7 +16,7 @@ export type Experience = {
   role: Localized<string>;
   company: string;
   start: string;
-  /** null = current. */
+
   end: string | null;
   summary: Localized<string>;
   stack: string[];
@@ -52,7 +47,29 @@ export const experience: Experience[] = [
 export type StackGroup = { label: Localized<string>; items: string[] };
 
 export const stack: StackGroup[] = [
-  { label: { pt: "Front-end", en: "Front-end" }, items: ["React 19", "Next.js", "TypeScript", "Tailwind", "Expo", "Tauri"] },
-  { label: { pt: "Back-end", en: "Back-end" }, items: ["Cloudflare Workers", "D1 · R2 · KV · Durable Objects", "Supabase · Postgres", "Fastify", "Node.js", "Rust"] },
-  { label: { pt: "Plataforma", en: "Platform" }, items: ["Salesforce Apex", "Lightning Web Components", "OAuth 2.0 · PKCE", "GitHub Actions", "Vitest · pytest"] },
+  {
+    label: { pt: "Front-end", en: "Front-end" },
+    items: ["React 19", "Next.js", "TypeScript", "Tailwind", "Expo", "Tauri"],
+  },
+  {
+    label: { pt: "Back-end", en: "Back-end" },
+    items: [
+      "Cloudflare Workers",
+      "D1 · R2 · KV · Durable Objects",
+      "Supabase · Postgres",
+      "Fastify",
+      "Node.js",
+      "Rust",
+    ],
+  },
+  {
+    label: { pt: "Plataforma", en: "Platform" },
+    items: [
+      "Salesforce Apex",
+      "Lightning Web Components",
+      "OAuth 2.0 · PKCE",
+      "GitHub Actions",
+      "Vitest · pytest",
+    ],
+  },
 ];

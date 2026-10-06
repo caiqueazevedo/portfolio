@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Image Cropper</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,12 +13,10 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; height: 580px; background: #000; border-radius: 6px; overflow: hidden; display: grid; place-items: center; padding: 24px; }
   .area { position: relative; touch-action: none; user-select: none; }
   .area canvas { display: block; width: 100%; height: 100%; }
-  /* The box's huge shadow is the dimmed outside; overflow on .area keeps it inside the image. */
+  
   .area { overflow: hidden; cursor: crosshair; }
   .box { position: absolute; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .62); outline: 1px solid rgba(255,255,255,.9); cursor: move; }
   .box:focus-visible { outline: 2px solid var(--accent); }
@@ -37,8 +34,6 @@
   .h[data-h="e"] { top: calc(50% - 7px); right: -7px; cursor: ew-resize; }
   .dims { position: absolute; left: 0; bottom: -26px; font-family: var(--font-mono); font-size: 11px; background: var(--accent); color: #0e0e0c; padding: 2px 7px; white-space: nowrap; pointer-events: none; }
   .box.top-edge .dims { bottom: auto; top: 4px; left: 4px; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -73,8 +68,7 @@
   html.card .panel { display: none; }
   html.card .stage { height: 100%; border-radius: 0; padding: 10px; }
   html.card .h { width: 9px; height: 9px; border-width: 1px; }
-  html.card .dims { font-size: 9px; }
-</style>
+  html.card .dims { font-size: 9px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -124,8 +118,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), area = $('area'), view = $('view'), box = $('box');
   const src = document.createElement('canvas');
@@ -163,8 +156,6 @@
     view.getContext('2d').drawImage(src, 0, 0, view.width, view.height);
     paint();
   }
-
-  // Largest rect of the current aspect, centred, at `fill` of the image.
   function defaultCrop(fill = 0.8) {
     const a = aspect();
     let w = W() * fill, h = H() * fill;
@@ -206,7 +197,7 @@
       L = Math.max(0, L); T = Math.max(0, T); R = Math.min(W(), R); B = Math.min(H(), B);
       return { x: L, y: T, w: R - L, h: B - T };
     }
-    // The fixed point is whatever the dragged handle is not touching.
+    
     const horiz = h.includes('w') ? 'left' : h.includes('e') ? 'right' : 'center';
     const vert = h.includes('n') ? 'up' : h.includes('s') ? 'down' : 'center';
     const ax = horiz === 'left' ? R : horiz === 'right' ? L : r.x + r.w / 2;
@@ -229,8 +220,6 @@
   function move(r, dx, dy) {
     return { ...r, x: Math.min(W() - r.w, Math.max(0, r.x + dx)), y: Math.min(H() - r.h, Math.max(0, r.y + dy)) };
   }
-
-  // One gesture model: move the box, drag a handle, or draw a new box from outside.
   let gesture = null;
   const point = (e) => { const b = area.getBoundingClientRect(); return { x: (e.clientX - b.left) / k, y: (e.clientY - b.top) / k }; };
   area.addEventListener('pointerdown', (e) => {
@@ -305,7 +294,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     }, true);
-    // Glide the box between ratios and positions.
+    
     const RATIOS = ['1', '0.5625', '1.7778', '0.8'];
     let i = 0, target = null;
     setInterval(() => {
@@ -321,6 +310,5 @@
       paint();
     })();
   }
-})();
-</script>
+})();</script>
 </html>

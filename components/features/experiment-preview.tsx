@@ -5,12 +5,6 @@ import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 
 type Props = { slug: string; title: string; href: string; hint: string; className?: string };
-
-/**
- * Live, interactive preview: the demo page in card mode (`?card=1`) inside an iframe.
- * The iframe keeps pointer events so hover effects work; a plain click inside it posts
- * `experiment:open` and we navigate. The frame only mounts once it scrolls near the viewport.
- */
 export function ExperimentPreview({ slug, title, href, hint, className }: Props) {
   const router = useRouter();
   const box = useRef<HTMLDivElement>(null);
@@ -38,7 +32,13 @@ export function ExperimentPreview({ slug, title, href, hint, className }: Props)
   }, [href, router]);
 
   return (
-    <div ref={box} className={cn("group relative aspect-[4/5] w-full min-w-0 overflow-hidden border border-ink/14 bg-paper", className)}>
+    <div
+      ref={box}
+      className={cn(
+        "group border-ink/14 bg-paper relative aspect-[4/5] w-full min-w-0 overflow-hidden border",
+        className,
+      )}
+    >
       {visible ? (
         <iframe
           ref={frame}
@@ -50,7 +50,7 @@ export function ExperimentPreview({ slug, title, href, hint, className }: Props)
       ) : null}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute right-2 bottom-2 bg-ink/85 px-2 py-1 font-mono text-[10px] tracking-[0.1em] text-ink uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        className="bg-ink/85 text-ink pointer-events-none absolute right-2 bottom-2 px-2 py-1 font-mono text-[10px] tracking-[0.1em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100"
       >
         {hint}
       </span>

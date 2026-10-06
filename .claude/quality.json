@@ -12,17 +12,7 @@
     "min": null
   },
   "commit": {
-    "types": [
-      "feature",
-      "bugfix",
-      "fix",
-      "refactor",
-      "docs",
-      "test",
-      "chore",
-      "release",
-      "hotfix"
-    ],
+    "types": ["feature", "bugfix", "fix", "refactor", "docs", "test", "chore", "release", "hotfix"],
     "scopes": null,
     "scope_required": false,
     "subject_max": 72,

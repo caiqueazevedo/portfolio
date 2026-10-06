@@ -2,8 +2,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { caseViews, wantsIndex } from "@/lib/case-view";
 import { CasesBoard } from "./cases-board";
 import { Panel, PANEL_PAD } from "./panel";
-
-/** 03 — the whole list, in whichever shape fits the number of cases. */
 export async function PanelCases() {
   const locale = await getLocale();
   const t = await getTranslations("home");

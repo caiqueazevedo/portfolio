@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>JWT Inspector</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --bad: #f23e2e; --warn: #f2a52e;
     --h: #ff6b8b; --p: #b58cff; --s: #6ea8ff;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
@@ -15,8 +14,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 600px; background: #000; border-radius: 6px; padding: 18px; display: grid; gap: 14px; align-content: start; }
   .lbl { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
   #token { font-family: var(--font-mono); font-size: 12px; line-height: 1.6; padding: 10px; border: 1px solid var(--line); border-radius: 4px; background: #0f1319; color: var(--ink); width: 100%; height: 92px; resize: vertical; word-break: break-all; }
@@ -37,8 +34,6 @@
   .status.ok { color: var(--accent); border-color: var(--accent); }
   .status.bad { color: var(--bad); border-color: var(--bad); }
   .status.warn { color: var(--warn); border-color: var(--warn); }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -64,8 +59,7 @@
   html.card .parts textarea { height: 11.5em; font-size: 10px; resize: none; overflow: hidden; pointer-events: none; }
   html.card .parts .hdr { display: none; }
   html.card .colored { font-size: 9.5px; max-height: 5.4em; overflow: hidden; }
-  html.card .status { font-size: 10.5px; padding: 7px 9px; }
-</style>
+  html.card .status { font-size: 10.5px; padding: 7px 9px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -107,8 +101,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const enc = new TextEncoder(), dec = new TextDecoder();
   const HASH = { HS256: 'SHA-256', HS384: 'SHA-384', HS512: 'SHA-512' };
@@ -158,8 +151,6 @@
   }
 
   function setStatus(kind, text) { $('status').className = 'status ' + kind; $('status').textContent = text; }
-
-  // Token -> panes. `fromEditor` skips rewriting the pane the user is typing in.
   async function inspect(fromEditor) {
     const token = $('token').value.trim();
     const parts = token.split('.');
@@ -188,8 +179,6 @@
     else if (typeof payload.nbf === 'number' && payload.nbf > now) setStatus('warn', 'Assinatura válida, mas ainda não vale (nbf)');
     else setStatus('ok', `Assinatura válida · ${header.alg}`);
   }
-
-  // Panes -> token (re-signed with the current secret).
   async function resign(which) {
     let header, payload;
     try { header = JSON.parse($('header').value); $('header').classList.remove('invalid'); } catch { $('header').classList.add('invalid'); return; }
@@ -215,7 +204,7 @@
     if (name === 'expired') { p.iat = now() - 7300; p.exp = now() - 3700; }
     let token = await sign({ alg, typ: 'JWT' }, p);
     if (name === 'tampered') {
-      // Swap the payload for one claiming another role, keeping the original signature.
+      
       const [h, , s] = token.split('.');
       token = [h, jsonPart({ ...p, role: 'superadmin' }), s].join('.');
     }
@@ -247,6 +236,5 @@
     let i = 0;
     setInterval(() => preset(ORDER[i = (i + 1) % ORDER.length]), 2200);
   }
-})();
-</script>
+})();</script>
 </html>

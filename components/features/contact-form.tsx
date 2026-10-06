@@ -52,39 +52,71 @@ export function ContactForm({ siteKey, title }: { siteKey: string; title: string
     invalid: t("invalid"),
     captcha: t("captcha"),
   };
-  const toastColor = status === "success" ? "bg-acid-500 text-ink-950" : status === "error" || status === "invalid" || status === "captcha" ? "bg-danger text-white" : "";
+  const toastColor =
+    status === "success"
+      ? "bg-acid-500 text-ink-950"
+      : status === "error" || status === "invalid" || status === "captcha"
+        ? "bg-danger text-white"
+        : "";
 
   return (
     <form
       onSubmit={onSubmit}
       noValidate
       aria-describedby={`${id}-status`}
-      className="relative flex min-w-0 flex-col gap-6 border border-ink/14 bg-paper p-6 sm:p-9"
+      className="border-ink/14 bg-paper relative flex min-w-0 flex-col gap-6 border p-6 sm:p-9"
     >
-      <span className="text-[clamp(18px,2vw,26px)] font-medium tracking-[0.06em] uppercase">{title}</span>
+      <span className="text-[clamp(18px,2vw,26px)] font-medium tracking-[0.06em] uppercase">
+        {title}
+      </span>
 
       <Field id={`${id}-name`} label={t("name")} error={errors.name}>
-        <Input id={`${id}-name`} name="name" autoComplete="name" placeholder={t("namePlaceholder")} required aria-invalid={errors.name || undefined} />
+        <Input
+          id={`${id}-name`}
+          name="name"
+          autoComplete="name"
+          placeholder={t("namePlaceholder")}
+          required
+          aria-invalid={errors.name || undefined}
+        />
       </Field>
       <Field id={`${id}-email`} label={t("email")} error={errors.email}>
-        <Input id={`${id}-email`} name="email" type="email" autoComplete="email" placeholder={t("emailPlaceholder")} required aria-invalid={errors.email || undefined} />
+        <Input
+          id={`${id}-email`}
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder={t("emailPlaceholder")}
+          required
+          aria-invalid={errors.email || undefined}
+        />
       </Field>
       <Field id={`${id}-company`} label={t("company")} error={errors.company}>
         <Input id={`${id}-company`} name="company" autoComplete="organization" />
       </Field>
       <Field id={`${id}-message`} label={t("message")} error={errors.message}>
-        <Textarea id={`${id}-message`} name="message" rows={4} required placeholder={t("messagePlaceholder")} aria-invalid={errors.message || undefined} />
+        <Textarea
+          id={`${id}-message`}
+          name="message"
+          rows={4}
+          required
+          placeholder={t("messagePlaceholder")}
+          aria-invalid={errors.message || undefined}
+        />
       </Field>
 
-      {/* Honeypot: hidden from people, tempting for bots. */}
       <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
         <label htmlFor={`${id}-website`}>Website</label>
         <input id={`${id}-website`} name="website" tabIndex={-1} autoComplete="off" />
       </div>
 
-      {/* The widget has a 300px floor; below that it scrolls inside its box instead of pushing the page. */}
-      <div className="min-w-0 max-w-full overflow-x-auto">
-        <Turnstile siteKey={siteKey} onSuccess={setToken} onExpire={() => setToken("")} options={{ theme: "light", size: "flexible" }} />
+      <div className="max-w-full min-w-0 overflow-x-auto">
+        <Turnstile
+          siteKey={siteKey}
+          onSuccess={setToken}
+          onExpire={() => setToken("")}
+          options={{ theme: "light", size: "flexible" }}
+        />
       </div>
 
       <Button type="submit" disabled={status === "sending"} className="self-start">
@@ -96,7 +128,7 @@ export function ContactForm({ siteKey, title }: { siteKey: string; title: string
         role="status"
         aria-live="polite"
         className={cn(
-          "inline-flex items-center gap-3 self-start border border-ink/14 px-4 py-3 text-[12px] font-medium tracking-[0.12em] uppercase",
+          "border-ink/14 inline-flex items-center gap-3 self-start border px-4 py-3 text-[12px] font-medium tracking-[0.12em] uppercase",
           toastColor,
           !feedback[status] && "hidden",
         )}

@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Image Compressor</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,12 +13,10 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage: a before/after wipe ---------- */
   .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: 1fr auto; }
   .view { position: relative; overflow: hidden; touch-action: none; cursor: ew-resize; }
   .view img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; }
-  /* The compressed copy sits on top, clipped to the left of the handle. */
+  
   .view .after { clip-path: inset(0 calc(100% - var(--x, 50%)) 0 0); }
   .view .tag { position: absolute; top: 12px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; background: rgba(0,0,0,.6); padding: 4px 9px; border-radius: 3px; pointer-events: none; }
   .view .tag.l { left: 12px; color: var(--accent); }
@@ -33,8 +30,6 @@
   .bar b.win { color: var(--accent); }
   .drop { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11,13,16,.85); font-family: var(--font-mono); font-size: 13px; color: var(--accent); opacity: 0; pointer-events: none; transition: opacity 120ms; }
   .stage.over .drop { opacity: 1; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -62,8 +57,7 @@
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; grid-template-rows: 1fr auto; }
   html.card .bar { grid-template-columns: repeat(2, 1fr); }
   html.card .bar div { padding: 7px 10px; }
-  html.card .bar b { font-size: 13px; }
-</style>
+  html.card .bar b { font-size: 13px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -108,15 +102,12 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), view = $('view');
   let source = null, sourceBytes = 0, lastBlob = null, lastUrl = null;
 
   const kb = (n) => n > 1024 * 1024 ? (n / 1048576).toFixed(2) + ' MB' : Math.round(n / 1024) + ' KB';
-
-  // AVIF encoding is not in every browser; disable the option when toBlob refuses it.
   (async () => {
     const c = document.createElement('canvas'); c.width = c.height = 4;
     const blob = await new Promise(r => c.toBlob(r, 'image/avif', 0.5));
@@ -132,7 +123,7 @@
   }
 
   function draw(img, targetW) {
-    // Halve repeatedly: a single big downscale drops pixels instead of averaging them.
+    
     let w = img.naturalWidth, h = img.naturalHeight;
     const scale = Math.min(1, targetW / w);
     let canvas = document.createElement('canvas');
@@ -205,8 +196,6 @@
   ['dragenter', 'dragover'].forEach(t => stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.add('over'); }));
   ['dragleave', 'drop'].forEach(t => stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.remove('over'); }));
   stage.addEventListener('drop', (e) => accept(e.dataTransfer.files[0]));
-
-  // Bundled photo: fetch it once so the "original" size is honest.
   fetch('photo.jpg').then(r => r.blob()).then(b => { sourceBytes = b.size; return load(URL.createObjectURL(b)); });
 
   if (new URLSearchParams(location.search).has('card')) {
@@ -217,7 +206,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // Sweep the wipe and drop the quality, so the card shows the trade-off in motion.
+    
     let t = 0;
     setInterval(() => {
       t += 0.02;
@@ -226,6 +215,5 @@
       $('q').value = q.toFixed(2); compress();
     }, 90);
   }
-})();
-</script>
+})();</script>
 </html>

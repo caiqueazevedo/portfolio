@@ -1,9 +1,4 @@
 import type { Localized } from "./localized";
-
-/**
- * Showcase projects. Public page content: no infrastructure detail (bucket names,
- * internal URLs, ids). Bracketed placeholders are facts only Caique can fill.
- */
 export type ProjectStatus = "production" | "active" | "paused";
 
 export type CaseSection = {
@@ -14,9 +9,9 @@ export type CaseSection = {
 export type Project = {
   slug: string;
   name: string;
-  /** Shown on cards. */
+
   summary: Localized<string>;
-  /** Shown on the case page hero. */
+
   headline: Localized<string>;
   lead: Localized<string>;
   tags: Localized<string[]>;
@@ -28,7 +23,7 @@ export type Project = {
   liveUrl: string | null;
   repoUrl: string | null;
   featured: boolean;
-  /** Key into `media.covers`. */
+
   cover: string;
   sections: CaseSection[];
 };

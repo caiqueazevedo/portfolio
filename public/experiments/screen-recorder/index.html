@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Screen Recorder</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --rec: #f23e2e;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 540px; background: #000; border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: 1fr auto; }
   .screen { position: relative; display: grid; place-items: center; overflow: hidden; background:
     radial-gradient(800px 400px at 30% 20%, #161c24, transparent), #0a0d11; }
@@ -36,8 +33,6 @@
   .bar .grow { flex: 1; }
   .bar .stat { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
   .bar .stat b { color: var(--accent); font-weight: 400; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -57,8 +52,7 @@
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; grid-template-rows: 1fr; }
-  html.card .bar, html.card .idle { display: none; }
-</style>
+  html.card .bar, html.card .idle { display: none; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -103,8 +97,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), screen = $('screen'), preview = $('preview');
   let recorder = null, chunks = [], stream = null, blob = null, t0 = 0, timer = null;
@@ -130,12 +123,12 @@
     if ($('mic').checked) {
       try {
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Two audio sources cannot both ride the same track, so mix them first.
+        
         const ac = new AudioContext(), dest = ac.createMediaStreamDestination();
         if (stream.getAudioTracks().length) ac.createMediaStreamSource(new MediaStream(stream.getAudioTracks())).connect(dest);
         ac.createMediaStreamSource(micStream).connect(dest);
         stream = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-      } catch { /* no mic: record the screen anyway */ }
+      } catch {  }
     }
 
     preview.hidden = false; preview.srcObject = stream; preview.play();
@@ -150,7 +143,7 @@
 
     t0 = Date.now(); timer = setInterval(tick, 250);
     $('start').disabled = true; $('stop').disabled = false; $('save').disabled = true;
-    // The browser's own "stop sharing" button ends the track, not the recorder.
+    
     stream.getVideoTracks()[0].addEventListener('ended', stop);
   }
 
@@ -188,9 +181,6 @@
   });
   $('bitrate').addEventListener('input', () => { $('bitrate-out').textContent = Number($('bitrate').value).toFixed(1).replace('.', ',') + ' Mbps'; });
   $('fps').addEventListener('input', () => { $('fps-out').textContent = $('fps').value; });
-
-  /* A fake desktop drawn on canvas: the card needs something to "record" without asking
-     for a real screen, and it doubles as the idle backdrop. */
   const c = $('demo'), ctx = c.getContext('2d');
   function sizeCanvas() {
     const r = c.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
@@ -206,7 +196,7 @@
     const w = c.clientWidth, h = c.clientHeight;
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = '#0a0d11'; ctx.fillRect(0, 0, w, h);
-    // Two drifting "windows" and a cursor, enough to read as a desktop at card size.
+    
     const win = (x, y, ww, hh, title) => {
       ctx.fillStyle = '#12171d'; ctx.fillRect(x, y, ww, hh);
       ctx.strokeStyle = '#232a32'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, ww, hh);
@@ -236,7 +226,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // Fake the recording chrome: getDisplayMedia would need a user gesture and a picker.
+    
     stage.setAttribute('data-rec', '');
     const started = Date.now();
     setInterval(() => {
@@ -244,6 +234,5 @@
       $('clock').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
     }, 500);
   }
-})();
-</script>
+})();</script>
 </html>

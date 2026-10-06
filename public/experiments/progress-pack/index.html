@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Progress Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -52,8 +51,7 @@
   html.card .cell.wide { grid-column: span 2; }
   html.card .cell:not(.in-card), html.card figcaption { display: none; }
   html.card .demo { padding: 8px 12px; }
-  html.card .demo > * { zoom: .78; }
-</style>
+  html.card .demo > * { zoom: .78; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -73,8 +71,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
   const A = 'var(--accent, #c8f31d)';
@@ -139,7 +136,7 @@ ${s} button:focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }`;
       js: function (root) {
         const b = root.querySelector('b');
         root.setValue = (v) => {
-          // A rounded cap on a 0-length dash still draws a dot; hide it at zero.
+          
           root.style.setProperty('--v', v < 0.5 ? '0.001' : String(v));
           b.textContent = `${Math.round(v)}%`;
           root.setAttribute('aria-valuenow', String(Math.round(v)));
@@ -230,7 +227,7 @@ ${BTN('.pg-steps')}`,
 .pg-upload[data-state="done"] .pg-upload-status { color: ${A}; }
 ${BTN('.pg-upload')}
 .pg-upload button { padding: .45em .65em; font-size: 12px; }`,
-      // Simulated transfer; replace the tick with XHR/fetch progress events.
+      
       js: function (root) {
         const TOTAL = 248 * 1048576;
         const status = root.querySelector('.pg-upload-status'), bar = root.querySelector('[role="progressbar"]');
@@ -254,7 +251,7 @@ ${BTN('.pg-upload')}
           last = now;
           const chunk = (8 + Math.random() * 14) * 1048576 * dt;
           sent = Math.min(TOTAL, sent + chunk);
-          // Exponential moving average: the ETA settles instead of jumping every tick.
+          
           speed = speed ? speed * 0.85 + (chunk / dt) * 0.15 : chunk / dt;
           if (sent >= TOTAL) { stop(); root.dataset.state = 'done'; pause.textContent = 'Enviar outro'; cancel.hidden = true; }
           paint();
@@ -282,7 +279,7 @@ ${BTN('.pg-upload')}
 .pg-read h3 { margin: 0 0 .4em; font-size: 1em; }
 .pg-read p { margin: 0 0 .7em; font-size: .88em; color: #c9ced4; }
 @keyframes pg-read { from { transform: scaleX(0); } to { transform: scaleX(1); } }`,
-      // Scroll-driven animation does the work; this only covers browsers without it.
+      
       js: function (root) {
         if (CSS.supports('animation-timeline: scroll()')) return;
         const bar = root.querySelector('.pg-read-bar');
@@ -353,7 +350,7 @@ ${BTN('.pg-session')}`,
           }
           const s = Math.min(total, Math.ceil(left / 1000));
           text.innerHTML = `Sua sessão expira em <b>${fmt(s)}</b>`;
-          // The visible countdown changes every second; the screen reader hears it once.
+          
           if (s <= 10 && !warned) { warned = true; sr.textContent = 'Sua sessão expira em 10 segundos.'; }
         };
         const reset = () => { end = Date.now() + LIMIT; warned = false; sr.textContent = ''; delete root.dataset.ended; btn.textContent = 'Continuar conectado'; tick(); };
@@ -442,7 +439,7 @@ ${BTN('.pg-session')}`,
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   function snippet(it) {
-    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    let s = `\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
     if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
     return s;
   }
@@ -491,7 +488,7 @@ ${BTN('.pg-session')}`,
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     }, true);
-    // A timer, not rAF: it keeps moving while the card is off-screen-throttled and costs little.
+    
     const steps = grid.querySelector('.pg-steps');
     let v = 0;
     setInterval(() => {
@@ -500,6 +497,5 @@ ${BTN('.pg-session')}`,
       steps.setStep(Math.min(4, Math.floor(Math.min(100, v) / 22)));
     }, 60);
   }
-})();
-</script>
+})();</script>
 </html>

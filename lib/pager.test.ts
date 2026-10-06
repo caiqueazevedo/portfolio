@@ -91,7 +91,6 @@ describe("wheelStep", () => {
   });
 
   it("keeps ignoring inertia until the cooldown passes", () => {
-    // One flick on a trackpad keeps firing for hundreds of ms. Without this, it skips panels.
     const cooling = { acc: 0, lastAt: 0, lockUntil: cooldownFrom(1000) };
     const during = wheelStep(cooling, wheel({ deltaY: 300, now: 1100 }));
     expect(during.step).toBe(0);
@@ -144,7 +143,6 @@ describe("clampLines", () => {
   });
 
   it("never asks for less than one line, however tight the box", () => {
-    // A box shorter than a line still has to show something; zero lines reads as a bug.
     expect(clampLines(4, 20)).toBe(1);
     expect(clampLines(Number.NaN, 20)).toBe(1);
     expect(clampLines(100, 0)).toBe(1);

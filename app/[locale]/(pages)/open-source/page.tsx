@@ -7,17 +7,27 @@ import { experiments } from "@/content/experiments";
 import { LANG_TAG, routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/open-source">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/open-source">): Promise<Metadata> {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "openSource" });
-  return { title: t("metaTitle"), description: t("metaDescription"), alternates: localizedAlternates(locale, "/open-source") };
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: localizedAlternates(locale, "/open-source"),
+  };
 }
 
 export default async function OpenSourcePage() {
   const t = await getTranslations("openSource");
   const locale = await getLocale();
-  const fmt = new Intl.DateTimeFormat(LANG_TAG[locale], { day: "2-digit", month: "short", year: "numeric" });
+  const fmt = new Intl.DateTimeFormat(LANG_TAG[locale], {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 
   const items: GridItem[] = experiments.map((e) => ({
     slug: e.slug,
@@ -52,7 +62,7 @@ export default async function OpenSourcePage() {
 
   return (
     <>
-      <section className="flex flex-col gap-7 bg-mist px-edge pt-[calc(94px+6vh)] pb-[clamp(40px,8vh,96px)]">
+      <section className="bg-mist px-edge flex flex-col gap-7 pt-[calc(94px+6vh)] pb-[clamp(40px,8vh,96px)]">
         <div className="flex flex-col gap-3.5">
           <span className="kicker">{t("kicker")}</span>
           <Rule />
@@ -60,7 +70,7 @@ export default async function OpenSourcePage() {
         <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em]">
           {t("title")}
         </h1>
-        <p className="max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty text-strong">
+        <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">
           {t("lead")}
         </p>
       </section>

@@ -9,11 +9,6 @@ type Bindings = {
   CONTACT_TO?: string;
   CONTACT_FROM?: string;
 };
-
-/**
- * Cloudflare bindings on Workers (and in `next dev` via initOpenNextCloudflareForDev),
- * with process.env underneath so `.env.local` still works for local secrets.
- */
 async function getBindings(): Promise<Bindings> {
   const fromProcess = process.env as unknown as Bindings;
   try {
@@ -52,15 +47,16 @@ export async function POST(req: NextRequest) {
   const to = env.CONTACT_TO;
   const from = env.CONTACT_FROM;
   if (!env.EMAIL || !to || !from) {
-    // Local dev without the email binding: keep the flow testable end to end.
-    console.info("[contact] (no email binding) would send:", buildContactEmail(input, { from: from ?? "dev@localhost", to: to ?? "dev@localhost" }));
+    console.info(
+      "[contact] (no email binding) would send:",
+      buildContactEmail(input, { from: from ?? "dev@localhost", to: to ?? "dev@localhost" }),
+    );
     return NextResponse.json({ ok: true, delivered: false });
   }
 
   try {
     await env.EMAIL.send(buildContactEmail(input, { from, to }));
   } catch (err) {
-    // Typically the sending domain is not onboarded yet; never leak the reason to the client.
     console.error("[contact] email send failed:", err instanceof Error ? err.message : err);
     return NextResponse.json({ ok: false, error: "email" }, { status: 502 });
   }

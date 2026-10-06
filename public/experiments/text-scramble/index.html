@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Text Scramble</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 540px; background: #000; border-radius: 6px; padding: 36px; display: grid; align-content: space-between; gap: 32px; container-type: inline-size; overflow: hidden; }
   .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
   .headline { margin: 0; font-family: var(--font-display); font-weight: 400; text-transform: uppercase; font-size: clamp(38px, 11cqw, 120px); line-height: .92; letter-spacing: .01em; min-height: 1.84em; overflow-wrap: anywhere; }
@@ -25,8 +22,6 @@
   .links a { font-family: var(--font-mono); font-size: 14px; color: var(--ink); text-decoration: none; letter-spacing: .08em; text-transform: uppercase; }
   .links a:hover { color: var(--accent); }
   .links a::before { content: "→ "; color: var(--muted); }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -48,8 +43,7 @@
   html.card .panel { display: none; }
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 18px; align-content: center; }
   html.card .links, html.card .kicker { display: none; }
-  html.card .headline { font-size: clamp(30px, 17cqw, 90px); }
-</style>
+  html.card .headline { font-size: clamp(30px, 17cqw, 90px); }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -97,18 +91,15 @@ Sem mágica, só código</textarea>
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const glyphs = () => $('glyphs').value;
   const escapeHtml = (s) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-
-  // One scrambler per element; a new call cancels the running one.
   function scramble(el, to, duration) {
     const from = el.dataset.text ?? el.textContent;
     el.dataset.text = to;
-    // Settle the interrupted run too, or whoever awaits it would hang forever.
+    
     if (el._raf) { cancelAnimationFrame(el._raf); el._raf = null; el._resolve?.(); }
     if (reduced.matches) { el.textContent = to; return Promise.resolve(); }
     const frames = Math.max(8, Math.round(duration / 16.7));
@@ -178,9 +169,8 @@ Sem mágica, só código</textarea>
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // Hover re-scrambles the current phrase in place.
+    
     stage.addEventListener('pointerenter', () => scramble(headline, headline.dataset.text, 700));
   }
-})();
-</script>
+})();</script>
 </html>

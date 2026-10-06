@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Field Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -50,8 +49,7 @@
   html.card .demo { padding: 4px 12px; }
   html.card .demo > * { zoom: .82; }
   html.card .demo label, html.card .demo legend, html.card .demo small { display: none; }
-  html.card .demo .fd-range label { display: block; height: 0; margin: 0 0 1.9em; overflow: hidden; }
-</style>
+  html.card .demo .fd-range label { display: block; height: 0; margin: 0 0 1.9em; overflow: hidden; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -70,8 +68,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
   const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 6px)';
@@ -147,7 +144,7 @@
           root.dataset.level = level;
           root.style.setProperty('--fill', `${Math.min(100, ratio * 100)}%`);
           out.textContent = `${n}/${max}`;
-          // Speak only when a threshold is crossed, not on every key.
+          
           if (level !== last) { sr.textContent = level === 'full' ? 'Limite atingido' : level === 'near' ? `Restam ${max - n} caracteres` : ''; last = level; }
         };
         area.addEventListener('input', update);
@@ -170,7 +167,7 @@
 .fd-valid small { ${HINT} }
 .fd-valid[data-state="error"] small { color: #f23e2e; }
 .fd-valid small button { padding: 0; border: 0; background: none; color: ${A}; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }`,
-      // Validates on blur (and live once an error is showing), and offers a fix for common domain typos.
+      
       js: function (root) {
         const input = root.querySelector('input'), msg = root.querySelector('small'), hint = msg.textContent;
         const KNOWN = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com.br', 'icloud.com', 'uol.com.br', 'bol.com.br'];
@@ -245,7 +242,7 @@
 .fd-phone small { ${HINT} }`,
       js: function (root) {
         const input = root.querySelector('input');
-        // 11 digits = mobile, (11) 91234-5678; 10 = landline, (11) 3456-7890.
+        
         const format = (digits) => {
           const d = digits.slice(0, 11);
           if (!d) return '';
@@ -254,7 +251,7 @@
           return rest.length > cut ? `${head}${rest.slice(0, cut)}-${rest.slice(cut)}` : head + rest;
         };
         input.addEventListener('keydown', (e) => {
-          // Backspace right after a ")" or "-" should eat the digit before it, not the symbol.
+          
           if (e.key !== 'Backspace' || input.selectionStart !== input.selectionEnd) return;
           let p = input.selectionStart;
           if (p > 0 && /\D/.test(input.value[p - 1])) { while (p > 0 && /\D/.test(input.value[p - 1])) p--; input.setSelectionRange(p, p); }
@@ -280,7 +277,7 @@
 .fd-money input { ${INPUT} text-align: right; font-size: 1.25em; font-variant-numeric: tabular-nums; caret-color: ${A}; }
 .fd-money input:focus { ${FOCUS} }
 .fd-money small { ${HINT} }`,
-      // Integer cents only: digits shift in from the right, like a card terminal. No float rounding anywhere.
+      
       js: function (root) {
         const input = root.querySelector('input');
         const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -345,7 +342,7 @@
             if (tags.length >= MAX) { say(`Limite de ${MAX} tags`); return; }
             tags.push(t); say(`${t} adicionada`);
           });
-          // Repaint first: a duplicate may point at a tag added in this same call.
+          
           paint();
           dupes.forEach((at) => { const li = list.children[at]; li.classList.remove('dupe'); void li.offsetWidth; li.classList.add('dupe'); });
         }
@@ -353,7 +350,7 @@
         input.addEventListener('keydown', (e) => {
           if ((e.key === 'Enter' || e.key === ',') && input.value.trim()) { e.preventDefault(); add(input.value); input.value = ''; }
           else if (e.key === 'Backspace' && !input.value && tags.length) {
-            // First press arms the last tag, second removes it.
+            
             const last = list.lastElementChild;
             if (last.classList.contains('armed')) remove(tags.length - 1); else last.classList.add('armed');
           } else list.lastElementChild?.classList.remove('armed');
@@ -383,7 +380,7 @@
 .fd-otp[data-state="ok"] small { color: ${A}; }
 .fd-otp[data-state="error"] small { color: #f23e2e; }
 @keyframes fd-otp-shake { 25%, 75% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }`,
-      // Focus only moves in answer to the user's own typing.
+      
       js: function (root) {
         const boxes = [...root.querySelectorAll('input')], msg = root.querySelector('small'), hint = msg.textContent;
         const value = () => boxes.map((b) => b.value).join('');
@@ -406,7 +403,7 @@
             const digits = box.value.replace(/\D/g, '');
             box.value = '';
             if (digits) {
-              // A whole code (SMS autofill lands in the first box) spreads over the rest.
+              
               const last = fill(i, digits);
               if (document.activeElement === box) boxes[i + digits.length < boxes.length ? i + digits.length : last].focus();
             }
@@ -446,7 +443,7 @@
 .fd-step input::-webkit-inner-spin-button, .fd-step input::-webkit-outer-spin-button { appearance: none; margin: 0; }
 .fd-step input.bump { animation: fd-step-bump .18s; }
 @keyframes fd-step-bump { 50% { transform: scale(1.25); } }`,
-      // Hold to repeat: waits 400 ms, then speeds up. aria-disabled keeps a focused button focused at the limit.
+      
       js: function (root) {
         const input = root.querySelector('input'), [minus, plus] = root.querySelectorAll('button');
         const min = Number(input.min), max = Number(input.max);
@@ -547,7 +544,7 @@
           const bad = !OK.includes(file.type) ? 'tipo não aceito' : file.size > MAX ? 'maior que 5 MB' : '';
           if (bad) { li.classList.add('error'); info.textContent = bad; return; }
           info.textContent = size(file.size);
-          // Stand-in for a real upload; wire fetch/XHR progress here.
+          
           let p = 0;
           const tick = setInterval(() => {
             p = Math.min(100, p + 8 + Math.random() * 20);
@@ -566,7 +563,7 @@
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   function snippet(it) {
-    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    let s = `\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
     if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
     return s;
   }
@@ -589,8 +586,6 @@
     b.textContent = ok ? 'copiado' : 'falhou'; b.classList.add('done');
     setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('done'); }, 1400);
   });
-
-  // A sample file so the list is not empty on arrival.
   grid.querySelector('.fd-drop').addFile(new File([new Uint8Array(284000)], 'contrato-assinado.pdf', { type: 'application/pdf' }));
   grid.querySelector('.fd-drop').addFile(new File([new Uint8Array(10)], 'planilha.xlsx', { type: 'application/vnd.ms-excel' }));
 
@@ -606,7 +601,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     }, true);
-    // Type into the fields through their own event handlers, without ever focusing them.
+    
     const tel = grid.querySelector('#fd-tel'), money = grid.querySelector('#fd-price'), range = grid.querySelector('#fd-budget');
     const otp = grid.querySelector('.fd-otp'), tags = grid.querySelector('.fd-tags');
     const PHONE = '11987654321', PRICE = '249990', CODES = ['246810', '135790'], SKILLS = ['React', 'Node', 'Figma', 'Apex', 'SQL', 'Go'];
@@ -628,6 +623,5 @@
       step++;
     }, 380);
   }
-})();
-</script>
+})();</script>
 </html>

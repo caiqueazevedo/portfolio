@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>AES-GCM</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --bad: #f23e2e;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; padding: 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 16px; overflow: hidden; }
   .io { display: grid; gap: 8px; }
   .io label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
@@ -34,8 +31,6 @@
   .out.bad { color: var(--bad); border-color: var(--bad); }
   .legend { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); flex-wrap: wrap; }
   .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -59,8 +54,7 @@
   html.card .panel { display: none; }
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 14px; gap: 10px; grid-template-rows: auto 1fr auto; }
   html.card .io.src, html.card .legend { display: none; }
-  html.card .cipher { font-size: 10.5px; min-height: 0; }
-</style>
+  html.card .cipher { font-size: 10.5px; min-height: 0; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -101,15 +95,14 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const enc = new TextEncoder(), dec = new TextDecoder();
   const hex = (b) => [...b].map(x => x.toString(16).padStart(2, '0')).join('');
 
   let salt = crypto.getRandomValues(new Uint8Array(16));
   let iv = crypto.getRandomValues(new Uint8Array(12));
-  let packet = new Uint8Array(0);  // iv || ciphertext || tag
+  let packet = new Uint8Array(0);  
   let busy = false, queued = false;
 
   async function deriveKey() {
@@ -143,7 +136,7 @@
       html += `<span class="${cls}" data-i="${i}">${packet[i].toString(16).padStart(2, '0')}</span>`;
     }
     $('cipher').innerHTML = html;
-    // The byte strip is a coarse fingerprint: one changed byte visibly repaints the whole tail.
+    
     $('bytes').innerHTML = [...packet].slice(0, 220).map(b =>
       `<i style="--b: color-mix(in oklab, var(--accent) ${Math.round(b / 255 * 100)}%, #12161c)"></i>`).join('');
   }
@@ -187,6 +180,5 @@
     let n = 0;
     setInterval(() => { if (++n % 3) corrupt(); else { iv = crypto.getRandomValues(new Uint8Array(12)); run(); } }, 1600);
   }
-})();
-</script>
+})();</script>
 </html>

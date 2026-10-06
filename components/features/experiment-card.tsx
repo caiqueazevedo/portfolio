@@ -7,9 +7,13 @@ import { countLines, splitSource } from "@/lib/experiments";
 import { CodePanel, type HighlightedView } from "./code-panel";
 
 const LABEL = { html: "HTML", css: "CSS", js: "JS" } as const;
-
-/** Server component: reads the demo from public/, highlights at build time, embeds it live. */
-export async function ExperimentCard({ experiment, index }: { experiment: Experiment; index: number }) {
+export async function ExperimentCard({
+  experiment,
+  index,
+}: {
+  experiment: Experiment;
+  index: number;
+}) {
   const t = await getTranslations("openSource");
   const locale = await getLocale();
   const demoPath = `/experiments/${experiment.slug}/index.html`;
@@ -26,31 +30,36 @@ export async function ExperimentCard({ experiment, index }: { experiment: Experi
   );
 
   return (
-    <article className="border-t border-ink/14">
-      <div className="grid grid-cols-1 gap-8 px-gutter py-10 lg:grid-cols-[3fr_2fr] lg:gap-8">
+    <article className="border-ink/14 border-t">
+      <div className="px-gutter grid grid-cols-1 gap-8 py-10 lg:grid-cols-[3fr_2fr] lg:gap-8">
         <div className="flex min-w-0 flex-col gap-5">
           <header className="flex flex-col gap-3">
-            <span className="font-mono text-[13px] text-ink">
+            <span className="text-ink font-mono text-[13px]">
               {String(index + 1).padStart(2, "0")} / {experiment.tags[0]}
             </span>
-            <h2 className="text-[clamp(34px,4.5vw,56px)] text-ink">{experiment.title}</h2>
-            <p className="max-w-[52ch] text-[15px] text-body">{experiment.summary[locale]}</p>
+            <h2 className="text-ink text-[clamp(34px,4.5vw,56px)]">{experiment.title}</h2>
+            <p className="text-body max-w-[52ch] text-[15px]">{experiment.summary[locale]}</p>
             <ul className="flex flex-wrap gap-2">
               {experiment.tags.map((tag) => (
                 <li key={tag}>
-                  <span className="border border-ink/14 px-2.5 py-1 text-[11px] tracking-[0.12em] text-muted uppercase">{tag}</span>
+                  <span className="border-ink/14 text-muted border px-2.5 py-1 text-[11px] tracking-[0.12em] uppercase">
+                    {tag}
+                  </span>
                 </li>
               ))}
             </ul>
           </header>
 
-          <div className="relative min-w-0 border border-ink/14 ">
+          <div className="border-ink/14 relative min-w-0 border">
             <iframe
               src={demoPath}
               title={`${experiment.title} — ${t("liveDemo")}`}
               loading="lazy"
               className="block w-full"
-              style={{ height: `min(${experiment.height}px, 80vh)`, background: experiment.background }}
+              style={{
+                height: `min(${experiment.height}px, 80vh)`,
+                background: experiment.background,
+              }}
             />
           </div>
 
@@ -59,7 +68,7 @@ export async function ExperimentCard({ experiment, index }: { experiment: Experi
               href={demoPath}
               target="_blank"
               rel="noopener"
-              className="inline-flex items-center gap-2 border border-ink/14 px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] text-ink uppercase transition-all duration-200 hover:bg-ink hover:text-paper"
+              className="border-ink/14 text-ink hover:bg-ink hover:text-paper inline-flex items-center gap-2 border px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] uppercase transition-all duration-200"
             >
               {t("fullscreen")} ↗
             </a>
@@ -68,7 +77,7 @@ export async function ExperimentCard({ experiment, index }: { experiment: Experi
                 href={experiment.sourceUrl}
                 target="_blank"
                 rel="noopener"
-                className="inline-flex items-center gap-2 border border-ink/14 px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] text-ink uppercase transition-all duration-200 hover:bg-ink hover:text-paper"
+                className="border-ink/14 text-ink hover:bg-ink hover:text-paper inline-flex items-center gap-2 border px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] uppercase transition-all duration-200"
               >
                 GitHub ↗
               </a>
@@ -77,9 +86,14 @@ export async function ExperimentCard({ experiment, index }: { experiment: Experi
         </div>
 
         <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
-          <CodePanel views={views} copyLabel={t("copy")} copiedLabel={t("copied")} linesLabel={t("lines")} />
-          <p className="text-[13px] leading-relaxed text-body">
-            <span className="label mr-2 text-ink">{t("how")}</span>
+          <CodePanel
+            views={views}
+            copyLabel={t("copy")}
+            copiedLabel={t("copied")}
+            linesLabel={t("lines")}
+          />
+          <p className="text-body text-[13px] leading-relaxed">
+            <span className="label text-ink mr-2">{t("how")}</span>
             {experiment.technique[locale]}
           </p>
         </div>

@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Gaze Poster</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=IBM+Plex+Mono&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #e6e2db;
     --panel: #f8f6f2;
     --line: #cfc9bf;
@@ -48,8 +47,6 @@
   .poster text { user-select: none; }
   .poster .display { font-family: var(--font-display); }
   .poster .serif { font-family: var(--font-serif); }
-
-  /* ---------- Panel ---------- */
   .panel {
     background: var(--panel);
     border: 1px solid var(--line);
@@ -140,19 +137,16 @@
   .upload input { display: none; }
   .note { font-size: 12.5px; color: var(--muted); margin: 0; }
   .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
-
-  /* ---------- Card mode (?card=1): stage only, filling the frame; the host page embeds it as a live preview. ---------- */
   html.card, html.card body { height: 100%; }
   html.card body { padding: 0; min-height: 0; overflow: hidden; }
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
-  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }
-</style>
+  html.card .stage, html.card .poster { max-width: none; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; margin: 0; }</style>
 
 <div class="wrap">
   <svg class="poster" id="poster" viewBox="0 0 900 1600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Poster editorial">
     <defs>
-      <!-- White = photo shows. Right-hand rect plus the word glyphs. -->
+      
       <mask id="reveal" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="1600">
         <rect width="900" height="1600" fill="#000"/>
         <rect id="m-rect" x="290" y="0" width="610" height="1600" fill="#fff"/>
@@ -168,10 +162,10 @@
       </g>
     </g>
 
-    <!-- Outline runs over both halves; it vanishes into the white side by itself. -->
+    
     <text id="o-word" class="display" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="miter" lengthAdjust="spacingAndGlyphs" paint-order="stroke">GAZE</text>
 
-    <!-- Left column -->
+    
     <path id="bracket" d="M 46 250 H 22 V 700 H 46" fill="none" stroke="#141210" stroke-width="7"/>
     <text id="t-title" class="display" font-size="58" fill="#141210" transform="translate(106 690) rotate(-90)">Magical Gaze</text>
     <text id="t-blurb" class="serif" font-size="17" fill="#141210" transform="translate(150 690) rotate(-90)"></text>
@@ -275,11 +269,10 @@ also be understood as a way of perceiving</textarea>
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const W = 900, H = 1600;
-  const CAP_RATIO = 0.72; // Anton cap height as a fraction of font-size
+  const CAP_RATIO = 0.72; 
 
   const ctl = {
     word: $('word'), cap: $('cap'), stroke: $('stroke'), pad: $('pad'), shift: $('shift'),
@@ -303,8 +296,6 @@ also be understood as a way of perceiving</textarea>
     const len = Math.max(50, H - pad * 2);
     const split = W * ctl.split.value / 100 + Number(ctl.shift.value);
     const d = dir();
-    // rotate(90): baseline runs down x=tx, glyph tops point +x. rotate(-90): baseline runs up, tops point -x.
-    // Either way we want the cap band centred on the split line.
     const tx = d > 0 ? split - cap / 2 : split + cap / 2;
     const ty = d > 0 ? pad : H - pad;
     const transform = `translate(${tx} ${ty}) rotate(${d})`;
@@ -330,7 +321,7 @@ also be understood as a way of perceiving</textarea>
   function renderPhoto() {
     const z = Number(ctl.zoom.value);
     const ox = Number(ctl.ox.value), oy = Number(ctl.oy.value);
-    // Zoom about the poster centre, then offset.
+    
     photoG.setAttribute('transform', `translate(${W / 2 + ox} ${H / 2 + oy}) scale(${z}) translate(${-W / 2} ${-H / 2})`);
     out.zoom.textContent = z.toFixed(2);
     out.ox.textContent = ox;
@@ -371,13 +362,9 @@ also be understood as a way of perceiving</textarea>
     document.querySelector('input[name="dir"][value="90"]').checked = true;
     renderWord(); renderPhoto(); renderColumn();
   });
-
-  // Fonts change glyph metrics; re-run once they land so textLength stretches the real face.
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderWord);
 
   renderWord(); renderPhoto(); renderColumn();
-
-  // Card mode: no panel, click on the stage asks the host page to open the full experiment.
   if (new URLSearchParams(location.search).has('card')) {
     document.documentElement.classList.add('card');
     const target = document.getElementById('poster');
@@ -389,7 +376,6 @@ also be understood as a way of perceiving</textarea>
     });
     target.addEventListener('pointermove', (e) => { const r = target.getBoundingClientRect(); ctl.split.value = Math.round(10 + (e.clientX - r.left) / r.width * 70); renderWord(); });
   }
-})();
-</script>
+})();</script>
 
 </html>

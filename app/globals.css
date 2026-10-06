@@ -1,22 +1,13 @@
 @import "tailwindcss";
-/* Tailwind scans the project for class names; keep tool state and design sources out of the scan. */
+
 @source not "../.wrangler";
 @source not "../.open-next";
-
-/*
- * Editorial design system (handoff: design_handoff_portfolio_editorial). Monochrome ink on
- * warm paper, one typeface (Jost), zero radius, zero shadow, 1px rules. Values are lifted
- * verbatim from the handoff README and the prototype's inline styles.
- *
- * The home is a horizontal rail of full-screen panels, so sizes are height-aware
- * (`min(Xvw, Yvh)`): every panel has to fit 924x540 without scrolling.
- */
 @theme {
   --color-*: initial;
   --color-ink: #111111;
-  /* Primary button hover. */
+
   --color-ink-soft: #3a3936;
-  /* Hover of a whole dark block (the "next case" band). */
+
   --color-ink-block: #1c1c1b;
   --color-paper: #f4f3f1;
   --color-mist: #e4e2de;
@@ -31,8 +22,6 @@
   --color-danger: #a8321f;
   --color-transparent: transparent;
   --color-current: currentColor;
-
-  /* One family, everywhere. Mono exists only for the open-source code panel. */
   --font-sans: var(--font-jost), Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
@@ -42,11 +31,9 @@
 
   --shadow-*: initial;
   --shadow-none: 0 0 0 transparent;
-
-  /* Fixed chrome: 30px top bar + 64px nav, 56px bottom bar. Panels pad around these. */
   --spacing-chrome-top: 94px;
   --spacing-chrome-bottom: 56px;
-  /* Horizontal padding: panels, then the thinner one the fixed bars use. */
+
   --spacing-edge: clamp(20px, 4vw, 64px);
   --spacing-bar: clamp(16px, 3vw, 40px);
 
@@ -94,8 +81,6 @@
     }
   }
 }
-
-/* Section kicker: the widest tracking in the system. */
 @utility kicker {
   font-size: 11px;
   font-weight: 500;
@@ -103,35 +88,25 @@
   line-height: 2;
   text-transform: uppercase;
 }
-
-/* Nav, buttons, footer lines. */
 @utility label {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-
-/* Field labels and numbers beside them. */
 @utility micro {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
-
-/* A link that reads as a link without leaving the type: 1px under the text. */
 @utility rule-link {
   border-bottom: 1px solid currentColor;
   padding-bottom: 4px;
 }
-
-/* Photos are always black and white. */
 @utility bw {
   filter: grayscale(1) contrast(1.15);
 }
-
-/* Shiki output inside the open-source code panel: the panel owns the background. */
 .code-panel pre.shiki {
   background: transparent !important;
   margin: 0;

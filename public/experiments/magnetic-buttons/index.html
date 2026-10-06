@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Magnetic Buttons</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center; justify-content: center; padding: 40px; overflow: hidden; cursor: none; }
   .btn {
     position: relative; font-family: var(--font-display); font-size: 22px; letter-spacing: .06em; text-transform: uppercase;
@@ -27,12 +24,10 @@
   .btn.near { background: var(--ink); color: #0e0e0c; }
   .btn.fill.near { background: #fff; border-color: #fff; }
   .btn span { display: inline-block; transition: transform 240ms cubic-bezier(.2,.9,.2,1); }
-  /* Custom cursor: a dot that lags behind and grows over a button. */
+  
   .cursor { position: absolute; left: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); pointer-events: none; transform: translate(-50%, -50%); mix-blend-mode: difference; transition: width 160ms, height 160ms; z-index: 3; }
   .cursor.big { width: 56px; height: 56px; }
   .hint { position: absolute; left: 20px; bottom: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -53,8 +48,7 @@
   html.card .wrap { display: block; max-width: none; height: 100%; }
   html.card .panel { display: none; }
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; gap: 28px; padding: 24px; }
-  html.card .btn { font-size: 18px; padding: 16px 24px; }
-</style>
+  html.card .btn { font-size: 18px; padding: 16px 24px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -87,8 +81,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), cursor = $('cursor'), buttons = [...stage.querySelectorAll('.btn')];
   const ctl = { radius: $('radius'), strength: $('strength'), lag: $('lag'), dot: $('dot') };
@@ -146,6 +139,5 @@
       down = null;
     });
   }
-})();
-</script>
+})();</script>
 </html>

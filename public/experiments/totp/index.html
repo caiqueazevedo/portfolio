@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>TOTP</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d; --bad: #f23e2e;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 560px; background: #000; border-radius: 6px; padding: 28px; display: grid; place-items: center; align-content: center; gap: 22px; container-type: inline-size; }
   .token { display: flex; align-items: center; gap: clamp(14px, 4cqw, 28px); }
   .ring { width: clamp(56px, 13cqw, 96px); aspect-ratio: 1; flex: none; }
@@ -36,8 +33,6 @@
   .verify input { font-family: var(--font-mono); font-size: 16px; letter-spacing: .2em; width: 11ch; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: #0f1319; color: var(--ink); text-align: center; }
   .verify output { font-family: var(--font-mono); font-size: 12px; min-width: 22ch; }
   .verify output.ok { color: var(--accent); } .verify output.bad { color: var(--bad); }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 16px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -62,8 +57,7 @@
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 12px; }
   html.card .token { flex-direction: column; gap: 14px; }
   html.card .ring { width: 38%; }
-  html.card .code { font-size: 17cqw; }
-</style>
+  html.card .code { font-size: 17cqw; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -108,8 +102,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
@@ -141,8 +134,6 @@
     if (!keyCache.has(id)) keyCache.set(id, crypto.subtle.importKey('raw', bytes, { name: 'HMAC', hash }, false, ['sign']));
     return keyCache.get(id);
   }
-
-  // RFC 4226 HOTP with the counter from RFC 6238.
   async function hotp(secretBytes, counter, digits, hash) {
     const msg = new ArrayBuffer(8), view = new DataView(msg);
     view.setUint32(0, Math.floor(counter / 2 ** 32));
@@ -205,8 +196,6 @@
     }
     out.className = 'bad'; out.textContent = 'inválido ou expirado';
   }
-
-  // Appendix B of RFC 6238: ASCII seeds, 8 digits, 30 s step.
   async function selftest() {
     const enc = new TextEncoder();
     const seeds = { 'SHA-1': enc.encode('12345678901234567890'), 'SHA-256': enc.encode('12345678901234567890123456789012'), 'SHA-512': enc.encode('1234567890123456789012345678901234567890123456789012345678901234') };
@@ -259,11 +248,10 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // A 10 s period keeps the card changing while someone looks at it.
+    
     const ten = document.createElement('option'); ten.value = '10'; ten.textContent = '10 s';
     $('period').append(ten); $('period').value = '10';
     readSecret();
   }
-})();
-</script>
+})();</script>
 </html>

@@ -10,33 +10,33 @@
 // The payload nests tool arguments under `tool_input`; older shapes put them
 // at the root, so both are accepted.
 
-const fs = require('fs');
+const fs = require("fs");
 
-let raw = '';
+let raw = "";
 try {
-    raw = fs.readFileSync(0, 'utf8');
+  raw = fs.readFileSync(0, "utf8");
 } catch {
-    process.exit(0);
+  process.exit(0);
 }
 
 let data;
 try {
-    data = JSON.parse(raw);
+  data = JSON.parse(raw);
 } catch {
-    process.exit(0);
+  process.exit(0);
 }
 
 const input = data.tool_input ?? data;
 const field = process.argv[2];
 
 let value;
-if (field === 'content') {
-    // Write sends `content`, Edit sends `new_string`.
-    value = input.content ?? input.new_string ?? '';
-} else if (field === 'tool_name') {
-    value = data.tool_name ?? '';
+if (field === "content") {
+  // Write sends `content`, Edit sends `new_string`.
+  value = input.content ?? input.new_string ?? "";
+} else if (field === "tool_name") {
+  value = data.tool_name ?? "";
 } else {
-    value = input[field] ?? '';
+  value = input[field] ?? "";
 }
 
 process.stdout.write(String(value));

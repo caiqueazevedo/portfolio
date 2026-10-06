@@ -3,19 +3,59 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ExperimentGrid, type GridItem, type GridLabels } from "./experiment-grid";
 
-vi.mock("./experiment-preview", () => ({ ExperimentPreview: ({ title }: { title: string }) => <div>{title} preview</div> }));
+vi.mock("./experiment-preview", () => ({
+  ExperimentPreview: ({ title }: { title: string }) => <div>{title} preview</div>,
+}));
 vi.mock("@/i18n/navigation", () => ({ Link: (p: React.ComponentProps<"a">) => <a {...p} /> }));
 
 const items: GridItem[] = [
-  { slug: "b", title: "Beta", summary: "", tags: ["x"], category: "images", createdAt: "2026-09-15T10:00", dateLabel: "15 set" },
-  { slug: "a", title: "Alpha", summary: "", tags: ["y"], category: "typography", createdAt: "2026-09-14T10:00", dateLabel: "14 set" },
-  { slug: "c", title: "Gamma", summary: "", tags: ["z"], category: "images", createdAt: "2026-09-16T10:00", dateLabel: "16 set" },
+  {
+    slug: "b",
+    title: "Beta",
+    summary: "",
+    tags: ["x"],
+    category: "images",
+    createdAt: "2026-09-15T10:00",
+    dateLabel: "15 set",
+  },
+  {
+    slug: "a",
+    title: "Alpha",
+    summary: "",
+    tags: ["y"],
+    category: "typography",
+    createdAt: "2026-09-14T10:00",
+    dateLabel: "14 set",
+  },
+  {
+    slug: "c",
+    title: "Gamma",
+    summary: "",
+    tags: ["z"],
+    category: "images",
+    createdAt: "2026-09-16T10:00",
+    dateLabel: "16 set",
+  },
 ];
 
 const labels: GridLabels = {
-  category: "Categoria", sort: "Ordem", all: "Todos", images: "Imagens & Filtros", typography: "Tipografia",
-  interaction: "Interação & UI", data: "Dados & Visualização", security: "Segurança", media: "Mídia & Arquivos", kits: "Kits de UI",
-  az: "A → Z", za: "Z → A", newest: "Mais novos", oldest: "Mais antigos", empty: "Nada.", open: "Abrir", hover: "hover",
+  category: "Categoria",
+  sort: "Ordem",
+  all: "Todos",
+  images: "Imagens & Filtros",
+  typography: "Tipografia",
+  interaction: "Interação & UI",
+  data: "Dados & Visualização",
+  security: "Segurança",
+  media: "Mídia & Arquivos",
+  kits: "Kits de UI",
+  az: "A → Z",
+  za: "Z → A",
+  newest: "Mais novos",
+  oldest: "Mais antigos",
+  empty: "Nada.",
+  open: "Abrir",
+  hover: "hover",
   count: "{count} itens",
 };
 

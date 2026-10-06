@@ -2,7 +2,7 @@ import type { Localized } from "./localized";
 
 export type Service = {
   slug: string;
-  /** Unicode glyph, the system's icon language (✱ ✕ ◉ →). */
+
   glyph: string;
   title: Localized<string>;
   description: Localized<string>;

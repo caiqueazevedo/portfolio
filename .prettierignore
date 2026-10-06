@@ -3,3 +3,4 @@ node_modules
 .open-next
 pnpm-lock.yaml
 public/media
+public/experiments

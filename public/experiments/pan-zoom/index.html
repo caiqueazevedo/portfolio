@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Pan & Zoom</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; height: 560px; background: #000; border-radius: 6px; overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
   .stage.grabbing { cursor: grabbing; }
   .stage img.main { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; -webkit-user-drag: none; pointer-events: none; max-width: none; }
@@ -26,8 +23,6 @@
   .mini { position: absolute; right: 12px; bottom: 12px; width: 140px; border: 1px solid var(--line); background: #000; cursor: pointer; line-height: 0; }
   .mini img { width: 100%; display: block; opacity: .55; pointer-events: none; }
   .mini i { position: absolute; border: 2px solid var(--accent); pointer-events: none; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -53,8 +48,7 @@
   html.card .stage { height: 100%; border-radius: 0; cursor: pointer; }
   html.card .hud { display: none; }
   html.card .mini { width: 34%; right: 8px; bottom: 8px; }
-  html.card .zoom { font-size: 10px; left: 8px; top: 8px; }
-</style>
+  html.card .zoom { font-size: 10px; left: 8px; top: 8px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage" aria-label="Visualizador com zoom">
@@ -95,8 +89,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), img = $('img');
   const isCard = new URLSearchParams(location.search).has('card');
@@ -118,7 +111,7 @@
     img.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
     $('zoom').textContent = Math.round(s * 100) + '%';
     img.style.imageRendering = $('pixel').checked && s > 1 ? 'pixelated' : 'auto';
-    // Minimap box: the visible viewport in image coordinates.
+    
     const { w, h, iw, ih } = size(), mw = $('mini').clientWidth, k = mw / iw;
     const box = $('mini-box');
     const left = Math.max(0, -x / s), top = Math.max(0, -y / s);
@@ -135,8 +128,6 @@
     s = next;
     apply();
   }
-
-  // Tween to a target state; used by buttons, double click and the minimap.
   function animateTo(ts, tx, ty, ms = 320) {
     cancelAnimationFrame(anim); vel = null;
     const s0 = s, x0 = x, y0 = y, t0 = performance.now();
@@ -155,15 +146,13 @@
 
   function fit(animated) {
     const { w, h, iw, ih } = size();
-    if (!iw) return; // not decoded yet; the load handler fits again
+    if (!iw) return; 
     fitScale = Math.min(w / iw, h / ih);
     const tx = (w - iw * fitScale) / 2, ty = (h - ih * fitScale) / 2;
     if (animated) animateTo(fitScale, tx, ty); else { s = fitScale; x = tx; y = ty; apply(); }
   }
 
   const local = (e) => { const r = stage.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-
-  // Wheel only on the full page: inside the card it would swallow the host page's scroll.
   if (!isCard) stage.addEventListener('wheel', (e) => {
     e.preventDefault();
     cancelAnimationFrame(anim); vel = null;
@@ -197,7 +186,7 @@
     }
     const p = local(e), now = performance.now(), dt = Math.max(1, now - last.t);
     x += p.x - last.x; y += p.y - last.y;
-    // Smoothed velocity in px per frame, for the throw.
+    
     last = { ...p, t: now, vx: last.vx * 0.6 + (p.x - last.x) / dt * 16.7 * 0.4, vy: last.vy * 0.6 + (p.y - last.y) / dt * 16.7 * 0.4 };
     apply();
   });
@@ -266,7 +255,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     });
-    // A slow tour: zoom into a random spot, pull back, repeat.
+    
     let near = false;
     setInterval(() => {
       if (pointers.size) return;
@@ -276,6 +265,5 @@
       near = !near;
     }, 2200);
   }
-})();
-</script>
+})();</script>
 </html>

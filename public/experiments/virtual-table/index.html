@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Virtual Table</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; height: 560px; background: #000; border-radius: 6px; display: grid; grid-template-rows: auto auto 1fr; overflow: hidden; }
   .stats { display: flex; gap: 18px; padding: 12px 16px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   .stats b { color: var(--accent); font-weight: 400; }
@@ -32,8 +29,6 @@
   .row .amt.neg { color: #f23e2e; }
   .row .st { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); justify-self: start; }
   .row .st.ok { color: var(--accent); border-color: var(--accent); }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -53,8 +48,7 @@
   html.card .panel { display: none; }
   html.card .stage { height: 100%; border-radius: 0; }
   html.card .thead, html.card .row { grid-template-columns: 50px 1fr 90px; }
-  html.card .thead > :nth-child(3), html.card .thead > :nth-child(5), html.card .row > :nth-child(3), html.card .row > :nth-child(5) { display: none; }
-</style>
+  html.card .thead > :nth-child(3), html.card .thead > :nth-child(5), html.card .row > :nth-child(3), html.card .row > :nth-child(5) { display: none; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -86,8 +80,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const viewport = $('viewport'), spacer = $('spacer'), rowsEl = $('rows');
   const FIRST = ['Ana', 'Bruno', 'Carla', 'Diego', 'Elisa', 'Fábio', 'Gabi', 'Heitor', 'Iara', 'João', 'Karen', 'Lucas', 'Marina', 'Nina', 'Otávio', 'Paula', 'Rafa', 'Sofia', 'Tiago', 'Vera'];
@@ -98,7 +91,7 @@
   function build(n) {
     const t0 = performance.now();
     data = new Array(n);
-    let seed = 42; const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32; // deterministic
+    let seed = 42; const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32; 
     for (let i = 0; i < n; i++) data[i] = { id: i + 1, name: `${FIRST[(rnd() * FIRST.length) | 0]} ${LAST[(rnd() * LAST.length) | 0]}`, city: CITY[(rnd() * CITY.length) | 0], amount: Math.round((rnd() - 0.3) * 5000 * 100) / 100, ok: rnd() > 0.2 };
     reindex(); $('s-ms').textContent = (performance.now() - t0).toFixed(0);
   }
@@ -151,6 +144,5 @@
     });
     setInterval(() => viewport.scrollBy({ top: rowH * 3 }), 120);
   }
-})();
-</script>
+})();</script>
 </html>

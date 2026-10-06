@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Skeleton Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -26,7 +25,7 @@
   .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
   .copy:hover { border-color: var(--accent); }
   .copy.done { border-color: var(--accent); color: var(--accent); }
-  /* Page-only shimmer modes; the snippets ship with the wave. */
+  
   .grid.pulse .sk { background: #1d232b; animation: sk-pulse var(--sk-speed) ease-in-out infinite; }
   .grid.still .sk { background: #1d232b; animation: none; }
   @keyframes sk-pulse { 50% { opacity: .45; } }
@@ -59,8 +58,7 @@
   html.card .cell { grid-template-rows: 1fr; }
   html.card .cell:not(.in-card), html.card figcaption { display: none; }
   html.card .demo { padding: 10px 14px; }
-  html.card .demo > * { zoom: .8; }
-</style>
+  html.card .demo > * { zoom: .8; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -90,8 +88,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
 
@@ -222,7 +219,7 @@
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>';
   function snippet(it) {
-    return `<!-- ${it.name} — troque aria-busy para "false" quando os dados chegarem -->\n${S_OPEN}\n${BASE.trim()}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    return `\n${S_OPEN}\n${BASE.trim()}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
   }
   async function copyText(text) {
     try { await navigator.clipboard.writeText(text); return true; } catch {}
@@ -246,7 +243,7 @@
   const scenes = [...grid.querySelectorAll('.sk-scene')];
   let timers = [];
   const setAll = (busy) => scenes.forEach((s) => s.setAttribute('aria-busy', String(busy)));
-  // Each scene "arrives" at its own time, like independent requests.
+  
   function simulate() {
     timers.forEach(clearTimeout);
     setAll(true);
@@ -278,6 +275,5 @@
   } else {
     simulate();
   }
-})();
-</script>
+})();</script>
 </html>

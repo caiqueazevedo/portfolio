@@ -18,25 +18,11 @@ import { onPanelRequest } from "@/lib/rail-bus";
 import { useMediaQuery } from "@/lib/use-media-query";
 
 type Labels = {
-  /** Panel names, in rail order. */
   names: string[];
   scroll: string;
   prev: string;
   next: string;
 };
-
-/**
- * The home: full-screen panels on a horizontal rail, one gesture per panel.
- *
- * The rail is `overflow: hidden` and moved only by writing `scrollLeft`, so the user never
- * lands between two panels — a half-scrolled screen is the one state this layout has no design
- * for. All the deciding (is this gesture a page turn?) lives in `lib/pager`, where it can be
- * tested; what is left here is the DOM.
- *
- * Below `md` the whole mechanism steps aside: the panels stack and the document scrolls as any
- * page does. A 100vh pager on a phone, with the browser's URL bar eating the viewport, cuts
- * text off — and the design's floor is 924x540.
- */
 export function HomeRail({ labels, children }: { labels: Labels; children: ReactNode }) {
   const track = useRef<HTMLDivElement>(null);
   const fill = useRef<HTMLDivElement>(null);
@@ -44,8 +30,6 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
 
   const stacked = useMediaQuery("(max-width: 767px)");
   const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
-
-  // Mutable scratch the gesture machine owns: none of it belongs in a render.
   const wheel = useRef<WheelState>(idleWheel());
   const animating = useRef(false);
   const frame = useRef(0);
@@ -76,7 +60,6 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
       if (to === panel) return;
 
       if (stacked) {
-        // `scrollIntoView` is missing in jsdom, and a stacked rail still has to change panels there.
         sections[to]?.scrollIntoView?.({ behavior: reduced ? "auto" : "smooth" });
         setPanel(to);
         return;
@@ -93,21 +76,17 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
 
       const direction = to > panel ? 1 : -1;
       const from = sections[panel];
-      // The children, not the panels: a panel is a flat background, and what reads as motion
-      // is the type and images inside it leaving and arriving on a stagger.
-      //
-      // `transform`, never the `translate` property: Tailwind v4 centres with `translate`
-      // (`-translate-x-1/2`), so animating that one wipes the centring for the length of the
-      // animation and the hero word and the cutout jump sideways before snapping back.
       for (const [index, child] of [...(from?.children ?? [])].entries()) {
-        // Optional: the Web Animations API is absent in jsdom, and the panel change must not
-        // depend on the decoration arriving.
         (child as HTMLElement).animate?.(
           [
             { transform: "translateX(0)", opacity: 1 },
             { transform: `translateX(${-direction * 18}vw)`, opacity: 0.2 },
           ],
-          { duration: TRANSITION_MS * EXIT_RATIO, easing: "cubic-bezier(.7,0,.3,1)", delay: index * 30 },
+          {
+            duration: TRANSITION_MS * EXIT_RATIO,
+            easing: "cubic-bezier(.7,0,.3,1)",
+            delay: index * 30,
+          },
         );
       }
       for (const [index, child] of [...target.children].entries()) {
@@ -136,9 +115,6 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
         wheel.current = { ...wheel.current, lockUntil: cooldownFrom(performance.now()) };
         paint();
       };
-
-      // A tab in the background stops serving frames, and a rail that was mid-flight when the
-      // user switched away would come back locked forever. The timer is the way out.
       const guard = window.setTimeout(arrive, TRANSITION_MS + 120);
 
       const step = (now: number) => {
@@ -156,12 +132,7 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
     },
     [paint, panel, panels, reduced, stacked],
   );
-
-  // The nav and the sheet menu live above the rail, so they ask through the window.
   useEffect(() => onPanelRequest(go), [go]);
-
-  // Only on unmount: the listener effect below re-runs on every panel change, and cancelling
-  // there would kill the transition it had just started.
   useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   useEffect(() => {
@@ -169,7 +140,6 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
     if (!el || stacked) return;
 
     const onWheel = (event: WheelEvent) => {
-      // Always: the document must not scroll under a rail that is already handling the gesture.
       event.preventDefault();
       const result = wheelStep(wheel.current, {
         deltaY: event.deltaY,
@@ -235,14 +205,14 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
         className={
           stacked
             ? "flex w-full min-w-0 flex-col"
-            : "fixed inset-0 flex overflow-hidden overscroll-contain [touch-action:none]"
+            : "fixed inset-0 flex [touch-action:none] overflow-hidden overscroll-contain"
         }
       >
         {children}
       </div>
 
       {stacked ? null : (
-        <div className="fixed inset-x-0 bottom-0 z-30 grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-[clamp(16px,3vw,40px)] px-bar text-[11px] font-medium tracking-[0.16em] text-white uppercase mix-blend-difference">
+        <div className="px-bar fixed inset-x-0 bottom-0 z-30 grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-[clamp(16px,3vw,40px)] text-[11px] font-medium tracking-[0.16em] text-white uppercase mix-blend-difference">
           <span className="min-w-[150px]" data-testid="rail-label">
             {String(panel + 1).padStart(2, "0")} — {labels.names[panel]}
           </span>

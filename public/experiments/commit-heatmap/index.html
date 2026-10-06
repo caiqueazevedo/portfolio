@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Commit Heatmap</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -14,8 +13,6 @@
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 28px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
   @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
-
-  /* ---------- Stage ---------- */
   .stage { position: relative; min-height: 520px; background: #000; border-radius: 6px; padding: 28px; display: grid; align-content: center; gap: 18px; }
   .head { display: flex; justify-content: space-between; align-items: baseline; }
   .head h2 { font-family: var(--font-display); font-weight: 400; font-size: 30px; margin: 0; letter-spacing: .03em; }
@@ -27,8 +24,6 @@
   .legend { display: flex; align-items: center; gap: 6px; justify-content: flex-end; font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
   .legend i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
   .tip { position: absolute; pointer-events: none; background: var(--ink); color: #0e0e0c; font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; border-radius: 4px; transform: translate(-50%, -140%); opacity: 0; white-space: nowrap; z-index: 2; }
-
-  /* ---------- Panel ---------- */
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
   .panel h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; letter-spacing: .04em; line-height: 1; margin: 0; }
   .panel p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 38ch; }
@@ -51,8 +46,7 @@
   html.card .panel { display: none; }
   html.card .stage { min-height: 0; height: 100%; border-radius: 0; padding: 16px; }
   html.card .grid { grid-template-columns: repeat(7, 1fr); grid-auto-flow: row; grid-template-rows: none; }
-  html.card .months, html.card .legend { display: none; }
-</style>
+  html.card .months, html.card .legend { display: none; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -87,14 +81,11 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid'), tip = $('tip');
   const DAY = 864e5, MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   let data = {};
-
-  // Start on the Sunday 52 weeks before this week's Sunday, so the grid ends on today's column.
   function range() {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const start = new Date(today); start.setDate(today.getDate() - today.getDay() - 52 * 7);
@@ -154,6 +145,5 @@
     });
     stage.addEventListener('pointermove', (e) => { const r = stage.getBoundingClientRect(); random(0.1 + (e.clientX - r.left) / r.width * 0.8); render(); });
   }
-})();
-</script>
+})();</script>
 </html>

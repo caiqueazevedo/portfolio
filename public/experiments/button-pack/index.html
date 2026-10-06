@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Button Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -38,8 +37,6 @@
   :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
   .note code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
-
-  /* Card-only: run the hover-driven specimens on their own. */
   .autoplay .bt-orbit { animation: bt-orbit 1.6s linear infinite; }
 
   html.card, html.card body { height: 100%; }
@@ -50,8 +47,7 @@
   html.card .grid { height: 100%; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 1fr; border: 0; font-size: 13px; }
   html.card .cell { grid-template-rows: 1fr; }
   html.card .cell:not(.in-card), html.card figcaption { display: none; }
-  html.card .demo { padding: 6px; }
-</style>
+  html.card .demo { padding: 6px; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -70,8 +66,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
   const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 0px)';
@@ -105,13 +100,13 @@
 .bt-load[data-state="done"] .bt-load-check { opacity: 1; transform: none; stroke-dashoffset: 0; transition: stroke-dashoffset .35s .1s, opacity .2s, transform .2s; }
 .bt-load:focus-visible { outline: 2px solid ${A}; outline-offset: 4px; }
 @keyframes bt-load-spin { to { transform: rotate(1turn); } }`,
-      // The label stays in the grid cell, so the button never changes width between states.
+      
       js: function (btn) {
         const sr = btn.querySelector('.bt-load-sr');
         btn.addEventListener('click', () => {
           if (btn.dataset.state === 'loading' || btn.dataset.state === 'done') return;
           btn.dataset.state = 'loading'; btn.setAttribute('aria-busy', 'true'); sr.textContent = 'Salvando';
-          // Replace the timeout with your request.
+          
           setTimeout(() => {
             btn.dataset.state = 'done'; btn.removeAttribute('aria-busy'); sr.textContent = 'Salvo';
             setTimeout(() => { btn.dataset.state = ''; sr.textContent = ''; }, 1500);
@@ -136,7 +131,7 @@
         let start = 0, raf = 0, p = 0;
         const set = (v) => {
           p = v;
-          // The overlay text is clipped to the label's own box, so map the button fill onto it.
+          
           const b = btn.getBoundingClientRect(), l = label.getBoundingClientRect();
           const inLabel = Math.max(0, Math.min(1, (v * b.width - (l.left - b.left)) / l.width));
           btn.style.setProperty('--p', (v * 100).toFixed(2) + '%');
@@ -144,7 +139,7 @@
         };
         const sync = () => label.setAttribute('data-text', label.textContent);
         sync();
-        // Completion runs on a timer; rAF only paints. A throttled tab still finishes the hold on time.
+        
         let holding = false, finish = 0;
         const complete = () => {
           holding = false;
@@ -373,7 +368,7 @@
 .bt-why:is(:hover, :focus-within) [role="tooltip"] { opacity: 1; translate: -50% 0; }
 .bt-why button:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
 @keyframes bt-why-shake { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }`,
-      // aria-disabled keeps the button focusable, so the reason can be read; the click is still blocked.
+      
       js: function (root) {
         const btn = root.querySelector('button');
         btn.addEventListener('click', (e) => {
@@ -387,7 +382,7 @@
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   function snippet(it) {
-    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    let s = `\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
     if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
     return s;
   }
@@ -424,7 +419,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     }, true);
-    // Play each specimen's own interaction on a loop, through the same event paths a user would hit.
+    
     const q = (s) => grid.querySelector(s);
     setInterval(() => q('.bt-load').click(), 3200);
     setInterval(() => q('.bt-like').click(), 1700);
@@ -445,6 +440,5 @@
     style2.textContent = '.bt-press.pressed{transform:translate(.3em,.3em);box-shadow:0 0 0 #e9e6dd}';
     document.head.appendChild(style2);
   }
-})();
-</script>
+})();</script>
 </html>

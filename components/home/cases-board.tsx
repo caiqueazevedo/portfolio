@@ -14,15 +14,6 @@ export type CasesLabels = {
   openCase: string;
   stack: string;
 };
-
-/**
- * The case list, in the two shapes the design has for it.
- *
- * Up to eight projects it is a row of cards, each tall enough to read as a poster. Past that
- * the same data becomes an index — three columns of names with one detail pane — which is the
- * layout that still works at thirty. The switch is on the count, not on a flag, so nobody has
- * to remember to flip it.
- */
 export function CasesBoard({ items, labels }: { items: CaseView[]; labels: CasesLabels }) {
   const indexMode = wantsIndex(items.length);
   return indexMode ? <CaseIndex items={items} labels={labels} /> : <CaseCards items={items} />;
@@ -49,11 +40,11 @@ function CaseCards({ items }: { items: CaseView[] }) {
               <span className="truncate text-[clamp(11px,1vw,14px)] font-medium tracking-[0.08em] uppercase">
                 {item.name}
               </span>
-              <span className="text-[12px] tracking-[0.04em] text-muted">
+              <span className="text-muted text-[12px] tracking-[0.04em]">
                 {item.tag} · {item.statusLabel}
               </span>
             </div>
-            <span className="text-[11px] tracking-[0.14em] text-muted">{item.number}</span>
+            <span className="text-muted text-[11px] tracking-[0.14em]">{item.number}</span>
           </div>
         </Link>
       ))}
@@ -72,7 +63,7 @@ function CaseIndex({ items, labels }: { items: CaseView[]; labels: CasesLabels }
     >
       <div
         data-testid="case-index-list"
-        className="grid min-h-0 grid-cols-1 border-t border-ink sm:grid-cols-2 md:grid-flow-col md:grid-cols-3 md:gap-x-[clamp(16px,2vw,36px)]"
+        className="border-ink grid min-h-0 grid-cols-1 border-t sm:grid-cols-2 md:grid-flow-col md:grid-cols-3 md:gap-x-[clamp(16px,2vw,36px)]"
         style={{ gridTemplateRows: `repeat(${indexRows(items.length)}, minmax(0, 1fr))` }}
       >
         {items.map((item, index) => (
@@ -81,11 +72,11 @@ function CaseIndex({ items, labels }: { items: CaseView[]; labels: CasesLabels }
             href={item.href}
             onMouseEnter={() => setHover(index)}
             onFocus={() => setHover(index)}
-            className={`grid min-h-0 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-ink/14 transition-[color,padding] duration-250 ${
-              index === hover ? "pl-2.5 text-ink" : "text-muted"
+            className={`border-ink/14 grid min-h-0 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2.5 border-b transition-[color,padding] duration-250 ${
+              index === hover ? "text-ink pl-2.5" : "text-muted"
             }`}
           >
-            <span className="text-[10px] tracking-[0.14em] text-faint">{item.number}</span>
+            <span className="text-faint text-[10px] tracking-[0.14em]">{item.number}</span>
             <span className="truncate text-[clamp(11px,min(1vw,2.1vh),14px)] font-medium tracking-[0.08em] uppercase">
               {item.name}
             </span>
@@ -98,13 +89,6 @@ function CaseIndex({ items, labels }: { items: CaseView[]; labels: CasesLabels }
     </div>
   );
 }
-
-/**
- * The pane that follows the cursor down the index.
- *
- * Every cover is mounted and cross-faded by opacity rather than swapped, so moving down the
- * list does not flash a fresh image request on every row.
- */
 function CaseDetail({
   items,
   active,
@@ -115,8 +99,6 @@ function CaseDetail({
   labels: CasesLabels;
 }) {
   const summary = useRef<HTMLParagraphElement>(null);
-
-  // The summary has to end on a whole line: half a line under a hard clip reads as a bug.
   useEffect(() => {
     const paragraph = summary.current;
     const box = paragraph?.parentElement;
@@ -125,7 +107,10 @@ function CaseDetail({
     const fit = () => {
       const lineHeight = Number.parseFloat(getComputedStyle(paragraph).lineHeight) || 20;
       const siblings = [...box.children].filter((child) => child !== paragraph);
-      const used = siblings.reduce((total, child) => total + (child as HTMLElement).offsetHeight, 0);
+      const used = siblings.reduce(
+        (total, child) => total + (child as HTMLElement).offsetHeight,
+        0,
+      );
       const gap = Number.parseFloat(getComputedStyle(box).rowGap) || 0;
       const room = box.clientHeight - used - gap * box.children.length;
       const lines = clampLines(room, lineHeight);
@@ -135,7 +120,7 @@ function CaseDetail({
 
     fit();
     window.addEventListener("resize", fit);
-    // Fonts land after first paint and change every measurement above.
+
     const settle = window.setTimeout(fit, 300);
     return () => {
       window.removeEventListener("resize", fit);
@@ -144,8 +129,11 @@ function CaseDetail({
   }, [active.slug]);
 
   return (
-    <div data-testid="case-detail" className="hidden min-h-0 flex-col gap-[min(16px,2.4vh)] md:flex">
-      <div className="relative h-[24%] min-h-[48px] flex-none bg-mist">
+    <div
+      data-testid="case-detail"
+      className="hidden min-h-0 flex-col gap-[min(16px,2.4vh)] md:flex"
+    >
+      <div className="bg-mist relative h-[24%] min-h-[48px] flex-none">
         {items.map((item) => (
           <div
             key={item.slug}
@@ -163,25 +151,27 @@ function CaseDetail({
           <span className="min-w-0 text-[clamp(14px,min(1.4vw,3vh),20px)] font-medium tracking-[0.08em] uppercase">
             {active.name}
           </span>
-          <span className="flex-none text-[10px] tracking-[0.14em] text-faint">{active.number}</span>
+          <span className="text-faint flex-none text-[10px] tracking-[0.14em]">
+            {active.number}
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-[11px] tracking-[0.12em] text-muted uppercase">
+        <div className="text-muted flex items-center gap-2 text-[11px] tracking-[0.12em] uppercase">
           <StatusDot status={active.status} />
           {active.tag} · {active.statusLabel}
         </div>
         <p
           ref={summary}
-          className="m-0 flex-none overflow-hidden text-[clamp(12px,min(1vw,2.2vh),15px)] leading-[1.55] text-pretty text-strong [-webkit-box-orient:vertical] [display:-webkit-box] [-webkit-line-clamp:3]"
+          className="text-strong m-0 [display:-webkit-box] flex-none overflow-hidden text-[clamp(12px,min(1vw,2.2vh),15px)] leading-[1.55] text-pretty [-webkit-box-orient:vertical] [-webkit-line-clamp:3]"
         >
           {active.summary}
         </p>
-        <div className="flex flex-col gap-1 border-t border-ink/14 pt-[min(10px,1.5vh)]">
+        <div className="border-ink/14 flex flex-col gap-1 border-t pt-[min(10px,1.5vh)]">
           <span className="micro">{labels.stack}</span>
-          <span className="text-[12px] leading-[1.4] text-muted">{active.stackLine}</span>
+          <span className="text-muted text-[12px] leading-[1.4]">{active.stackLine}</span>
         </div>
       </div>
 
-      <Link href={active.href} className="label flex-none self-start rule-link">
+      <Link href={active.href} className="label rule-link flex-none self-start">
         {labels.openCase}
       </Link>
     </div>

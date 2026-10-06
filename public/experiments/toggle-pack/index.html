@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Toggle Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -52,8 +51,7 @@
   html.card .cell:not(.in-card), html.card figcaption { display: none; }
   html.card .cell.wide { grid-column: span 2; }
   html.card .demo { padding: 6px; }
-  html.card .demo > * { zoom: .72; }
-</style>
+  html.card .demo > * { zoom: .72; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -76,8 +74,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
   const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 999px)';
@@ -289,7 +286,7 @@
 .tg-save input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 3px; }
 @keyframes tg-save-wait { 50% { opacity: .35; } }
 @keyframes tg-save-shake { 25%, 75% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }`,
-      // Optimistic UI: flip now, confirm later, roll back on failure.
+      
       js: function (root) {
         const input = root.querySelector('input'), note = root.querySelector('small');
         let clear = 0;
@@ -298,7 +295,7 @@
           const next = input.checked;
           clearTimeout(clear);
           root.dataset.state = 'saving'; root.setAttribute('aria-busy', 'true'); note.textContent = 'salvando…';
-          // Replace with your request; one in four fails here so the rollback shows.
+          
           setTimeout(() => {
             root.removeAttribute('aria-busy');
             if (Math.random() < 0.25) { input.checked = !next; root.dataset.state = 'error'; note.textContent = 'falhou, revertido'; }
@@ -312,7 +309,7 @@
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   function snippet(it) {
-    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    let s = `\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
     if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
     return s;
   }
@@ -348,7 +345,7 @@
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     }, true);
-    // Flip the visible controls one after another. .click() on an input toggles it without moving focus.
+    
     const targets = ['.tg-sw input', '.tg-sky input', '.tg-goo input', '.tg-check input', '.tg-task input', '.tg-chips label:nth-child(2) input', '.tg-chips label:nth-child(5) input'];
     const plans = [...grid.querySelectorAll('.tg-plans input')];
     let i = 0, p = 1;
@@ -358,6 +355,5 @@
       i++;
     }, 650);
   }
-})();
-</script>
+})();</script>
 </html>

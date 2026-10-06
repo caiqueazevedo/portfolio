@@ -19,18 +19,6 @@ type Props = {
   menuLabel: string;
   closeLabel: string;
 };
-
-/**
- * The two fixed bars at the top, on every surface.
- *
- * One component rather than two skins in two files, because the only difference between the
- * home and an inner page is whether the bars float over a full-screen rail or sit above a
- * scrolling document — and the moment that lives in two places, one of them drifts.
- *
- * On the home the nav is `mix-blend-mode: difference` over the panels, which is what lets the
- * same white type read over `#e4e2de` and over `#111` as they slide past. Blending only works
- * while no ancestor creates a stacking context, so these bars live outside the rail.
- */
 export function SiteChrome({
   role,
   github,
@@ -50,13 +38,18 @@ export function SiteChrome({
     <header className={cn("z-30", onHome ? "contents" : "sticky top-0 z-30")}>
       <div
         className={cn(
-          "flex h-[30px] items-center justify-between gap-4 bg-ink px-bar text-[10px] font-medium tracking-[0.14em] text-paper uppercase",
+          "bg-ink px-bar text-paper flex h-[30px] items-center justify-between gap-4 text-[10px] font-medium tracking-[0.14em] uppercase",
           onHome && "fixed inset-x-0 top-0 z-30",
         )}
       >
         <span className="truncate">{role}</span>
         <div className="flex shrink-0 items-center gap-3.5">
-          <a href={githubUrl} target="_blank" rel="noreferrer" className="text-paper hover:text-paper/70">
+          <a
+            href={githubUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-paper hover:text-paper/70"
+          >
             {github}
           </a>
           <span aria-hidden="true" className="opacity-40">
@@ -75,10 +68,10 @@ export function SiteChrome({
       <nav
         aria-label={brand}
         className={cn(
-          "grid h-16 grid-cols-[1fr_auto_1fr] items-center px-bar label",
+          "px-bar label grid h-16 grid-cols-[1fr_auto_1fr] items-center",
           onHome
             ? "fixed inset-x-0 top-[30px] z-30 text-white mix-blend-difference"
-            : "border-b border-ink/12 bg-paper text-ink",
+            : "border-ink/12 bg-paper text-ink border-b",
         )}
       >
         <div className="hidden min-w-0 gap-[clamp(14px,2.4vw,36px)] md:flex">
@@ -91,7 +84,14 @@ export function SiteChrome({
 
         <Link
           href="/"
-          onClick={onHome ? (event) => { event.preventDefault(); goToPanel(0); } : undefined}
+          onClick={
+            onHome
+              ? (event) => {
+                  event.preventDefault();
+                  goToPanel(0);
+                }
+              : undefined
+          }
           className="justify-self-center text-[clamp(16px,1.8vw,24px)] font-medium tracking-[0.22em] whitespace-nowrap"
         >
           {brand}
@@ -105,14 +105,6 @@ export function SiteChrome({
     </header>
   );
 }
-
-/**
- * A nav item is a link everywhere except on the home, where it is a panel.
- *
- * Leaving it a link there would navigate to `/work` and lose the rail; dispatching the panel
- * keeps the gesture and the URL honest, and the same labels still work as real links from any
- * other page.
- */
 function NavLink({ item, onHome }: { item: NavItem; onHome: boolean }) {
   if (onHome) {
     return (
@@ -126,13 +118,11 @@ function NavLink({ item, onHome }: { item: NavItem; onHome: boolean }) {
     );
   }
   return (
-    <Link href={item.href} className="whitespace-nowrap hover:text-muted">
+    <Link href={item.href} className="hover:text-muted whitespace-nowrap">
       {item.label}
     </Link>
   );
 }
-
-/** Below `md` the links do not fit beside the wordmark, so they fold into a sheet. */
 function MobileMenu({
   items,
   menuLabel,
@@ -170,7 +160,7 @@ function MobileMenu({
       <div
         id={panelId}
         hidden={!open}
-        className="fixed inset-x-0 top-[94px] bottom-0 z-40 flex flex-col gap-6 bg-paper px-edge pt-10 text-ink mix-blend-normal"
+        className="bg-paper px-edge text-ink fixed inset-x-0 top-[94px] bottom-0 z-40 flex flex-col gap-6 pt-10 mix-blend-normal"
       >
         {items.map((item) =>
           onHome ? (

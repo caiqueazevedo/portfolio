@@ -5,7 +5,9 @@ const labels = { production: "Em produção", active: "Em desenvolvimento", paus
 
 describe("shortOf", () => {
   it("drops the project's own name from its headline", () => {
-    expect(shortOf("ZenID: um login que é seu, não alugado.")).toBe("um login que é seu, não alugado.");
+    expect(shortOf("ZenID: um login que é seu, não alugado.")).toBe(
+      "um login que é seu, não alugado.",
+    );
   });
 
   it("keeps a headline that has no colon in it", () => {

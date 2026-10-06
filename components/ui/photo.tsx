@@ -13,27 +13,19 @@ const RATIO = {
 type Props = {
   src?: string | null;
   alt: string;
-  /** Shown only while there is no image: what the slot is waiting for. */
+
   label?: string;
   ratio?: keyof typeof RATIO;
   priority?: boolean;
   className?: string;
 };
-
-/**
- * Every photo on the site, always black and white.
- *
- * Until the real assets land, the slot is a flat mist rectangle with its caption — not a grey
- * gradient pretending to be a picture. An empty slot that looks like a photo is how a missing
- * asset survives to production.
- */
 export function Photo({ src, alt, label, ratio = "16/10", priority, className }: Props) {
   return (
     <div
       data-testid="photo"
       data-placeholder={src ? undefined : "true"}
       className={cn(
-        "relative w-full max-w-full overflow-hidden bg-mist",
+        "bg-mist relative w-full max-w-full overflow-hidden",
         src && "bw",
         RATIO[ratio],
         className,
@@ -49,7 +41,7 @@ export function Photo({ src, alt, label, ratio = "16/10", priority, className }:
           className="object-cover"
         />
       ) : (
-        <span className="absolute bottom-3 left-3 micro text-faint">{label ?? alt}</span>
+        <span className="micro text-faint absolute bottom-3 left-3">{label ?? alt}</span>
       )}
     </div>
   );

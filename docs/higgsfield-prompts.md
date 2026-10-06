@@ -16,11 +16,11 @@ importante é luz dura, sombra fechada e textura.
 
 ## 1. Retrato (hero da home e página Sobre)
 
-| Campo | Valor |
-| --- | --- |
-| Arquivo | `public/media/portrait.jpg` |
-| Formato | **4:5**, 1600×2000 px, JPG q85 |
-| Input | sua foto real como referência (image-to-image), preservando traços |
+| Campo   | Valor                                                              |
+| ------- | ------------------------------------------------------------------ |
+| Arquivo | `public/media/portrait.jpg`                                        |
+| Formato | **4:5**, 1600×2000 px, JPG q85                                     |
+| Input   | sua foto real como referência (image-to-image), preservando traços |
 
 > Three-quarter portrait, looking slightly off-camera, dark plain background, single hard
 > key light from the upper left, black clothing, calm and direct expression. Documentary
@@ -28,11 +28,11 @@ importante é luz dura, sombra fechada e textura.
 
 ## 2. Capas dos cases (6 imagens)
 
-| Campo | Valor |
-| --- | --- |
-| Formato | **3:2**, 2400×1600 px, JPG q85 |
-| Arquivos | `public/media/covers/<slug>.jpg` com slug em `zenid`, `aetherion`, `pulse`, `polaris`, `watchtower`, `claude-usage-hub` |
-| Extra pro ZenID | uma versão **16:9** (2400×1350) em `covers/zenid-wide.jpg` pro topo da página do case |
+| Campo           | Valor                                                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Formato         | **3:2**, 2400×1600 px, JPG q85                                                                                          |
+| Arquivos        | `public/media/covers/<slug>.jpg` com slug em `zenid`, `aetherion`, `pulse`, `polaris`, `watchtower`, `claude-usage-hub` |
+| Extra pro ZenID | uma versão **16:9** (2400×1350) em `covers/zenid-wide.jpg` pro topo da página do case                                   |
 
 Um motivo por projeto, sempre objeto físico fotografado, nunca ilustração:
 
@@ -48,9 +48,9 @@ film grain, empty space on one side. Documentary still, 3:2.`
 
 ## 3. Texturas de fundo (opcional, 2)
 
-| Campo | Valor |
-| --- | --- |
-| Formato | 2400×1350 px, JPG q80, quase pretas |
+| Campo    | Valor                                                                   |
+| -------- | ----------------------------------------------------------------------- |
+| Formato  | 2400×1350 px, JPG q80, quase pretas                                     |
 | Arquivos | `public/media/textures/concrete.jpg`, `public/media/textures/paper.jpg` |
 
 - **concrete** — "Dark wet concrete wall, macro, very low key, faint texture."
@@ -69,19 +69,19 @@ O Negative Poster também lê `front.png` (recorte com fundo transparente) pra i
 o arquivo não existir, ele usa `photo.jpg`. O site aplica o efeito por cima, então gere a foto
 "limpa": sem texto, sem logo, sem filtro.
 
-| Slug | Formato | O que o efeito precisa |
-| --- | --- | --- |
-| `frosted-reveal` | 4:5, 1600×2000 | Retrato em close, olhar direto, fundo neutro e liso. O vidro fosco esconde detalhe: o rosto tem que ser reconhecível mesmo borrado. |
-| `gaze-poster` | 9:16, 1080×1920 | Retrato editorial vertical, P&B, contraste alto, muito espaço vazio de um lado (a palavra vertical entra ali). |
-| `halftone-poster` | 4:5, 1600×2000 | Rosto com luz lateral dura e sombras fechadas. Meios-tons variados viram pontos de tamanhos diferentes. |
-| `split-tone-duotone` | 4:5, 1600×2000 | Cena com grande variação de luz: contraluz, cidade à noite, névoa. O duotone separa sombra e luz. |
-| `liquid-distortion` | 4:5, 1600×2000 | Superfície com linhas retas e repetição: fachada, grade, azulejos, piscina. A onda fica óbvia deformando linhas. |
-| `scanline-reveal` | 4:5, 1600×2000 | Cena escura e tecnológica: corredor de servidores, néon apagado, painel. Vai ficar em P&B escuro atrás do feixe. |
-| `knockout-marquee` | 16:9, 2400×1350 | Paisagem panorâmica colorida: praia ao pôr do sol, deserto, skyline. Aparece só dentro das letras, então cor e gradiente contam mais que detalhe. |
-| `torn-edge-collage` | 4:5, 1600×2000 | Rua, muro grafitado, textura urbana. Vira P&B; o recorte de papel colorido entra por cima. |
-| `pixel-sort` | 4:5, 1600×2000 | Céu com gradiente, skyline com luzes, água refletindo. O sort ordena as áreas claras: quanto mais brilho e gradiente, mais dramático. |
-| `negative-poster` (`photo.jpg`) | 9:16, 1080×1920 | Retrato dramático com metade clara e metade escura, ou fundo dividido em luz e sombra. O texto inverte contra cada lado. |
-| `negative-poster` (`front.png`) | PNG transparente, ~800×1200 | Figura de corpo inteiro recortada (pessoa de costas, silhueta caminhando), pra colar na frente. |
+| Slug                            | Formato                     | O que o efeito precisa                                                                                                                            |
+| ------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frosted-reveal`                | 4:5, 1600×2000              | Retrato em close, olhar direto, fundo neutro e liso. O vidro fosco esconde detalhe: o rosto tem que ser reconhecível mesmo borrado.               |
+| `gaze-poster`                   | 9:16, 1080×1920             | Retrato editorial vertical, P&B, contraste alto, muito espaço vazio de um lado (a palavra vertical entra ali).                                    |
+| `halftone-poster`               | 4:5, 1600×2000              | Rosto com luz lateral dura e sombras fechadas. Meios-tons variados viram pontos de tamanhos diferentes.                                           |
+| `split-tone-duotone`            | 4:5, 1600×2000              | Cena com grande variação de luz: contraluz, cidade à noite, névoa. O duotone separa sombra e luz.                                                 |
+| `liquid-distortion`             | 4:5, 1600×2000              | Superfície com linhas retas e repetição: fachada, grade, azulejos, piscina. A onda fica óbvia deformando linhas.                                  |
+| `scanline-reveal`               | 4:5, 1600×2000              | Cena escura e tecnológica: corredor de servidores, néon apagado, painel. Vai ficar em P&B escuro atrás do feixe.                                  |
+| `knockout-marquee`              | 16:9, 2400×1350             | Paisagem panorâmica colorida: praia ao pôr do sol, deserto, skyline. Aparece só dentro das letras, então cor e gradiente contam mais que detalhe. |
+| `torn-edge-collage`             | 4:5, 1600×2000              | Rua, muro grafitado, textura urbana. Vira P&B; o recorte de papel colorido entra por cima.                                                        |
+| `pixel-sort`                    | 4:5, 1600×2000              | Céu com gradiente, skyline com luzes, água refletindo. O sort ordena as áreas claras: quanto mais brilho e gradiente, mais dramático.             |
+| `negative-poster` (`photo.jpg`) | 9:16, 1080×1920             | Retrato dramático com metade clara e metade escura, ou fundo dividido em luz e sombra. O texto inverte contra cada lado.                          |
+| `negative-poster` (`front.png`) | PNG transparente, ~800×1200 | Figura de corpo inteiro recortada (pessoa de costas, silhueta caminhando), pra colar na frente.                                                   |
 
 Prompts (colar a direção comum da seção 1 antes de cada um):
 

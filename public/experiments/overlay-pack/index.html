@@ -3,8 +3,7 @@
 <meta charset="utf-8">
 <title>Overlay Pack</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<style>
-  :root {
+<style>  :root {
     --ground: #0b0d10; --panel: #13171c; --line: #232a32; --ink: #e8ecef; --muted: #8a94a0; --accent: #c8f31d;
     --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -27,7 +26,7 @@
   .copy { flex: none; font: 11px var(--font-mono); padding: 4px 8px; background: transparent; color: inherit; border: 1px solid #2a2f37; border-radius: 3px; cursor: pointer; }
   .copy:hover { border-color: var(--accent); }
   .copy.done { border-color: var(--accent); color: var(--accent); }
-  /* The cookie banner is fixed in a real page; here it sits inside its cell. */
+  
   .demo .ov-cookie { position: absolute; }
 
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
@@ -53,9 +52,8 @@
   html.card .demo { padding: 0; font-size: 12px; }
   html.card .ov-trigger { display: none; }
   html.card .cell:has(.ov-tour) { order: -1; }
-  /* Not on the tour: it measures with getBoundingClientRect and positions in CSS pixels. */
-  html.card .demo > .ov-cookie-demo { zoom: .8; }
-</style>
+  
+  html.card .demo > .ov-cookie-demo { zoom: .8; }</style>
 
 <div class="wrap">
   <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
@@ -74,8 +72,7 @@
   </aside>
 </div>
 
-<script>
-(function () {
+<script>(function () {
   const $ = (id) => document.getElementById(id);
   const grid = $('grid');
   const A = 'var(--accent, #c8f31d)', R = 'var(--radius, 10px)';
@@ -90,7 +87,7 @@ ${scope} footer .primary { border-color: ${A}; background: ${A}; color: #0e0e0c;
 ${scope} footer .danger { border-color: #f23e2e; background: #f23e2e; color: #0e0e0c; }
 ${scope} footer button:disabled { opacity: .35; cursor: not-allowed; }
 ${scope} :focus-visible { outline: 2px solid ${A}; outline-offset: 2px; }`;
-  // Enter and exit animations for a modal <dialog>, no JS involved.
+  
   const DIALOG = (scope, from = 'translate: 0 12px; scale: .97;', fade = true) => {
     const hidden = (fade ? 'opacity: 0; ' : '') + from;
     return `${scope} { padding: 0; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; color: #e9e6dd; box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
@@ -116,7 +113,7 @@ ${TRIGGER}
 .ov-confirm { width: min(24rem, calc(100vw - 2rem)); ${FONT} }
 ${DIALOG('.ov-confirm')}
 ${BTN('.ov-confirm')}`,
-      // The safe choice has autofocus, so Enter on a reflex never destroys work.
+      
       js: function (root) {
         const dialog = root.querySelector('dialog'), out = root.querySelector('output');
         root.querySelector('.ov-trigger').addEventListener('click', () => dialog.showModal());
@@ -173,7 +170,7 @@ ${BTN('.ov-drawer')}`,
       js: function (root) {
         const dialog = root.querySelector('dialog'), boxes = [...dialog.querySelectorAll('input')];
         const count = root.querySelector('.ov-drawer-count'), n = dialog.querySelector('[data-n]');
-        // Stand-in result counts per filter; a real page would ask the server.
+        
         const HITS = [118, 64, 58, 41, 97, 102], ALL = 240;
         const sync = () => {
           const on = boxes.filter((b) => b.checked);
@@ -205,7 +202,7 @@ ${BTN('.ov-drawer')}`,
 .ov-pop kbd { font: 11px ui-monospace, monospace; color: #8a94a0; }
 .ov-pop hr { margin: .3em 0; border: 0; border-top: 1px solid #2a2f37; }
 .ov-pop .out { color: #f23e2e; }`,
-      // The popover API handles open/close, Esc and click-outside; this only places it under the avatar.
+      
       js: function (root) {
         const btn = root.querySelector('.ov-avatar'), pop = root.querySelector('[popover]');
         pop.addEventListener('beforetoggle', (e) => {
@@ -232,7 +229,7 @@ ${BTN('.ov-drawer')}`,
 .ov-tip[data-side="bottom"] { bottom: auto; top: calc(100% + 10px); translate: -50% -4px; }
 .ov-tip[data-side="bottom"]::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: #e9e6dd; }
 .ov-tip[data-open] { opacity: 1; visibility: visible; translate: -50% 0; transition: opacity .15s, translate .15s; }`,
-      // Hoverable (the pointer can move onto the text), dismissible with Esc, and it flips when there is no room above.
+      
       js: function (root) {
         const wrap = root.querySelector('.ov-tip-wrap'), tip = root.querySelector('[role="tooltip"]');
         let showTimer = 0, hideTimer = 0;
@@ -277,7 +274,7 @@ ${BTN('.ov-drawer')}`,
         let focusOnOpen = true;
         function open(x, y, focus = true) {
           menu.hidden = false;
-          // Keep the whole menu inside the viewport.
+          
           const w = menu.offsetWidth, h = menu.offsetHeight;
           menu.style.left = `${Math.max(4, Math.min(x, innerWidth - w - 4))}px`;
           menu.style.top = `${Math.max(4, Math.min(y, innerHeight - h - 4))}px`;
@@ -309,7 +306,7 @@ ${BTN('.ov-drawer')}`,
           else if (e.key === 'Escape') { e.preventDefault(); close(true); }
           else if (e.key === 'Tab') close(false);
           else if (e.key.length === 1) {
-            // Type-ahead: jump to the next item starting with that letter.
+            
             const k = items.findIndex((it, j) => j > i && it.textContent.toLowerCase().startsWith(e.key.toLowerCase()));
             const any = k >= 0 ? k : items.findIndex((it) => it.textContent.toLowerCase().startsWith(e.key.toLowerCase()));
             if (any >= 0) go(any);
@@ -339,7 +336,7 @@ ${BTN('.ov-drawer')}`,
 .ov-combo mark { background: none; color: ${A}; font-weight: 700; }
 .ov-combo .empty { padding: .6em; color: #8a94a0; }
 .ov-combo-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }`,
-      // Focus never leaves the input: the highlighted option is announced through aria-activedescendant.
+      
       js: function (root) {
         const CITIES = [['São Paulo', 'SP'], ['Rio de Janeiro', 'RJ'], ['Belo Horizonte', 'MG'], ['Brasília', 'DF'], ['Salvador', 'BA'], ['Fortaleza', 'CE'], ['Curitiba', 'PR'], ['Manaus', 'AM'], ['Recife', 'PE'], ['Porto Alegre', 'RS'], ['Belém', 'PA'], ['Goiânia', 'GO'], ['Guarulhos', 'SP'], ['Campinas', 'SP'], ['São Luís', 'MA'], ['Maceió', 'AL'], ['Natal', 'RN'], ['Teresina', 'PI'], ['Campo Grande', 'MS'], ['João Pessoa', 'PB'], ['Florianópolis', 'SC'], ['Ribeirão Preto', 'SP'], ['Uberlândia', 'MG'], ['Joinville', 'SC'], ['Londrina', 'PR'], ['Niterói', 'RJ'], ['Vitória', 'ES'], ['Cuiabá', 'MT'], ['Aracaju', 'SE'], ['Santos', 'SP'], ['São José dos Campos', 'SP'], ['Juiz de Fora', 'MG'], ['Maringá', 'PR'], ['Caxias do Sul', 'RS'], ['Palmas', 'TO'], ['Porto Velho', 'RO'], ['Macapá', 'AP'], ['Boa Vista', 'RR'], ['Rio Branco', 'AC'], ['Petrópolis', 'RJ']];
         const input = root.querySelector('input'), list = root.querySelector('[role="listbox"]'), sr = root.querySelector('.ov-combo-sr');
@@ -354,7 +351,7 @@ ${BTN('.ov-drawer')}`,
           active = shown.length ? 0 : -1;
           list.innerHTML = shown.length ? shown.map(([c, uf], i) => {
             const at = plain(c).indexOf(q);
-            // Accent-insensitive match; indices line up because NFD stripping keeps one char per letter here.
+            
             const label = q ? esc(c.slice(0, at)) + '<mark>' + esc(c.slice(at, at + q.length)) + '</mark>' + esc(c.slice(at + q.length)) : esc(c);
             return `<li role="option" id="ov-city-${i}" aria-selected="false">${label}<small>${uf}</small></li>`;
           }).join('') : `<li class="empty">Nenhuma cidade para “${esc(input.value.trim())}”</li>`;
@@ -366,7 +363,7 @@ ${BTN('.ov-drawer')}`,
           const el = active >= 0 ? list.children[active] : null;
           if (el) {
             input.setAttribute('aria-activedescendant', el.id);
-            // Scroll the list only; scrollIntoView would also move every page above it.
+            
             if (el.offsetTop < list.scrollTop) list.scrollTop = el.offsetTop - 4;
             else if (el.offsetTop + el.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = el.offsetTop + el.offsetHeight - list.clientHeight + 4;
           } else input.removeAttribute('aria-activedescendant');
@@ -384,7 +381,7 @@ ${BTN('.ov-drawer')}`,
           else if (e.key === 'Tab') close();
         });
         input.addEventListener('blur', () => setTimeout(close, 0));
-        // pointerdown + preventDefault keeps focus in the input while picking with the mouse.
+        
         list.addEventListener('pointerdown', (e) => { e.preventDefault(); const o = e.target.closest('[role="option"]'); if (o) choose([...list.children].indexOf(o)); });
         list.addEventListener('pointermove', (e) => { const o = e.target.closest('[role="option"]'); if (o) { const i = [...list.children].indexOf(o); if (i !== active) { active = i; paint(); } } });
         root.querySelector('.ov-combo-box button').addEventListener('pointerdown', (e) => { e.preventDefault(); if (list.hidden) { input.focus(); open(); } else close(); });
@@ -418,7 +415,7 @@ ${BTN('.ov-drawer')}`,
 @keyframes ov-swap { from { opacity: .3; transform: translateX(calc(var(--dir, 1) * 18px)); } }`,
       js: function (root) {
         const PICS = ['Lagoa ao amanhecer', 'Estúdio azul', 'Jardim lilás', 'Duna', 'Noturno', 'Mata'];
-        // Placeholder art: swap for <img> with your own sources.
+        
         const art = (i) => {
           const h = [28, 205, 285, 40, 240, 140][i];
           return `<svg viewBox="0 0 160 120" aria-hidden="true"><rect width="160" height="120" fill="hsl(${h} 40% 13%)"/><circle cx="${42 + (i * 23) % 80}" cy="${44 + (i * 17) % 30}" r="${22 + i * 3}" fill="hsl(${h} 85% 62%)"/><rect x="${60 - i * 4}" y="${58 + i * 3}" width="${64 + i * 5}" height="${12 + i * 2}" fill="hsl(${(h + 50) % 360} 70% 72%)" transform="rotate(${-14 + i * 6} 100 70)"/><path d="M0 ${96 - i * 3}Q80 ${70 + i * 5} 160 ${88 - i * 2}V120H0Z" fill="hsl(${h} 45% 28%)"/></svg>`;
@@ -441,7 +438,7 @@ ${BTN('.ov-drawer')}`,
         dialog.querySelector('.ov-x').addEventListener('click', () => dialog.close());
         dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
         dialog.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(at - 1, -1); if (e.key === 'ArrowRight') show(at + 1, 1); });
-        // Return focus to the thumbnail that opened it (the dialog would go back to the body otherwise in some browsers).
+        
         dialog.addEventListener('close', () => (thumbs.querySelector(`[data-i="${at}"]`) || opener)?.focus({ preventScroll: true }));
         let x0 = null;
         const fig = dialog.querySelector('figure');
@@ -558,7 +555,7 @@ ${TRIGGER}
           count.textContent = `${at + 1}/${STEPS.length}`;
           back.disabled = at === 0;
           next.textContent = at === STEPS.length - 1 ? 'Concluir' : 'Próximo';
-          // Below the target when it fits, otherwise above; always inside the container.
+          
           const below = r.bottom - box.top + 12, h = tip.offsetHeight;
           const top = below + h < box.height ? below : r.top - box.top - h - 12;
           const left = Math.max(8, Math.min(box.width - tip.offsetWidth - 8, r.left - box.left + r.width / 2 - tip.offsetWidth / 2));
@@ -590,7 +587,7 @@ ${TRIGGER}
 
   const S_OPEN = '\x3cstyle>', S_CLOSE = '\x3c/style>', J_OPEN = '\x3cscript>', J_CLOSE = '\x3c/script>';
   function snippet(it) {
-    let s = `<!-- ${it.name} -->\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
+    let s = `\n${S_OPEN}\n${it.css.trim()}\n${S_CLOSE}\n\n${it.html}\n`;
     if (it.js) s += `\n${J_OPEN}\n(${it.js.toString()})(document.querySelector('${it.sel}'));\n${J_CLOSE}\n`;
     return s;
   }
@@ -626,13 +623,12 @@ ${TRIGGER}
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && Date.now() - down.t < 400) parent.postMessage({ type: 'experiment:open' }, location.origin);
       down = null;
     }, true);
-    // Only in-cell overlays play here: modals and popovers would take focus inside the host page.
+    
     const tour = grid.querySelector('.ov-tour'), cookie = grid.querySelector('.ov-cookie-demo');
     cookie.replay();
     tour.autoplay();
     setInterval(() => tour.autoplay(), 1900);
     setInterval(() => { const b = cookie.querySelector('.ov-cookie'); if (b.hidden) cookie.replay(); else { b.hidden = true; setTimeout(() => cookie.replay(), 400); } }, 5200);
   }
-})();
-</script>
+})();</script>
 </html>
