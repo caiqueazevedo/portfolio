@@ -33,6 +33,7 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
   const wheel = useRef<WheelState>(idleWheel());
   const animating = useRef(false);
   const frame = useRef(0);
+  const guard = useRef(0);
   const touch = useRef<{ x: number; y: number } | null>(null);
 
   const panels = useCallback(
@@ -54,7 +55,7 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
     (next: number) => {
       const el = track.current;
       const sections = panels();
-      if (!el || animating.current || sections.length === 0) return;
+      if (!el || sections.length === 0) return;
 
       const to = clampPanel(next, sections.length);
       if (to === panel) return;
@@ -76,6 +77,18 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
 
       const direction = to > panel ? 1 : -1;
       const from = sections[panel];
+
+      // A gesture that lands mid-flight re-aims the rail instead of being dropped. The
+      // running animations are cancelled first: left alone, the previous panel's arrival
+      // would keep playing against its own departure.
+      cancelAnimationFrame(frame.current);
+      window.clearTimeout(guard.current);
+      for (const section of [from, target]) {
+        for (const child of [...(section?.children ?? [])]) {
+          for (const running of (child as HTMLElement).getAnimations?.() ?? []) running.cancel();
+        }
+      }
+
       for (const [index, child] of [...(from?.children ?? [])].entries()) {
         (child as HTMLElement).animate?.(
           [
@@ -115,7 +128,7 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
         wheel.current = { ...wheel.current, lockUntil: cooldownFrom(performance.now()) };
         paint();
       };
-      const guard = window.setTimeout(arrive, TRANSITION_MS + 120);
+      guard.current = window.setTimeout(arrive, TRANSITION_MS + 120);
 
       const step = (now: number) => {
         const t = Math.min(1, (now - startedAt) / TRANSITION_MS);
@@ -125,7 +138,7 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
           frame.current = requestAnimationFrame(step);
           return;
         }
-        window.clearTimeout(guard);
+        window.clearTimeout(guard.current);
         arrive();
       };
       frame.current = requestAnimationFrame(step);
@@ -133,7 +146,13 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
     [paint, panel, panels, reduced, stacked],
   );
   useEffect(() => onPanelRequest(go), [go]);
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(frame.current);
+      window.clearTimeout(guard.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     const el = track.current;

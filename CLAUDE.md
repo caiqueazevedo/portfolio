@@ -86,13 +86,26 @@ lado e voltavam de supetão no fim. `transform` compõe com `translate` em vez d
 **Sintoma quando violada:** elementos centralizados se teletransportam ao trocar de painel, em vez
 de deslizarem.
 
-### O trilho não cancela o quadro quando o painel muda
+### O trilho só cancela o quadro em dois lugares: no unmount e em `go`
 
 O efeito que registra os listeners depende de `panel`, então ele roda de novo a cada troca. Com um
 `cancelAnimationFrame` na limpeza dele, a animação era abortada no primeiro quadro e o `animating`
-ficava preso em `true` — o teclado e a roda paravam de responder para sempre. O cancelamento mora
-num efeito de unmount, e um `setTimeout` de guarda garante a chegada mesmo quando a aba vai para
+ficava preso em `true` — o teclado e a roda paravam de responder para sempre. Cancelar dentro do
+`go` é outra coisa, e é de propósito: um gesto que chega no meio do voo re-mira o trilho em vez de
+ser descartado, e as animações dos filhos são canceladas junto para a chegada anterior não brigar
+com a própria saída. Um `setTimeout` de guarda garante a chegada mesmo quando a aba vai para
 segundo plano e o navegador para de servir quadros.
 
 **Sintoma quando violada:** o primeiro gesto funciona e nenhum outro; a barra de progresso congela
 no meio. Coberto por `components/features/home-rail.test.tsx`.
+
+### Inércia de trackpad se distingue de gesto novo pela pausa, não pela trava
+
+Travar a roda por tempo fixo depois de cada troca descarta o segundo gesto de quem está com
+pressa — e foi assim que o trilho passou a parecer lento. O estado da roda guarda um `armed`: um
+evento que chega depois de 200 ms de silêncio re-arma o gesto e vale mesmo com o trilho em
+movimento; a sequência contínua que vem logo atrás (a inércia do próprio gesto) chega desarmada e
+é engolida.
+
+**Sintoma quando violada:** ou um flick pula três painéis, ou rolar duas vezes seguidas só anda
+uma. Coberto por `lib/pager.test.ts`.

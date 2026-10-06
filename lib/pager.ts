@@ -1,9 +1,9 @@
 export const WHEEL_THRESHOLD = 25;
 export const WHEEL_RESET_MS = 200;
-export const COOLDOWN_MS = 350;
+export const COOLDOWN_MS = 220;
 export const LOCK_EXTENSION_MS = 120;
 export const SWIPE_THRESHOLD = 40;
-export const TRANSITION_MS = 1100;
+export const TRANSITION_MS = 760;
 export const EXIT_RATIO = 0.8;
 export const ACTIVE_AT = 0.45;
 export function easeInOutQuart(t: number): number {
@@ -18,13 +18,12 @@ export function clampPanel(index: number, count: number): number {
 
 export type WheelState = {
   acc: number;
-
   lastAt: number;
-
   lockUntil: number;
+  armed: boolean;
 };
 
-export const idleWheel = (): WheelState => ({ acc: 0, lastAt: 0, lockUntil: 0 });
+export const idleWheel = (): WheelState => ({ acc: 0, lastAt: 0, lockUntil: 0, armed: true });
 
 export type WheelEventish = {
   deltaY: number;
@@ -37,22 +36,25 @@ export function wheelStep(
   state: WheelState,
   { deltaY, deltaX, now, animating }: WheelEventish,
 ): { state: WheelState; step: -1 | 0 | 1 } {
-  if (animating || now < state.lockUntil) {
+  const fresh = now - state.lastAt > WHEEL_RESET_MS;
+  const armed = fresh || state.armed;
+
+  if (!armed && (animating || now < state.lockUntil)) {
     return {
-      state: { ...state, lockUntil: Math.max(state.lockUntil, now + LOCK_EXTENSION_MS) },
+      state: { ...state, lastAt: now, lockUntil: Math.max(state.lockUntil, now + LOCK_EXTENSION_MS) },
       step: 0,
     };
   }
 
   const delta = Math.abs(deltaY) > Math.abs(deltaX) ? deltaY : deltaX;
-  const carried = now - state.lastAt > WHEEL_RESET_MS ? 0 : state.acc;
-  const acc = carried + delta;
+  const acc = (fresh ? 0 : state.acc) + delta;
 
   if (Math.abs(acc) <= WHEEL_THRESHOLD) {
-    return { state: { ...state, acc, lastAt: now }, step: 0 };
+    return { state: { ...state, acc, lastAt: now, armed }, step: 0 };
   }
-  return { state: { ...state, acc: 0, lastAt: now }, step: acc > 0 ? 1 : -1 };
+  return { state: { acc: 0, lastAt: now, lockUntil: state.lockUntil, armed: false }, step: acc > 0 ? 1 : -1 };
 }
+
 export const cooldownFrom = (now: number): number => now + COOLDOWN_MS;
 export function swipeStep(dx: number, dy: number): -1 | 0 | 1 {
   const travel = Math.abs(dx) > Math.abs(dy) ? -dx : dy;

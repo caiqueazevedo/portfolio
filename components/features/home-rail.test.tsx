@@ -68,19 +68,22 @@ describe("the rail on a desktop", () => {
     expect(screen.getByTestId("rail-label")).toHaveTextContent("01 — Início");
   });
 
-  it("moves with the arrow keys, and is deaf while it travels", async () => {
+  it("moves with the arrow keys, and a second key re-aims it mid-flight", async () => {
     desktop();
     laidOut();
 
     fireEvent.keyDown(window, { key: "ArrowRight" });
     expect(screen.getByTestId("rail-label")).toHaveTextContent("02 — Cases");
+
+    // The transition takes most of a second; a key pressed inside it used to be dropped,
+    // which reads as a rail that ignores you.
     fireEvent.keyDown(window, { key: "ArrowRight" });
-    expect(screen.getByTestId("rail-label")).toHaveTextContent("02 — Cases");
+    expect(screen.getByTestId("rail-label")).toHaveTextContent("03 — Contato");
 
     await settle();
 
     fireEvent.keyDown(window, { key: "ArrowLeft" });
-    expect(screen.getByTestId("rail-label")).toHaveTextContent("01 — Início");
+    expect(screen.getByTestId("rail-label")).toHaveTextContent("02 — Cases");
   });
 
   it("stops at the ends instead of running off the rail", () => {

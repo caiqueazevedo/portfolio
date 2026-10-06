@@ -4,7 +4,6 @@ import {
   clampLines,
   clampPanel,
   cooldownFrom,
-  COOLDOWN_MS,
   easeInOutQuart,
   idleWheel,
   LOCK_EXTENSION_MS,
@@ -83,20 +82,35 @@ describe("wheelStep", () => {
     expect(wheelStep(idleWheel(), wheel({ deltaY: 5, deltaX: -40 })).step).toBe(-1);
   });
 
-  it("ignores the wheel mid-flight and pushes the lock further out", () => {
-    const state = { acc: 0, lastAt: 0, lockUntil: 0 };
-    const locked = wheelStep(state, wheel({ deltaY: 300, animating: true }));
-    expect(locked.step).toBe(0);
-    expect(locked.state.lockUntil).toBe(1000 + LOCK_EXTENSION_MS);
+  it("swallows the tail of the flick that is already moving the rail", () => {
+    // Inertia is a stream with no pause in it, and each event would otherwise turn a page.
+    const fired = wheelStep(idleWheel(), wheel({ deltaY: 40 }));
+    expect(fired.step).toBe(1);
+
+    const inertia = wheelStep(fired.state, wheel({ deltaY: 38, now: 1030, animating: true }));
+    expect(inertia.step).toBe(0);
+    expect(inertia.state.lockUntil).toBe(1030 + LOCK_EXTENSION_MS);
   });
 
-  it("keeps ignoring inertia until the cooldown passes", () => {
-    const cooling = { acc: 0, lastAt: 0, lockUntil: cooldownFrom(1000) };
-    const during = wheelStep(cooling, wheel({ deltaY: 300, now: 1100 }));
+  it("lets a second, deliberate gesture through while the rail is still moving", () => {
+    // What separates it from inertia is the pause: a hand that scrolled again stopped first.
+    const fired = wheelStep(idleWheel(), wheel({ deltaY: 40 }));
+    const again = wheelStep(fired.state, wheel({ deltaY: 40, now: 1000 + WHEEL_RESET_MS + 1, animating: true }));
+    expect(again.step).toBe(1);
+  });
+
+  it("lets a deliberate gesture through during the cooldown too", () => {
+    const cooling = { ...idleWheel(), lastAt: 1000, armed: false, lockUntil: cooldownFrom(1000) };
+    const during = wheelStep(cooling, wheel({ deltaY: 40, now: 1100 }));
     expect(during.step).toBe(0);
 
-    const after = wheelStep(cooling, wheel({ deltaY: 300, now: 1000 + COOLDOWN_MS + 1 }));
+    const after = wheelStep(cooling, wheel({ deltaY: 40, now: 1000 + WHEEL_RESET_MS + 1 }));
     expect(after.step).toBe(1);
+  });
+
+  it("re-arms a gesture that crossed the threshold only once", () => {
+    const fired = wheelStep(idleWheel(), wheel({ deltaY: 40 }));
+    expect(fired.state.armed).toBe(false);
   });
 });
 
