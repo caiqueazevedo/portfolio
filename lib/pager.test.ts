@@ -95,7 +95,10 @@ describe("wheelStep", () => {
   it("lets a second, deliberate gesture through while the rail is still moving", () => {
     // What separates it from inertia is the pause: a hand that scrolled again stopped first.
     const fired = wheelStep(idleWheel(), wheel({ deltaY: 40 }));
-    const again = wheelStep(fired.state, wheel({ deltaY: 40, now: 1000 + WHEEL_RESET_MS + 1, animating: true }));
+    const again = wheelStep(
+      fired.state,
+      wheel({ deltaY: 40, now: 1000 + WHEEL_RESET_MS + 1, animating: true }),
+    );
     expect(again.step).toBe(1);
   });
 

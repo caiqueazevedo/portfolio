@@ -41,7 +41,11 @@ export function wheelStep(
 
   if (!armed && (animating || now < state.lockUntil)) {
     return {
-      state: { ...state, lastAt: now, lockUntil: Math.max(state.lockUntil, now + LOCK_EXTENSION_MS) },
+      state: {
+        ...state,
+        lastAt: now,
+        lockUntil: Math.max(state.lockUntil, now + LOCK_EXTENSION_MS),
+      },
       step: 0,
     };
   }
@@ -52,7 +56,10 @@ export function wheelStep(
   if (Math.abs(acc) <= WHEEL_THRESHOLD) {
     return { state: { ...state, acc, lastAt: now, armed }, step: 0 };
   }
-  return { state: { acc: 0, lastAt: now, lockUntil: state.lockUntil, armed: false }, step: acc > 0 ? 1 : -1 };
+  return {
+    state: { acc: 0, lastAt: now, lockUntil: state.lockUntil, armed: false },
+    step: acc > 0 ? 1 : -1,
+  };
 }
 
 export const cooldownFrom = (now: number): number => now + COOLDOWN_MS;

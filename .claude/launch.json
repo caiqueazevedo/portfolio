@@ -4,8 +4,9 @@
     {
       "name": "portfolio",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": ["pnpm", "dev"],
-      "port": 3000
+      "runtimeArgs": ["pnpm", "dev", "-p", "3200"],
+      "port": 3200,
+      "autoPort": true
     }
   ]
 }
