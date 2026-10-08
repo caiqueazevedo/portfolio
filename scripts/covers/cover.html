@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face {
+        font-family: "Jost";
+        src: url("jost.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        font-family: "Jost", Helvetica, sans-serif;
+        background: #e4e2de;
+        color: #111;
+        -webkit-font-smoothing: antialiased;
+      }
+      .frame {
+        position: absolute;
+        inset: var(--inset, 40px);
+        border: 1px solid rgba(17, 17, 17, 0.14);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: var(--pad, 56px);
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 24px;
+      }
+      .micro {
+        font-size: var(--micro, 18px);
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .muted {
+        color: #5d5b57;
+      }
+      .art {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mark {
+        width: var(--mark, 360px);
+        height: var(--mark, 360px);
+      }
+      .monogram {
+        font-size: var(--monogram, 420px);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 0.78;
+        text-transform: uppercase;
+      }
+      .name {
+        font-size: var(--name, 64px);
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        line-height: 1;
+      }
+      .foot {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap, 20px);
+      }
+      .rule {
+        width: 40px;
+        height: 1px;
+        background: #111;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <div class="row">
+        <span class="micro" id="number"></span>
+        <span class="micro muted" id="tag"></span>
+      </div>
+      <div class="art" id="art"></div>
+      <div class="foot">
+        <span class="rule"></span>
+        <div class="row">
+          <span class="name" id="name"></span>
+          <span class="micro muted" id="year"></span>
+        </div>
+        <span class="micro muted" id="stack"></span>
+      </div>
+    </div>
+
+    <script>
+      window.render = (data) => {
+        const put = (id, value) => (document.getElementById(id).textContent = value ?? "");
+        put("number", data.number);
+        put("tag", data.tag);
+        put("name", data.name);
+        put("year", data.year);
+        put("stack", data.stack);
+        document.getElementById("art").innerHTML = data.mark
+          ? `<img class="mark" src="${data.mark}" alt="">`
+          : `<span class="monogram">${data.monogram}</span>`;
+        for (const [key, value] of Object.entries(data.vars ?? {})) {
+          document.documentElement.style.setProperty(key, value);
+        }
+        return document.fonts.ready;
+      };
+    </script>
+  </body>
+</html>

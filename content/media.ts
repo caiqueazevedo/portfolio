@@ -1,12 +1,12 @@
+const slugs = ["zenid", "aetherion", "pulse", "polaris", "watchtower", "claude-usage-hub"];
+
+const covers: Record<string, string | null> = {};
+for (const slug of slugs) {
+  covers[slug] = `/media/covers/${slug}.png`;
+  covers[`${slug}-wide`] = `/media/covers/${slug}-wide.png`;
+}
+
 export const media = {
   portrait: null as string | null,
-  covers: {
-    zenid: null,
-    "zenid-wide": null,
-    aetherion: null,
-    pulse: null,
-    polaris: null,
-    watchtower: null,
-    "claude-usage-hub": null,
-  } as Record<string, string | null>,
+  covers,
 };

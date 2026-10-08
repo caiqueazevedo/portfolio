@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "zenid",
+    "name": "ZenID",
+    "tag": "Identidade",
+    "stack": "React 19 · Supabase · Cloudflare Workers",
+    "year": "2026",
+    "number": "Case 01",
+    "mark": null,
+    "monogram": "01"
+  },
+  {
+    "slug": "aetherion",
+    "name": "Aetherion 2.0",
+    "tag": "Desktop",
+    "stack": "Tauri 2 · Rust · React · tree-sitter",
+    "year": "2026",
+    "number": "Case 02",
+    "mark": "aetherion-mark.svg",
+    "monogram": "02"
+  },
+  {
+    "slug": "pulse",
+    "name": "Pulse",
+    "tag": "Social",
+    "stack": "Cloudflare Workers · D1 · Durable Objects · Expo",
+    "year": "2026",
+    "number": "Case 03",
+    "mark": null,
+    "monogram": "03"
+  },
+  {
+    "slug": "polaris",
+    "name": "Polaris",
+    "tag": "Comunidades",
+    "stack": "Fastify 5 · Postgres 17 · Kysely · LiveKit",
+    "year": "2026",
+    "number": "Case 04",
+    "mark": null,
+    "monogram": "04"
+  },
+  {
+    "slug": "watchtower",
+    "name": "Watchtower",
+    "tag": "Observabilidade",
+    "stack": "Cloudflare Workers · D1 · KV · React 19",
+    "year": "2026",
+    "number": "Case 05",
+    "mark": null,
+    "monogram": "05"
+  },
+  {
+    "slug": "claude-usage-hub",
+    "name": "Claude Usage Hub",
+    "tag": "Ferramenta",
+    "stack": "Tauri 2 · Rust · OpenTelemetry",
+    "year": "2026",
+    "number": "Case 06",
+    "mark": null,
+    "monogram": "06"
+  }
+]

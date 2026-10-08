@@ -53,11 +53,6 @@ function laidOut() {
 
   return result;
 }
-const settle = async () => {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2600));
-  });
-};
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -75,15 +70,18 @@ describe("the rail on a desktop", () => {
     fireEvent.keyDown(window, { key: "ArrowRight" });
     expect(screen.getByTestId("rail-label")).toHaveTextContent("02 — Cases");
 
-    // The transition takes most of a second; a key pressed inside it used to be dropped,
-    // which reads as a rail that ignores you.
     fireEvent.keyDown(window, { key: "ArrowRight" });
     expect(screen.getByTestId("rail-label")).toHaveTextContent("03 — Contato");
 
-    await settle();
-
-    fireEvent.keyDown(window, { key: "ArrowLeft" });
-    expect(screen.getByTestId("rail-label")).toHaveTextContent("02 — Cases");
+    // Pressed until it lands rather than after a fixed wait: the transition's own clock is
+    // the test runner's, and under load a sleep long enough today is short tomorrow.
+    await waitFor(
+      () => {
+        fireEvent.keyDown(window, { key: "ArrowLeft" });
+        expect(screen.getByTestId("rail-label")).toHaveTextContent("01 — Início");
+      },
+      { timeout: 6000 },
+    );
   });
 
   it("stops at the ends instead of running off the rail", () => {

@@ -53,3 +53,5 @@ portfolio-caique-azevedo.html
 # wrangler local state (miniflare sqlite); also keeps Tailwind source scanning out of it
 .wrangler/
 .dev.vars*
+scripts/covers/node_modules
+scripts/covers/jost.woff2
