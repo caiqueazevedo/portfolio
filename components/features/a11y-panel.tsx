@@ -33,14 +33,9 @@ function store(prefs: A11yPrefs) {
   try {
     if (Object.keys(prefs).length) localStorage.setItem(A11Y_KEY, JSON.stringify(prefs));
     else localStorage.removeItem(A11Y_KEY);
-  } catch {
-    // Private mode or blocked storage: the choice still applies to this page.
-  }
+  } catch {}
 }
 
-// The preferences live outside React: storage is read once, lazily, and the snapshot has to keep
-// its identity between renders. The server renders the defaults, since localStorage is a client
-// thing; the inline boot script is what keeps the real choice from flashing.
 const EMPTY: A11yPrefs = {};
 const listeners = new Set<() => void>();
 let snapshot: A11yPrefs | null = null;
@@ -49,7 +44,6 @@ function subscribe(notify: () => void) {
   listeners.add(notify);
   return () => {
     listeners.delete(notify);
-    // Nothing is reading them any more, so the next panel to mount reads storage again.
     if (listeners.size === 0) snapshot = null;
   };
 }
@@ -90,9 +84,6 @@ function createReadingGuide() {
   };
 }
 
-// The federal VLibras widget (Portuguese to Libras) is only fetched once the visitor turns it on.
-// The plugin boots once per page, so turning it off detaches everything it added and turning it
-// back on puts those nodes back.
 function createVlibras() {
   let enabled = false;
   let script: HTMLScriptElement | null = null;
@@ -117,7 +108,6 @@ function createVlibras() {
   return (on: boolean) => {
     if (on === enabled) return;
     enabled = on;
-    // While the plugin is loading, start() parks it if it was turned off meanwhile.
     if (script?.onload) return;
     if (!on) return park();
     before = new Set(nodes());
@@ -146,8 +136,6 @@ function createVlibras() {
 const VLIBRAS_MARKUP =
   '<div vw-access-button class="active"></div><div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>';
 
-// The label and the hint are named, not derived from the key: "text" has no toggle and only four
-// of the options carry a hint, so a template over the keys would point at messages that do not exist.
 type Toggle = {
   key: Exclude<A11yKey, "text">;
   value: string;
@@ -180,7 +168,6 @@ export function A11yPanel() {
   useEffect(() => {
     sideRef.current ??= { guide: createReadingGuide(), libras: createVlibras() };
     sideRef.current.guide(prefs.guide === "on");
-    // VLibras translates Portuguese only, so English pages never load it.
     sideRef.current.libras(prefs.libras === "on" && isPt);
   }, [prefs, isPt]);
 

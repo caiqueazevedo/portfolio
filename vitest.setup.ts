@@ -1,6 +1,5 @@
 import "@testing-library/jest-dom/vitest";
 
-// jsdom ships <dialog> without its modal methods; the accessibility panel needs them.
 if (!HTMLDialogElement.prototype.showModal) {
   HTMLDialogElement.prototype.showModal = function showModal() {
     this.open = true;

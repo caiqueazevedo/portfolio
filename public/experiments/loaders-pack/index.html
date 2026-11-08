@@ -99,7 +99,6 @@
       css: `
 .ld-eq { display: flex; align-items: center; gap: .08em; height: 1em; font-size: var(--size, 48px); }
 .ld-eq i { width: .12em; height: 100%; border-radius: .06em; background: ${A}; transform: scaleY(.25); animation: ld-eq calc(${S} * .9) ease-in-out infinite; }
-/* Uneven offsets read as music; even ones read as a wave. */
 .ld-eq i:nth-child(1) { animation-delay: calc(${S} * -.72); }
 .ld-eq i:nth-child(2) { animation-delay: calc(${S} * -.18); }
 .ld-eq i:nth-child(3) { animation-delay: calc(${S} * -.55); }
@@ -126,7 +125,6 @@
       css: `
 .ld-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: .08em; width: 1em; height: 1em; font-size: var(--size, 48px); perspective: 3em; }
 .ld-tiles i { background: ${A}; animation: ld-tiles calc(${S} * 1.6) ease-in-out infinite; }
-/* Clockwise: top-left, top-right, bottom-right, bottom-left. */
 .ld-tiles i:nth-child(2) { animation-delay: calc(${S} * .2); }
 .ld-tiles i:nth-child(4) { animation-delay: calc(${S} * .4); }
 .ld-tiles i:nth-child(3) { animation-delay: calc(${S} * .6); }
@@ -154,7 +152,6 @@
 .ld-typing i { width: .16em; height: .16em; border-radius: .08em; background: ${A}; animation: ld-typing calc(${S} * 1.1) ease-in-out infinite; }
 .ld-typing i:nth-child(2) { animation-delay: calc(${S} * .14); }
 .ld-typing i:nth-child(3) { animation-delay: calc(${S} * .28); }
-/* Squash on take-off, stretch in the air: reads as a hop, not a slide. */
 @keyframes ld-typing {
   0%, 60%, 100% { height: .16em; transform: translateY(0); }
   15% { height: .1em; transform: translateY(0); }
@@ -169,7 +166,6 @@
 .ld-track { width: var(--size, 48px); height: var(--size, 48px); overflow: visible; }
 .ld-track rect { fill: none; stroke: ${A}; stroke-width: 5; stroke-linecap: round; animation: ld-track calc(${S} * 1.6) cubic-bezier(.5, 0, .5, 1) infinite; }
 .ld-track .ld-track-bg { stroke: color-mix(in srgb, ${A} 16%, transparent); animation: none; }
-/* The dash grows while it travels, then shrinks: one lap per cycle. */
 @keyframes ld-track {
   0% { stroke-dasharray: 4 96; stroke-dashoffset: 0; }
   50% { stroke-dasharray: 46 54; stroke-dashoffset: -30; }
@@ -187,7 +183,6 @@
 .ld-glass::after { bottom: 0; clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); animation: ld-glass-bottom calc(${S} * 2.4) linear infinite; }
 @keyframes ld-glass-top { 0% { background-size: 100% 100%, auto; } 80%, 100% { background-size: 100% 0%, auto; } }
 @keyframes ld-glass-bottom { 0% { background-size: 100% 0%, auto; } 80%, 100% { background-size: 100% 100%, auto; } }
-/* Turning over at the end swaps the full and empty halves, so the loop is seamless. */
 @keyframes ld-glass-flip { 0%, 80% { transform: rotate(0); } 100% { transform: rotate(180deg); } }`,
     },
     {
@@ -196,7 +191,6 @@
       css: `
 .ld-pixels { display: grid; grid-template-columns: repeat(3, 1fr); gap: .06em; width: 1em; height: 1em; font-size: var(--size, 48px); }
 .ld-pixels i { background: ${A}; opacity: .12; animation: ld-pixels calc(${S} * 1.8) ease-out infinite; }
-/* Spiral order through a 3×3 grid: 1 2 3 6 9 8 7 4 5. */
 .ld-pixels i:nth-child(2) { animation-delay: calc(${S} * .1); }
 .ld-pixels i:nth-child(3) { animation-delay: calc(${S} * .2); }
 .ld-pixels i:nth-child(6) { animation-delay: calc(${S} * .3); }
@@ -217,7 +211,6 @@
 .ld-cradle i::after { content: ""; position: absolute; left: 0; bottom: 0; width: .17em; height: .17em; border-radius: 50%; background: ${A}; }
 .ld-cradle i:first-child { animation: ld-cradle-l calc(${S} * 1.2) infinite; }
 .ld-cradle i:last-child { animation: ld-cradle-r calc(${S} * 1.2) infinite; }
-/* Each end ball swings out and falls back while the other rests. */
 @keyframes ld-cradle-l {
   0% { transform: rotate(0); animation-timing-function: cubic-bezier(.2, .6, .4, 1); }
   25% { transform: rotate(38deg); animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
@@ -235,7 +228,6 @@
       css: `
 .ld-bar { position: relative; width: 2.6em; height: .1em; font-size: var(--size, 48px); overflow: hidden; border-radius: .05em;
   background: repeating-linear-gradient(90deg, color-mix(in srgb, ${A} 22%, transparent) 0 .1em, transparent .1em .16em); }
-/* The block stretches in the middle of its run and compresses at the walls. */
 .ld-bar::before { content: ""; position: absolute; top: 0; bottom: 0; border-radius: inherit; background: ${A};
   animation: ld-bar calc(${S} * .9) cubic-bezier(.5, 0, .5, 1) infinite alternate; }
 @keyframes ld-bar { 0% { left: 0; width: 6%; } 50% { left: 30%; width: 40%; } 100% { left: 94%; width: 6%; } }`,
@@ -247,7 +239,6 @@
 .ld-clock { position: relative; width: 1em; height: 1em; font-size: var(--size, 48px); border-radius: 50%; border: .06em solid ${A}; }
 .ld-clock::before, .ld-clock::after { content: ""; position: absolute; left: calc(50% - .03em); bottom: 50%; width: .06em; border-radius: .03em; transform-origin: 50% 100%; }
 .ld-clock::before { height: .34em; background: currentColor; animation: ld-clock calc(${S} * .8) linear infinite; }
-/* The hour hand runs twelve times slower than the minute hand. */
 .ld-clock::after { height: .22em; background: ${A}; animation: ld-clock calc(${S} * 9.6) linear infinite; }
 @keyframes ld-clock { to { transform: rotate(1turn); } }`,
     },

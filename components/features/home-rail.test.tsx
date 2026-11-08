@@ -73,8 +73,6 @@ describe("the rail on a desktop", () => {
     fireEvent.keyDown(window, { key: "ArrowRight" });
     expect(screen.getByTestId("rail-label")).toHaveTextContent("03 — Contato");
 
-    // Pressed until it lands rather than after a fixed wait: the transition's own clock is
-    // the test runner's, and under load a sleep long enough today is short tomorrow.
     await waitFor(
       () => {
         fireEvent.keyDown(window, { key: "ArrowLeft" });

@@ -88,7 +88,6 @@
 .fd-float input { ${INPUT} padding: 1.35em .9em .45em; }
 .fd-float span { position: absolute; left: .95em; top: 50%; translate: 0 -50%; color: #8a94a0; pointer-events: none; transform-origin: left center; transition: translate .18s, scale .18s, color .18s; }
 .fd-float input:focus { ${FOCUS} }
-/* placeholder=" " makes :placeholder-shown mean "empty", which is what decides the label's spot. */
 .fd-float input:is(:focus, :not(:placeholder-shown)) + span { translate: 0 calc(-50% - .72em); scale: .75; }
 .fd-float input:focus + span { color: ${A}; }`,
     },
@@ -216,7 +215,6 @@
 .fd-search button { display: grid; place-items: center; width: 1.6em; height: 1.6em; border: 0; border-radius: 50%; background: #2a2f37; color: #e9e6dd; font-size: .65em; cursor: pointer; }
 .fd-search button:focus-visible { outline: 2px solid ${A}; }
 .fd-search kbd { padding: .1em .45em; border: 1px solid #3a414b; border-radius: 4px; font: .75em ui-monospace, monospace; color: #8a94a0; }
-/* Clear button only with text; the shortcut hint only without. */
 .fd-search input:placeholder-shown ~ button, .fd-search input:not(:placeholder-shown) ~ kbd { display: none; }`,
       js: function (root) {
         const input = root.querySelector('input');
@@ -489,7 +487,6 @@
 .fd-range input:active::-webkit-slider-thumb { transform: scale(1.2); }
 .fd-range input:focus-visible { outline: none; }
 .fd-range input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px color-mix(in srgb, ${A} 35%, transparent); }
-/* The bubble follows the thumb's centre, which moves over (100% - thumb) of the track. */
 .fd-range output { position: absolute; bottom: calc(100% + .5em); left: calc(var(--p, 0) * (100% - var(--thumb)) + var(--thumb) / 2); translate: -50% 0; padding: .3em .55em; border-radius: calc(${R} * .7); background: ${A}; color: #0e0e0c; font: 600 .8em/1 ui-monospace, monospace; white-space: nowrap; pointer-events: none; }
 .fd-range output::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% 0; border: 5px solid transparent; border-top-color: ${A}; }
 .fd-range-scale { display: flex; justify-content: space-between; margin-top: .5em; font: .72em ui-monospace, monospace; color: #8a94a0; }`,

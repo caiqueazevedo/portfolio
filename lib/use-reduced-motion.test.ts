@@ -11,7 +11,6 @@ function media(reduce: boolean) {
   }));
 }
 
-// Unmount first: a hook still mounted would read matchMedia after the stub is gone.
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();

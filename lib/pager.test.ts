@@ -83,7 +83,6 @@ describe("wheelStep", () => {
   });
 
   it("swallows the tail of the flick that is already moving the rail", () => {
-    // Inertia is a stream with no pause in it, and each event would otherwise turn a page.
     const fired = wheelStep(idleWheel(), wheel({ deltaY: 40 }));
     expect(fired.step).toBe(1);
 
@@ -93,7 +92,6 @@ describe("wheelStep", () => {
   });
 
   it("lets a second, deliberate gesture through while the rail is still moving", () => {
-    // What separates it from inertia is the pause: a hand that scrolled again stopped first.
     const fired = wheelStep(idleWheel(), wheel({ deltaY: 40 }));
     const again = wheelStep(
       fired.state,

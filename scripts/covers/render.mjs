@@ -1,5 +1,3 @@
-// Renders the case covers from the editorial template.
-// Two sizes per project: 4:5 for the cards, 16:9 for the case hero.
 import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";

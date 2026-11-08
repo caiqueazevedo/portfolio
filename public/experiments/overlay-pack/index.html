@@ -456,13 +456,11 @@ ${BTN('.ov-drawer')}`,
 .ov-cookie-page i:first-child { width: 40%; height: 1.2em; }
 .ov-cookie-page i:nth-child(3) { width: 70%; }
 .ov-cookie-demo output { position: absolute; left: 1em; top: 3.6em; font: 12px ui-monospace, monospace; color: ${A}; }
-/* In a real page: position fixed at the bottom of the viewport. */
 .ov-cookie { position: fixed; left: .8em; right: .8em; bottom: .8em; z-index: 40; display: flex; flex-wrap: wrap; align-items: center; gap: .8em 1.2em; padding: .9em 1em; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; box-shadow: 0 16px 40px rgba(0, 0, 0, .5); font-size: 14px; animation: ov-cookie-in .35s cubic-bezier(.2, .8, .2, 1); }
 .ov-cookie[hidden] { display: none; }
 .ov-cookie p { flex: 1 1 16em; margin: 0; color: #c9ced4; }
 .ov-cookie p b { color: #e9e6dd; }
 .ov-cookie-actions { display: flex; flex-wrap: wrap; gap: .4em; }
-/* Reject and accept have the same weight: consent has to be a free choice. */
 .ov-cookie-actions button { font: 600 13px/1 system-ui, sans-serif; padding: .7em .9em; border: 1.5px solid #e9e6dd; border-radius: calc(${R} * .6); background: none; color: #e9e6dd; cursor: pointer; }
 .ov-cookie-actions [data-choice="all"] { background: #e9e6dd; color: #0e0e0c; }
 .ov-cookie-actions .link { border-color: transparent; text-decoration: underline; text-underline-offset: 3px; }
@@ -526,7 +524,6 @@ ${TRIGGER}
 .ov-tour-app main { display: grid; align-content: start; gap: .6em; padding: .9em; }
 .ov-tour-app main i { height: 2.4em; border-radius: 6px; background: #11151a; }
 .ov-tour-start { position: absolute; right: .9em; bottom: .9em; }
-/* The spotlight is one element; its giant shadow darkens everything else. */
 .ov-tour-spot { position: absolute; z-index: 2; border-radius: 8px; box-shadow: 0 0 0 9999px rgb(0 0 0 / .68), 0 0 0 2px ${A}; pointer-events: none; transition: left .35s cubic-bezier(.5, 0, .2, 1), top .35s cubic-bezier(.5, 0, .2, 1), width .35s cubic-bezier(.5, 0, .2, 1), height .35s cubic-bezier(.5, 0, .2, 1); }
 .ov-tour-tip { position: absolute; z-index: 3; width: min(17em, calc(100% - 1.6em)); padding: .8em .9em; border-radius: ${R}; background: #e9e6dd; color: #0e0e0c; box-shadow: 0 14px 40px rgba(0, 0, 0, .5); transition: left .35s cubic-bezier(.5, 0, .2, 1), top .35s cubic-bezier(.5, 0, .2, 1); }
 .ov-tour-tip p { margin: 0 0 .7em; line-height: 1.4; }

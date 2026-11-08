@@ -138,7 +138,6 @@ ${FOCUS('.nv-tabs')}
 .nv-crumbs details ul { position: absolute; left: 0; top: calc(100% + 6px); z-index: 5; display: grid; min-width: 9em; margin: 0; padding: .3em; list-style: none; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; box-shadow: 0 12px 30px rgba(0, 0, 0, .5); }
 .nv-crumbs details a { display: block; padding: .45em .6em; border-radius: calc(${R} * .6); }
 .nv-crumbs details a:hover { background: #1f252d; text-decoration: none; }
-/* Narrow container: the middle levels fold into the "…" menu. */
 @container (max-width: 26em) {
   .nv-crumbs .mid { display: none; }
   .nv-crumbs ol > li.nv-crumbs-more { display: flex; }
@@ -267,7 +266,6 @@ ${FOCUS('.nv-more')}
 .nv-side a b { margin-left: auto; min-width: 1.5em; padding: .1em .35em; border-radius: 99px; background: #f23e2e; color: #fff; font-size: .7em; text-align: center; }
 .nv-side main { flex: 1; display: grid; align-content: start; gap: .5em; padding: .8em; }
 .nv-side main i { height: 1.8em; border-radius: 5px; background: #11151a; }
-/* Rail mode: labels leave the layout but stay readable by screen readers; a tooltip replaces them on hover. */
 .nv-side[data-rail] aside { width: 3.2em; }
 .nv-side[data-rail] .nv-side-toggle span:first-child { rotate: 180deg; }
 .nv-side[data-rail] :is(a span, .nv-side-label) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -300,7 +298,6 @@ ${FOCUS('.nv-side')}`,
 .nv-bottom { display: flex; justify-content: space-around; padding: .45em .4em .7em; border-top: 1px solid #1f252d; background: #0f1319; }
 .nv-bottom a { display: flex; align-items: center; padding: .45em .6em; border-radius: 99px; color: #8a94a0; text-decoration: none; transition: background .25s, color .25s; }
 .nv-bottom i { font-style: normal; font-size: 1.15em; line-height: 1; }
-/* The label only takes space on the active item; it slides open by max-width (screen readers read it either way). */
 .nv-bottom span { display: inline-block; max-width: 0; overflow: hidden; font-size: .8em; font-weight: 600; white-space: nowrap; transition: max-width .28s cubic-bezier(.5, 0, .2, 1), margin .28s; }
 .nv-bottom a[aria-current] { background: color-mix(in srgb, ${A} 16%, transparent); color: ${A}; }
 .nv-bottom a[aria-current] span { max-width: 6em; margin-left: .4em; }
@@ -323,7 +320,6 @@ ${FOCUS('.nv-bottom')}`,
 .nv-burger { ${FONT} position: relative; width: 15em; height: 17em; border: 3px solid #2a2f37; border-radius: 1.6em; overflow: hidden; background: #0c0f13; }
 .nv-burger header { display: flex; justify-content: space-between; align-items: center; padding: .8em 1em; border-bottom: 1px solid #1f252d; }
 .nv-burger button { position: relative; width: 2.2em; height: 2.2em; border: 0; border-radius: calc(${R} * .7); background: none; cursor: pointer; }
-/* Three bars from one span and its pseudo-elements; the middle one fades as the others cross. */
 .nv-burger button span, .nv-burger button span::before, .nv-burger button span::after { position: absolute; left: .45em; right: .45em; height: 2px; border-radius: 1px; background: #e9e6dd; transition: transform .3s cubic-bezier(.5, 0, .2, 1), opacity .2s, top .3s; }
 .nv-burger button span { top: calc(50% - 1px); }
 .nv-burger button span::before, .nv-burger button span::after { content: ""; left: 0; right: 0; }
@@ -456,7 +452,6 @@ ${FOCUS('.nv-mega')}`,
       html: `<div class="nv-skip"><a class="nv-skip-link" href="#nv-skip-main">Pular para o conteúdo</a><header><b>Marca</b><span>Serviços</span><span>Projetos</span><span>Blog</span><span>Contato</span></header><main id="nv-skip-main" tabindex="-1"><b>Conteúdo principal</b><i></i></main><button type="button" class="nv-skip-sim">Simular primeiro Tab</button></div>`,
       css: `
 .nv-skip { ${FONT} position: relative; display: grid; gap: .5em; padding-top: .3em; overflow: hidden; }
-/* Off-canvas until it receives keyboard focus; the first Tab on the page lands here. */
 .nv-skip-link { position: absolute; left: .5em; top: .3em; z-index: 2; padding: .55em .9em; border-radius: calc(${R} * .7); background: ${A}; color: #0e0e0c; font-weight: 700; font-size: .85em; text-decoration: none; translate: 0 -150%; transition: translate .18s; }
 .nv-skip-link:focus-visible, .nv-skip-link.show { translate: 0; outline: 2px solid #e9e6dd; outline-offset: 2px; }
 .nv-skip header { display: flex; gap: .8em; padding: .5em .6em; border: 1px solid #1f252d; border-radius: calc(${R} * .7); font-size: .8em; color: #8a94a0; }

@@ -127,10 +127,8 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, .45); overflow: hidden; touch-action: pan-y; user-select: none;
   transform: translateX(var(--dx, 0px)) translateY(var(--y, 0px)) scale(var(--s, 1));
   transition: transform .35s cubic-bezier(.2, .8, .2, 1), opacity .3s; }
-/* Back cards shrink toward the edge that stays hidden behind the front one. */
 .toaster[data-position^="bottom"] .toast { bottom: 0; transform-origin: 50% 0; }
 .toaster[data-position^="top"] .toast { top: 0; transform-origin: 50% 100%; }
-/* Entry needs no JS timing: the browser starts each new toast from these values. */
 @starting-style {
   .toaster[data-position^="bottom"] .toast { transform: translateY(110%) scale(.92); opacity: 0; }
   .toaster[data-position^="top"] .toast { transform: translateY(-110%) scale(.92); opacity: 0; }

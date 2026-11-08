@@ -18,7 +18,6 @@ function subscribe(notify: () => void) {
   };
 }
 
-// An explicit "on" from the accessibility panel has to beat the system preference, not just match it.
 function read() {
   const motion = document.documentElement.dataset.motion;
   if (motion === "off") return true;

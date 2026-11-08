@@ -101,7 +101,6 @@
 .tg-sky { position: relative; display: inline-block; font-size: 15px; cursor: pointer; }
 .tg-sky input { ${HIDE} }
 .tg-sky i { position: relative; display: block; width: 4.2em; height: 2.2em; border-radius: ${R}; overflow: hidden; background: linear-gradient(#6fb6f2, #bfe3ff); transition: background .45s; }
-/* Sun by day; the same disc becomes a moon with an inset shadow for a crater. */
 .tg-sky i::before { content: ""; position: absolute; top: .3em; left: .3em; width: 1.6em; height: 1.6em; border-radius: 50%; background: #ffd23f; box-shadow: 0 0 0 .28em rgba(255, 210, 63, .3); transition: transform .5s cubic-bezier(.5, 0, .2, 1), background .5s, box-shadow .5s; }
 .tg-sky i::after { content: ""; position: absolute; top: .5em; left: .65em; width: .14em; height: .14em; border-radius: 50%; background: #fff; opacity: 0; transform: translateY(.4em);
   box-shadow: .9em .55em 0 #fff, .35em 1.05em 0 #fff, 1.35em .1em 0 #fff; transition: opacity .4s, transform .5s; }
@@ -133,12 +132,10 @@
 .tg-goo input { ${HIDE} }
 .tg-goo i { position: relative; width: 3.4em; height: 1.6em; border-radius: ${R}; background: #2a2f37; transition: background .25s; }
 .tg-goo i::before { content: ""; position: absolute; top: .2em; left: .2em; width: 1.2em; height: 1.2em; border-radius: calc(${R} * .75); background: #e9e6dd; transition: left .32s cubic-bezier(.6, 0, .2, 1), width .16s; }
-/* Holding the pointer down stretches the knob toward where it is about to go. */
 .tg-goo:active i::before { width: 1.8em; }
 .tg-goo input:checked + i { background: ${A}; }
 .tg-goo input:checked + i::before { left: calc(100% - 1.4em); background: #0e0e0c; }
 .tg-goo:active input:checked + i::before { left: calc(100% - 2em); }
-/* Two identical keyframes with different names, so every change restarts the stretch. */
 .tg-goo input:checked + i::before { animation: tg-goo-on .32s; }
 .tg-goo input:not(:checked) + i::before { animation: tg-goo-off .32s; }
 .tg-goo input:focus-visible + i { outline: 2px solid ${A}; outline-offset: 3px; }
@@ -182,7 +179,6 @@
 .tg-tree legend { padding: 0; margin-bottom: .5em; font-weight: 600; }
 .tg-tree label { display: flex; align-items: center; gap: .55em; cursor: pointer; }
 .tg-tree > label { padding-left: 1.6em; color: #c9ced4; }
-/* The native checkbox already draws the indeterminate dash; accent-color is enough. */
 .tg-tree input { width: 1.1em; height: 1.1em; margin: 0; accent-color: ${A}; }`,
       js: function (root) {
         const all = root.querySelector('[data-all]');
@@ -217,7 +213,6 @@
       css: `
 .tg-seg { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); min-width: 17em; padding: .25em; border-radius: ${R}; background: #1a1f26; font: 600 13px/1 system-ui, sans-serif; }
 .tg-seg::before { content: ""; position: absolute; top: .25em; bottom: .25em; left: .25em; width: calc((100% - .5em) / 4); border-radius: ${R}; background: ${A}; transition: transform .32s cubic-bezier(.5, 0, .2, 1); }
-/* The pill's position comes from which label holds the checked radio. */
 .tg-seg:has(label:nth-child(2) input:checked)::before { transform: translateX(100%); }
 .tg-seg:has(label:nth-child(3) input:checked)::before { transform: translateX(200%); }
 .tg-seg:has(label:nth-child(4) input:checked)::before { transform: translateX(300%); }
@@ -236,13 +231,11 @@
 .tg-stars input { ${HIDE} }
 .tg-stars label { position: relative; font-size: 2.1em; line-height: 1; color: #2a2f37; cursor: pointer; transition: color .12s, transform .12s; }
 .tg-stars label span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-/* DOM order stays 1 → 5 (so arrow keys go the right way); :has lights every star up to the chosen one. */
 .tg-stars div:has(#tg-s1:checked) label:nth-of-type(-n+1),
 .tg-stars div:has(#tg-s2:checked) label:nth-of-type(-n+2),
 .tg-stars div:has(#tg-s3:checked) label:nth-of-type(-n+3),
 .tg-stars div:has(#tg-s4:checked) label:nth-of-type(-n+4),
 .tg-stars div:has(#tg-s5:checked) label:nth-of-type(-n+5) { color: ${A}; }
-/* Hover preview wins over the saved value while the pointer is on the row. */
 .tg-stars div:hover label { color: #2a2f37; }
 .tg-stars div:has(label:nth-of-type(1):hover) label:nth-of-type(-n+1),
 .tg-stars div:has(label:nth-of-type(2):hover) label:nth-of-type(-n+2),
@@ -259,7 +252,6 @@
 .tg-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: .45em; max-width: 24em; font: 600 13px/1 system-ui, sans-serif; }
 .tg-chips label { position: relative; display: inline-flex; align-items: center; padding: .6em .95em; border: 1.5px solid #3a414b; border-radius: ${R}; color: #c9ced4; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
 .tg-chips input { ${HIDE} }
-/* The tick is a rotated corner that grows from zero width, pushing the text over. */
 .tg-chips label::before { content: ""; width: 0; height: .55em; margin-right: 0; border: solid #0e0e0c; border-width: 0 .14em .14em 0; transform: translateY(-.08em) rotate(45deg); opacity: 0; transition: width .2s, margin .2s, opacity .2s; }
 .tg-chips label:hover { border-color: #5a626c; }
 .tg-chips label:has(input:checked) { background: ${A}; border-color: ${A}; color: #0e0e0c; }
@@ -277,7 +269,6 @@
 .tg-save input:checked + i { background: ${A}; }
 .tg-save input:checked + i::before { transform: translateX(1.2em); background: #0e0e0c; }
 .tg-save small { grid-column: 2; min-height: 1.2em; font: 12px ui-monospace, monospace; color: #8a94a0; }
-/* While saving, the knob breathes and clicks are ignored. */
 .tg-save[data-state="saving"] { cursor: progress; }
 .tg-save[data-state="saving"] i::before { animation: tg-save-wait .8s ease-in-out infinite; }
 .tg-save[data-state="ok"] small { color: ${A}; }

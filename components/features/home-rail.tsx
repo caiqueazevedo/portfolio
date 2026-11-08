@@ -79,9 +79,6 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
       const direction = to > panel ? 1 : -1;
       const from = sections[panel];
 
-      // A gesture that lands mid-flight re-aims the rail instead of being dropped. The
-      // running animations are cancelled first: left alone, the previous panel's arrival
-      // would keep playing against its own departure.
       cancelAnimationFrame(frame.current);
       window.clearTimeout(guard.current);
       for (const section of [from, target]) {

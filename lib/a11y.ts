@@ -35,10 +35,6 @@ export function parsePrefs(raw: string | null): A11yPrefs {
   return prefs;
 }
 
-/**
- * Turning "pause animations" off has to beat the system's reduced-motion setting, so it stores an
- * explicit "on"; turning it on while the system already reduces motion needs no attribute at all.
- */
 export function nextPrefs(
   prefs: A11yPrefs,
   key: A11yKey,
@@ -59,7 +55,6 @@ export function applyPrefs(root: HTMLElement, prefs: A11yPrefs) {
   }
 }
 
-// Runs in <head> before the first paint, so a saved preference never flashes the default theme.
 export const A11Y_BOOT = `(()=>{try{var p=JSON.parse(localStorage.getItem(${JSON.stringify(
   A11Y_KEY,
 )})||"{}"),d=document.documentElement.dataset;for(var k of ${JSON.stringify(

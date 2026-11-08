@@ -126,7 +126,6 @@ ${AV}
 ${AV}
 .av-presence { ${FONT} display: grid; grid-template-columns: repeat(2, auto); gap: .8em 1.4em; margin: 0; padding: 0; list-style: none; }
 .av-presence li { position: relative; display: flex; align-items: center; gap: .6em; font-size: .85em; }
-/* The dot sits on the avatar's lower-right edge, cut out of it by a ring in the background colour. */
 .av-presence i { position: absolute; left: 1.95em; top: 1.95em; width: .85em; height: .85em; border-radius: 50%; box-shadow: 0 0 0 .18em #07090b; }
 .av-presence [data-status="online"] { background: #3ddc84; }
 .av-presence [data-status="online"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #3ddc84; animation: av-ping 2s ease-out infinite; }
@@ -147,7 +146,6 @@ ${AV}
 .av-stack li { margin-left: -.7em; transition: margin .25s cubic-bezier(.3, 1.3, .5, 1), transform .2s; }
 .av-stack li:first-child { margin-left: 0; }
 .av-stack .av { box-shadow: 0 0 0 .18em #07090b; }
-/* Hover or expansion fans the stack out; each face lifts on its own hover. */
 .av-stack:hover li, .av-stack[data-open] li { margin-left: .15em; }
 .av-stack li:hover { transform: translateY(-.25em); z-index: 1; }
 .av-stack button { display: grid; place-items: center; height: 2.6em; min-width: 2.6em; margin-left: -.7em; padding: 0 .55em; border: 0; border-radius: ${SH}; box-shadow: 0 0 0 .18em #07090b; background: #2a2f37; color: #e9e6dd; font: 700 .85em/1 system-ui, sans-serif; cursor: pointer; transition: margin .25s; }
@@ -381,10 +379,8 @@ ${AV}
       css: `
 .av-ribbon { ${FONT} position: relative; display: grid; gap: .2em; width: 12em; padding: 1.2em 1em 1em; border: 1.5px solid #2a2f37; border-radius: 10px;
   clip-path: inset(0 0 -1em -1.5em); }
-/* A band rotated across the corner; the card's clip-path trims its ends but lets the tag hang out on the left. */
 .av-ribbon-band { position: absolute; top: .9em; right: -2.4em; width: 8em; padding: .25em 0; rotate: 45deg; background: ${A}; color: #0e0e0c; font: 800 .65em/1.3 system-ui, sans-serif; letter-spacing: .14em; text-align: center; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
 .av-ribbon small { font-family: ui-monospace, monospace; color: #8a94a0; }
-/* A tag hanging off the left edge, with a folded corner drawn by borders. */
 .av-ribbon-tag { justify-self: start; position: relative; margin: .6em 0 0 -1.35em; padding: .3em .7em .3em 1.1em; background: #2e4bf2; color: #fff; font-size: .72em; font-weight: 600; }
 .av-ribbon-tag::after { content: ""; position: absolute; left: 0; top: 100%; border-top: .45em solid #1a2c8f; border-left: .45em solid transparent; }`,
     },

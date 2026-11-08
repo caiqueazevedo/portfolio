@@ -1,14 +1,4 @@
 #!/bin/bash
-# Harness dos hooks: alimenta payloads reais e confere o exit code.
-#
-# Existe porque hook quebrado falha em silencio. Os PreToolUse do primeiro repo
-# a receber esses hooks passaram meses saindo 0 sem checar nada — liam
-# '/dev/stdin', que no Windows resolve para <drive>:\dev\stdin e lanca ENOENT.
-# Hook sem teste e indistinguivel de hook que aprova tudo.
-#
-# Testa apenas os hooks presentes: repo que nao instalou um deles nao falha.
-#
-# Uso: bash .claude/hooks/test-hooks.sh
 
 cd "$(dirname "$0")/../.." || exit 1
 HOOKS=".claude/hooks"
@@ -40,15 +30,9 @@ write_payload() {
   printf '{"hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"%s","content":"%s"}}' "$1" "$2"
 }
 
-# Fixtures montados por concatenacao: o literal completo nao existe no arquivo,
-# mas e reconstruido em runtime. Assim o guard continua estrito (a checagem de
-# chave privada vale em TODO caminho) sem se auto-bloquear ao editar o harness.
 PRIV_CRED='SERVICE_'"ROLE_KEY"
 PRIV_KEY_HEADER='-----BEGIN RSA PRIVATE'" KEY-----"
 
-# Tipo e escopo validos saem do manifesto do proprio repo. Os repos divergem
-# (`feat:` no Pulse, `feature:` no portfolio; o ZenID tem lista fechada de
-# escopos) e fixture cravado reprova o repo por praticar a propria convencao.
 OK_SUBJECT=$(node -e "
   let type = 'feat', scope = 'ui';
   try {
@@ -91,7 +75,6 @@ check "co-authored-by"          commit-guard.sh 2 "$(bash_payload "git commit -m
 check "heredoc nao parseavel"   commit-guard.sh 0 "$(bash_payload 'git commit -m \"\$(cat <<EOF)\"')"
 check "nao e commit"            commit-guard.sh 0 "$(bash_payload 'git status')"
 
-# Alias: so valem onde o repo os declara.
 ALIAS=$(node -e "
   try {
     const c = JSON.parse(require('fs').readFileSync('.claude/quality.json','utf8')).commit || {};

@@ -122,7 +122,6 @@
   background: linear-gradient(#f23e2e 0 0) left / var(--p, 0%) 100% no-repeat, transparent; }
 .bt-hold span { position: relative; display: inline-block; }
 .bt-hold[data-done] span::after { display: none; }
-/* Text flips colour exactly where the fill has reached. */
 .bt-hold span::after { content: attr(data-text); position: absolute; inset: 0; color: #0e0e0c; clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0); white-space: nowrap; }
 .bt-hold[data-done] { background: #f23e2e; color: #0e0e0c; }
 .bt-hold:focus-visible { outline: 2px solid #f23e2e; outline-offset: 4px; }`,
@@ -232,7 +231,6 @@
 .bt-refresh:hover { border-color: ${A}; }
 .bt-refresh svg { width: 1.3em; height: 1.3em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .bt-refresh.spin svg { animation: bt-refresh .7s cubic-bezier(.3, 0, .2, 1); }
-/* Tooltip from the same text as the accessible name, shown on hover and keyboard focus. */
 .bt-refresh::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 4px; padding: .45em .65em; border-radius: 4px; background: #e9e6dd; color: #0e0e0c; font-size: 12px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
 .bt-refresh:is(:hover, :focus-visible)::after { opacity: 1; translate: -50% 0; transition-delay: .25s; }
 .bt-refresh:focus-visible { outline: 2px solid ${A}; outline-offset: 3px; }
@@ -275,7 +273,6 @@
 .bt-like svg { width: 1.3em; height: 1.3em; fill: transparent; stroke: currentColor; stroke-width: 2; overflow: visible; transition: fill .2s; }
 .bt-like[aria-pressed="true"] { border-color: ${A}; color: ${A}; }
 .bt-like[aria-pressed="true"] svg { fill: currentColor; animation: bt-like-pop .45s cubic-bezier(.3, 1.8, .5, 1); }
-/* Eight sparks drawn with one element's box-shadows. */
 .bt-like::before { content: ""; position: absolute; left: 1.75em; top: 50%; width: .28em; height: .28em; margin: -.14em; border-radius: 50%; opacity: 0; pointer-events: none;
   box-shadow: 0 -1.5em ${A}, 1.06em -1.06em ${A}, 1.5em 0 ${A}, 1.06em 1.06em ${A}, 0 1.5em ${A}, -1.06em 1.06em ${A}, -1.5em 0 ${A}, -1.06em -1.06em ${A}; }
 .bt-like.burst::before { animation: bt-like-burst .55s ease-out; }
@@ -341,7 +338,6 @@
 .bt-glow { ${BASE} position: relative; padding: 1em 1.7em; border: 1px solid #2a2f37; border-radius: ${R}; background: #13171c; color: #e9e6dd; overflow: hidden; }
 .bt-glow::before { content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .25s;
   background: radial-gradient(7em circle at var(--x, 50%) var(--y, 50%), color-mix(in srgb, ${A} 40%, transparent), transparent 70%); }
-/* A second, tighter light on the border only, masked to a 1px ring. */
 .bt-glow::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; opacity: 0; transition: opacity .25s;
   background: radial-gradient(4em circle at var(--x, 50%) var(--y, 50%), ${A}, transparent 70%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;

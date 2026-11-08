@@ -49,7 +49,6 @@
     background: var(--color-mist);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    /* rem, not px: the text-size options in the accessibility panel scale the root font size. */
     font-size: 1rem;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
@@ -73,7 +72,6 @@
     color: var(--color-paper);
   }
 
-  /* Scoped to :not([data-motion="on"]) so the panel can put animations back against the system. */
   @media (prefers-reduced-motion: reduce) {
     html:not([data-motion="on"]) *,
     html:not([data-motion="on"]) ::before,
@@ -120,10 +118,6 @@
   min-width: max-content;
 }
 
-/* Accessibility preferences.
-   components/features/a11y-panel.tsx writes these as data-* on <html>; the inline boot script in
-   app/[locale]/layout.tsx restores them before the first paint. */
-
 html[data-text="115"] {
   font-size: 115%;
 }
@@ -134,11 +128,6 @@ html[data-text="150"] {
   font-size: 150%;
 }
 
-/* The full link row fits only once the viewport is wide enough to hold it beside the centered
-   brand, and every text step pushes that point further out: the links grow with the font while
-   their column grows with the viewport. Under the threshold the compact menu takes over, exactly
-   as it does on a phone. The widths are measured against the longest list (PT), with room to
-   spare, and they own the switch outright — the nav markup carries no responsive display class. */
 [data-nav="full"] {
   display: none;
 }
@@ -179,17 +168,12 @@ html[data-text="150"] {
   }
 }
 
-/* Same squeeze in the ink bar: on a narrow phone the scaled links no longer fit beside the
-   accessibility and language controls. GitHub and e-mail are a shortcut — they live in the contact
-   panel and in the footer too — so they are what gives way. */
 @media (width < 480px) {
   html[data-text] [data-bar="optional"] {
     display: none;
   }
 }
 
-/* html[data-contrast] outranks the :root of @theme, so every Tailwind color utility follows along.
-   Light only — the site is color-scheme: light. The status hues are darkened to clear 4.5:1 on white. */
 html[data-contrast="high"] {
   --color-ink: #000000;
   --color-ink-soft: #000000;
@@ -225,7 +209,6 @@ html[data-links="underline"] a {
   text-underline-offset: 3px;
 }
 
-/* Monochrome on purpose: a colored cursor would be the only accent on the whole site. */
 html[data-cursor="big"] {
   cursor:
     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M5 2 L5 26 L11.5 19.5 L15.5 28 L19.5 26 L15.5 17.5 L24 17.5 Z' fill='%23fff' stroke='%23000' stroke-width='2' stroke-linejoin='round'/></svg>")
@@ -252,7 +235,6 @@ html[data-motion="off"] ::after {
   scroll-behavior: auto !important;
 }
 
-/* A body sibling, never an ancestor of the nav: the mix-blend-mode inversion stays intact. */
 .reading-guide {
   position: fixed;
   top: var(--guide-y, 33vh);
@@ -267,7 +249,6 @@ html[data-motion="off"] ::after {
   pointer-events: none;
 }
 
-/* The home panels are one screen tall and clipped; enlarged text has to be reachable. */
 @media (min-width: 48rem) {
   html[data-text] [data-panel] {
     overflow-y: auto;
