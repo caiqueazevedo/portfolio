@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ExperimentGrid, type GridItem } from "@/components/features/experiment-grid";
+import { PageBreadcrumb } from "@/components/features/page-breadcrumb";
 import { Rule } from "@/components/ui/rule";
 import { experiments } from "@/content/experiments";
 import { LANG_TAG, routing } from "@/i18n/routing";
@@ -62,12 +63,13 @@ export default async function OpenSourcePage() {
 
   return (
     <>
-      <section className="bg-mist px-edge flex flex-col gap-7 pt-[calc(94px+6vh)] pb-[clamp(40px,8vh,96px)]">
+      <section className="bg-mist px-edge relative flex flex-col gap-7 pt-[calc(94px+6vh)] pb-[clamp(40px,8vh,96px)]">
+        <PageBreadcrumb section="openSource" />
         <div className="flex flex-col gap-3.5">
           <span className="kicker">{t("kicker")}</span>
           <Rule />
         </div>
-        <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em]">
+        <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] hyphens-auto break-words">
           {t("title")}
         </h1>
         <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">

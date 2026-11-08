@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { PageBreadcrumb } from "@/components/features/page-breadcrumb";
 import { Photo } from "@/components/ui/photo";
 import { Rule } from "@/components/ui/rule";
 import { bio, experience, stack } from "@/content/about";
@@ -36,7 +37,8 @@ export default async function AboutPage() {
             priority
           />
         </div>
-        <div className="px-edge flex flex-col gap-7 pt-[calc(94px+5vh)] pb-[clamp(40px,8vh,96px)]">
+        <div className="px-edge relative flex flex-col gap-7 pt-[calc(94px+5vh)] pb-[clamp(40px,8vh,96px)]">
+          <PageBreadcrumb section="about" />
           <div className="flex flex-col gap-3.5">
             <span className="kicker">{t("kicker")}</span>
             <Rule />

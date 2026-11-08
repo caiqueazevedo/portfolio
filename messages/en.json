@@ -15,6 +15,9 @@
     "menu": "Open menu",
     "close": "Close menu"
   },
+  "breadcrumb": {
+    "label": "Breadcrumb"
+  },
   "chrome": {
     "role": "Software engineer · Web · Mobile · Serverless",
     "github": "GitHub",
@@ -128,7 +131,6 @@
     }
   },
   "case": {
-    "back": "← Back",
     "role": "Role",
     "year": "Year",
     "stack": "Stack",
@@ -209,7 +211,6 @@
     "lines": "lines",
     "how": "How it works",
     "open": "Open →",
-    "back": "← All experiments",
     "next": "Next experiment",
     "count": "{count} experiments",
     "hover": "Move the mouse. Click to open.",

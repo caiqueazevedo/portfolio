@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ExperimentCard } from "@/components/features/experiment-card";
-import { ButtonLink } from "@/components/ui/button";
+import { PageBreadcrumb } from "@/components/features/page-breadcrumb";
 import { Container } from "@/components/ui/container";
 import { IconButtonLink } from "@/components/ui/icon-button";
+import { Rule } from "@/components/ui/rule";
 import { experiments } from "@/content/experiments";
 import { routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
@@ -36,17 +37,37 @@ export default async function ExperimentPage({
   const experiment = experiments[index];
   const next = experiments[(index + 1) % experiments.length];
   const t = await getTranslations("openSource");
+  const locale = await getLocale();
 
   return (
     <>
-      <Container className="pt-8">
-        <ButtonLink href="/open-source" variant="rule">
-          {t("back")}
-        </ButtonLink>
-      </Container>
-      <div className="mt-6">
-        <ExperimentCard experiment={experiment} index={index} />
-      </div>
+      <section className="bg-mist px-edge relative flex flex-col gap-7 pt-[calc(94px+6vh)] pb-[clamp(40px,8vh,96px)]">
+        <PageBreadcrumb section="openSource" leaf={experiment.title} />
+        <div className="flex flex-col gap-3.5">
+          <span className="kicker">
+            {String(index + 1).padStart(2, "0")} — {experiment.tags[0]}
+          </span>
+          <Rule />
+        </div>
+        <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] hyphens-auto break-words">
+          {experiment.title}
+        </h1>
+        <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">
+          {experiment.summary[locale]}
+        </p>
+        <ul className="flex flex-wrap gap-2">
+          {experiment.tags.map((tag) => (
+            <li key={tag}>
+              <span className="border-ink/14 text-muted border px-2.5 py-1 text-[11px] tracking-[0.12em] uppercase">
+                {tag}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <ExperimentCard experiment={experiment} />
+
       <section className="border-ink/14 border-t">
         <Container className="flex items-center justify-between gap-4 py-7">
           <span className="label text-muted">

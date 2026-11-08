@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { ContactForm } from "@/components/features/contact-form";
+import { PageBreadcrumb } from "@/components/features/page-breadcrumb";
 import { Rule } from "@/components/ui/rule";
 import { site } from "@/content/site";
 import { routing } from "@/i18n/routing";
@@ -27,13 +28,14 @@ export default async function ContactPage() {
   const chrome = await getTranslations("chrome");
 
   return (
-    <section className="bg-mist px-edge grid grid-cols-1 gap-12 pt-[calc(94px+6vh)] pb-[clamp(56px,10vh,120px)] lg:grid-cols-[1.1fr_1fr] lg:gap-20">
+    <section className="bg-mist px-edge relative grid grid-cols-1 gap-12 pt-[calc(94px+6vh)] pb-[clamp(56px,10vh,120px)] lg:grid-cols-[1.1fr_1fr] lg:gap-20">
+      <PageBreadcrumb section="contact" />
       <div className="flex min-w-0 flex-col gap-7">
         <div className="flex flex-col gap-3.5">
           <span className="kicker">{t("metaTitle")}</span>
           <Rule />
         </div>
-        <h1 className="text-[clamp(44px,8vw,140px)] leading-[0.86] font-medium tracking-[-0.01em]">
+        <h1 className="text-[clamp(44px,8vw,140px)] leading-[0.86] font-medium tracking-[-0.01em] break-words hyphens-auto">
           {home("contactTitle1")}
           <br />
           {home("contactTitle2")}

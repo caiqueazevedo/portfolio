@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { PageBreadcrumb } from "@/components/features/page-breadcrumb";
 import { Rule } from "@/components/ui/rule";
 import { Photo } from "@/components/ui/photo";
 import { media } from "@/content/media";
@@ -50,7 +51,6 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
   return (
     <article className="bg-paper">
       <div className="border-ink/12 px-bar label flex items-center justify-between gap-6 border-b py-3">
-        <Link href="/work">{t("back")}</Link>
         <span className="text-muted text-[10px] tracking-[0.2em]">
           {t("counter", { num: number, total: padNumber(projects.length - 1) })} ·{" "}
           {t(`status.${project.status}`)}
@@ -59,7 +59,8 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
       </div>
 
       <section className="bg-mist grid min-h-[calc(100svh-94px)] grid-cols-1 lg:grid-cols-2">
-        <div className="px-edge flex flex-col justify-between gap-12 py-[clamp(32px,6vh,80px)]">
+        <div className="px-edge relative flex flex-col justify-between gap-12 pt-[clamp(56px,8vh,96px)] pb-[clamp(32px,6vh,80px)]">
+          <PageBreadcrumb section="work" leaf={project.name} />
           <div className="flex flex-col gap-7">
             <div className="flex flex-col gap-3.5">
               <span className="kicker">
@@ -68,7 +69,7 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
               </span>
               <Rule />
             </div>
-            <h1 className="text-[clamp(52px,8vw,150px)] leading-[0.86] font-medium tracking-[-0.01em] text-balance">
+            <h1 className="text-[clamp(52px,8vw,150px)] leading-[0.86] font-medium tracking-[-0.01em] text-balance hyphens-auto break-words">
               {project.name}
             </h1>
             <p className="max-w-[520px] text-[clamp(18px,1.8vw,26px)] leading-[1.3] text-pretty">

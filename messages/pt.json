@@ -15,6 +15,9 @@
     "menu": "Abrir menu",
     "close": "Fechar menu"
   },
+  "breadcrumb": {
+    "label": "Trilha de navegação"
+  },
   "chrome": {
     "role": "Engenheiro de software · Web · Mobile · Serverless",
     "github": "GitHub",
@@ -128,7 +131,6 @@
     }
   },
   "case": {
-    "back": "← Voltar",
     "role": "Papel",
     "year": "Ano",
     "stack": "Stack",
@@ -209,7 +211,6 @@
     "lines": "linhas",
     "how": "Como funciona",
     "open": "Abrir →",
-    "back": "← Todos os experimentos",
     "next": "Próximo experimento",
     "count": "{count} experimentos",
     "hover": "Passe o mouse. Clique pra abrir.",
