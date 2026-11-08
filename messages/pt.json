@@ -23,6 +23,26 @@
     "github": "GitHub",
     "email": "E-mail"
   },
+  "a11y": {
+    "open": "Acessibilidade",
+    "title": "Acessibilidade",
+    "intro": "Os ajustes abaixo ficam salvos neste aparelho e valem em todas as páginas do site.",
+    "textSize": "Tamanho do texto",
+    "options": "Ajustes de leitura e movimento",
+    "contrast": "Alto contraste",
+    "readable": "Fonte para leitura",
+    "readableHint": "Atkinson Hyperlegible, com mais espaço entre letras e linhas. Ajuda com dislexia e baixa visão.",
+    "links": "Sublinhar links",
+    "cursor": "Cursor grande",
+    "motion": "Pausar animações",
+    "motionHint": "Desliga transições e rolagem suave.",
+    "guide": "Guia de leitura",
+    "guideHint": "Uma faixa que acompanha o mouse ou o campo em foco.",
+    "libras": "Tradução para Libras (VLibras)",
+    "librasHint": "Mostra o tradutor VLibras. Ao ligar, o site carrega o serviço do governo federal (gov.br).",
+    "reset": "Restaurar padrão",
+    "close": "Fechar"
+  },
   "home": {
     "word": "Caique",
     "statement1": "Sistemas que saem",

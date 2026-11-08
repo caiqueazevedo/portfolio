@@ -45,7 +45,7 @@ export async function ExperimentCard({ experiment }: { experiment: Experiment })
               href={demoPath}
               target="_blank"
               rel="noopener"
-              className="border-ink/14 text-ink hover:bg-ink hover:text-paper inline-flex items-center gap-2 border px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] uppercase transition-all duration-200"
+              className="border-ink/14 text-ink hover:bg-ink hover:text-paper inline-flex items-center gap-2 border px-4 py-2.5 text-[0.8125rem] font-bold tracking-[0.1em] uppercase transition-all duration-200"
             >
               {t("fullscreen")} ↗
             </a>
@@ -54,7 +54,7 @@ export async function ExperimentCard({ experiment }: { experiment: Experiment })
                 href={experiment.sourceUrl}
                 target="_blank"
                 rel="noopener"
-                className="border-ink/14 text-ink hover:bg-ink hover:text-paper inline-flex items-center gap-2 border px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] uppercase transition-all duration-200"
+                className="border-ink/14 text-ink hover:bg-ink hover:text-paper inline-flex items-center gap-2 border px-4 py-2.5 text-[0.8125rem] font-bold tracking-[0.1em] uppercase transition-all duration-200"
               >
                 GitHub ↗
               </a>
@@ -69,7 +69,7 @@ export async function ExperimentCard({ experiment }: { experiment: Experiment })
             copiedLabel={t("copied")}
             linesLabel={t("lines")}
           />
-          <p className="text-body text-[13px] leading-relaxed">
+          <p className="text-body text-[0.8125rem] leading-relaxed">
             <span className="label text-ink mr-2">{t("how")}</span>
             {experiment.technique[locale]}
           </p>

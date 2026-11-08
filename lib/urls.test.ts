@@ -1,5 +1,17 @@
-import { describe, expect, it } from "vitest";
-import { localePath, openSourceUrl, wwwUrl } from "./urls";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { localePath, openSourceTarget, wwwHome, wwwPath } from "./urls";
+
+/** The production branch is decided when the module loads, so it needs a fresh one. */
+async function inProduction() {
+  vi.stubEnv("NODE_ENV", "production");
+  vi.resetModules();
+  return import("./urls");
+}
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.resetModules();
+});
 
 describe("localePath", () => {
   it("collapses the root into the bare locale", () => {
@@ -11,20 +23,47 @@ describe("localePath", () => {
   });
 });
 
-describe("wwwUrl", () => {
-  it("points at the marketing host", () => {
-    expect(wwwUrl("pt", "/contact")).toBe("https://www.caiqueazevedo.com.br/pt/contact");
+describe("wwwPath", () => {
+  it("keeps the canonical URL on the marketing host", () => {
+    expect(wwwPath("pt", "/contact").url).toBe("https://www.caiqueazevedo.com.br/pt/contact");
+  });
+
+  it("links by path alone, because the subdomain hands those paths back", () => {
+    expect(wwwPath("pt", "/contact").link).toBe("/contact");
+    expect(wwwPath("en", "/work").link).toBe("/work");
   });
 });
 
-describe("openSourceUrl", () => {
-  it("drops the section segment on the subdomain", () => {
-    expect(openSourceUrl("pt")).toBe("https://open-source.caiqueazevedo.com.br/pt");
+describe("wwwHome", () => {
+  it("links to the local root while a single origin serves everything", () => {
+    expect(wwwHome("pt")).toEqual({ url: "https://www.caiqueazevedo.com.br/pt", link: "/" });
+  });
+
+  it("gives up the client transition in production, where the root is the other host's list", async () => {
+    const { wwwHome: split } = await inProduction();
+    expect(split("pt")).toEqual({ url: "https://www.caiqueazevedo.com.br/pt", link: null });
+  });
+});
+
+describe("openSourceTarget", () => {
+  it("drops the section segment from the canonical URL", () => {
+    expect(openSourceTarget("pt").url).toBe("https://open-source.caiqueazevedo.com.br/pt");
   });
 
   it("serves an experiment straight off the locale root", () => {
-    expect(openSourceUrl("en", "pixel-sort")).toBe(
+    expect(openSourceTarget("en", "pixel-sort").url).toBe(
       "https://open-source.caiqueazevedo.com.br/en/pixel-sort",
     );
+  });
+
+  it("keeps the section in the link while one origin serves both", () => {
+    expect(openSourceTarget("pt").link).toBe("/open-source");
+    expect(openSourceTarget("en", "pixel-sort").link).toBe("/open-source/pixel-sort");
+  });
+
+  it("crosses hosts in production", async () => {
+    const { openSourceTarget: split } = await inProduction();
+    expect(split("pt").link).toBeNull();
+    expect(split("en", "pixel-sort").link).toBeNull();
   });
 });

@@ -28,7 +28,7 @@ export async function PanelAbout() {
             {bio[locale].slice(0, PARAGRAPHS).map((paragraph) => (
               <p
                 key={paragraph.slice(0, 24)}
-                className="text-[clamp(12px,min(1.05vw,2.3vh),15px)] leading-[1.5] text-pretty opacity-80"
+                className="text-[clamp(0.75rem,min(1.05vw,2.3vh),0.9375rem)] leading-[1.5] text-pretty opacity-80"
               >
                 {paragraph}
               </p>
@@ -39,10 +39,10 @@ export async function PanelAbout() {
         <div className="border-paper/30 grid gap-[clamp(16px,2vw,32px)] border-t pt-[3vh] md:grid-cols-3">
           {stack.map((group) => (
             <div key={group.label.en} className="flex flex-col gap-2">
-              <span className="text-[11px] font-semibold tracking-[0.2em] uppercase">
+              <span className="text-[0.6875rem] font-semibold tracking-[0.2em] uppercase">
                 {group.label[locale]}
               </span>
-              <span className="text-[clamp(12px,min(1vw,2.2vh),14px)] leading-[1.5] text-pretty opacity-70">
+              <span className="text-[clamp(0.75rem,min(1vw,2.2vh),0.875rem)] leading-[1.5] text-pretty opacity-70">
                 {group.items.join(" · ")}
               </span>
             </div>

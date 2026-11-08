@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 type Variant = "primary" | "ghost" | "paper";
 
 const BASE =
-  "inline-flex h-11 w-11 shrink-0 items-center justify-center border-2 text-[22px] font-extrabold leading-none transition-all duration-200";
+  "inline-flex h-11 w-11 shrink-0 items-center justify-center border-2 text-[1.375rem] font-extrabold leading-none transition-all duration-200";
 
 const VARIANT: Record<Variant, string> = {
   primary: "bg-ink text-paper border-ink hover:-rotate-6 hover:scale-[1.06]",

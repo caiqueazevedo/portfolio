@@ -1,7 +1,8 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { buttonClass } from "@/components/ui/button";
+import { TargetLink } from "@/components/ui/target-link";
 import { site } from "@/content/site";
-import { wwwUrl } from "@/lib/urls";
+import { wwwHome, wwwPath } from "@/lib/urls";
 export async function Footer() {
   const t = await getTranslations("home");
   const contact = await getTranslations("contact");
@@ -23,7 +24,7 @@ export async function Footer() {
             <span className="micro opacity-60">{chrome("email")}</span>
             <a
               href={`mailto:${site.email}`}
-              className="rule-link self-start text-[clamp(15px,1.5vw,22px)]"
+              className="rule-link self-start text-[clamp(0.9375rem,1.5vw,1.375rem)]"
             >
               {site.email}
             </a>
@@ -34,27 +35,27 @@ export async function Footer() {
               href={site.github}
               target="_blank"
               rel="noreferrer"
-              className="rule-link self-start text-[clamp(15px,1.5vw,22px)]"
+              className="rule-link self-start text-[clamp(0.9375rem,1.5vw,1.375rem)]"
             >
               {site.github.replace("https://", "")}
             </a>
           </div>
           <div className="flex flex-col items-start gap-2.5">
             <span className="micro opacity-60">{t("contactReply")}</span>
-            <a
-              href={wwwUrl(locale, "/contact")}
+            <TargetLink
+              to={wwwPath(locale, "/contact")}
               className={buttonClass("solid", "bg-paper text-ink hover:bg-paper/80 hover:text-ink")}
             >
               {contact("formTitle")}
-            </a>
+            </TargetLink>
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-6 text-[11px] tracking-[0.16em] uppercase opacity-60">
+        <div className="flex items-center justify-between gap-6 text-[0.6875rem] tracking-[0.16em] uppercase opacity-60">
           <span>
             © {year} {site.name}
           </span>
-          <a href={wwwUrl(locale, "/")}>{t("backToStart")}</a>
+          <TargetLink to={wwwHome(locale)}>{t("backToStart")}</TargetLink>
         </div>
       </div>
     </footer>

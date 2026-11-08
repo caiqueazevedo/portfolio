@@ -50,7 +50,7 @@ export type GridLabels = {
   count: string;
 };
 const CHIP =
-  "inline-flex cursor-pointer items-center gap-1.5 border-2 px-3 py-1.5 text-[12px] font-bold tracking-[0.1em] uppercase transition-all duration-200 has-focus-visible:outline-2 has-focus-visible:outline-ink";
+  "inline-flex cursor-pointer items-center gap-1.5 border-2 px-3 py-1.5 text-[0.75rem] font-bold tracking-[0.1em] uppercase transition-all duration-200 has-focus-visible:outline-2 has-focus-visible:outline-ink";
 
 export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: GridLabels }) {
   const [sort, setSort] = useState<Sort>("newest");
@@ -101,7 +101,7 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
                   checked={categories.has(c)}
                   onChange={() => toggle(c)}
                 />
-                <span aria-hidden="true" className="font-mono text-[11px]">
+                <span aria-hidden="true" className="font-mono text-[0.6875rem]">
                   {categories.has(c) ? "✕" : "+"}
                 </span>
                 {labels[c]}
@@ -111,7 +111,7 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
               <button
                 type="button"
                 onClick={() => setCategories(new Set())}
-                className="text-muted hover:text-ink px-2 text-[12px] font-bold tracking-[0.1em] uppercase"
+                className="text-muted hover:text-ink px-2 text-[0.75rem] font-bold tracking-[0.1em] uppercase"
               >
                 {labels.all}
               </button>
@@ -126,7 +126,7 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
             id="experiments-sort"
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
-            className="border-ink/14 bg-paper text-ink focus-visible:border-ink border px-3 py-2 text-[12px] font-bold tracking-[0.1em] uppercase outline-none"
+            className="border-ink/14 bg-paper text-ink focus-visible:border-ink border px-3 py-2 text-[0.75rem] font-bold tracking-[0.1em] uppercase outline-none"
           >
             {SORTS.map((s) => (
               <option key={s} value={s}>
@@ -134,14 +134,14 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
               </option>
             ))}
           </select>
-          <span className="text-muted font-mono text-[12px]" aria-live="polite">
+          <span className="text-muted font-mono text-[0.75rem]" aria-live="polite">
             {labels.count.replace("{count}", String(shown.length))}
           </span>
         </div>
       </div>
 
       {shown.length === 0 ? (
-        <p className="text-body py-10 text-[15px]">{labels.empty}</p>
+        <p className="text-body py-10 text-[0.9375rem]">{labels.empty}</p>
       ) : (
         <div className="grid grid-cols-1 gap-5 py-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {shown.map((e) => {
@@ -154,23 +154,23 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
               >
                 <ExperimentPreview slug={e.slug} title={e.title} href={href} hint={labels.hover} />
                 <div className="flex min-w-0 flex-col gap-2">
-                  <span className="text-ink flex justify-between gap-3 font-mono text-[12px]">
+                  <span className="text-ink flex justify-between gap-3 font-mono text-[0.75rem]">
                     <span>{labels[e.category]}</span>
                     <time dateTime={e.createdAt} className="text-muted">
                       {e.dateLabel}
                     </time>
                   </span>
-                  <h2 className="text-[22px]">
+                  <h2 className="text-[1.375rem]">
                     <Link href={href} className="text-ink hover:text-muted transition-colors">
                       {e.title}
                     </Link>
                   </h2>
-                  <p className="text-body text-[13px]">{e.summary}</p>
+                  <p className="text-body text-[0.8125rem]">{e.summary}</p>
                   <div className="flex items-center justify-between gap-3 pt-1">
                     <ul className="flex flex-wrap gap-1.5">
                       {e.tags.slice(0, 2).map((tag) => (
                         <li key={tag}>
-                          <span className="border-ink/14 text-muted border px-2 py-1 text-[10px] tracking-[0.12em] uppercase">
+                          <span className="border-ink/14 text-muted border px-2 py-1 text-[0.625rem] tracking-[0.12em] uppercase">
                             {tag}
                           </span>
                         </li>
@@ -178,7 +178,7 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
                     </ul>
                     <Link
                       href={href}
-                      className="text-ink hover:text-ink shrink-0 text-[13px] font-bold tracking-[0.1em] uppercase"
+                      className="text-ink hover:text-ink shrink-0 text-[0.8125rem] font-bold tracking-[0.1em] uppercase"
                     >
                       {labels.open}
                     </Link>

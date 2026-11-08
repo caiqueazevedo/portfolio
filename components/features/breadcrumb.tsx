@@ -1,7 +1,9 @@
+import { TargetLink } from "@/components/ui/target-link";
 import { cn } from "@/lib/cn";
 import { breadcrumbJsonLd } from "@/lib/seo";
+import type { Target } from "@/lib/urls";
 
-export type Crumb = { label: string; href?: string };
+export type Crumb = { label: string; target?: Target };
 
 type Props = {
   items: Crumb[];
@@ -10,7 +12,9 @@ type Props = {
 };
 
 export function Breadcrumb({ items, label, className }: Props) {
-  const jsonLd = breadcrumbJsonLd(items.map((item) => ({ label: item.label, url: item.href })));
+  const jsonLd = breadcrumbJsonLd(
+    items.map((item) => ({ label: item.label, url: item.target?.url })),
+  );
 
   return (
     <>
@@ -28,10 +32,13 @@ export function Breadcrumb({ items, label, className }: Props) {
                     /
                   </span>
                 ) : null}
-                {item.href && !last ? (
-                  <a href={item.href} className="label hover:text-muted whitespace-nowrap">
+                {item.target && !last ? (
+                  <TargetLink
+                    to={item.target}
+                    className="label hover:text-muted whitespace-nowrap"
+                  >
                     {item.label}
-                  </a>
+                  </TargetLink>
                 ) : (
                   <span
                     aria-current={last ? "page" : undefined}

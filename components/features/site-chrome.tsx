@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { TargetLink } from "@/components/ui/target-link";
 import { cn } from "@/lib/cn";
 import { goToPanel } from "@/lib/rail-bus";
+import type { Target } from "@/lib/urls";
+import { A11yPanel } from "./a11y-panel";
 import { LocaleSwitch } from "./locale-switch";
 import type { NavItem } from "./nav-items";
 
@@ -14,7 +17,7 @@ type Props = {
   email: string;
   emailUrl: string;
   brand: string;
-  brandHref: string;
+  brandTarget: Target;
   open: string;
   items: NavItem[];
   menuLabel: string;
@@ -28,7 +31,7 @@ export function SiteChrome({
   email,
   emailUrl,
   brand,
-  brandHref,
+  brandTarget,
   open,
   items,
   menuLabel,
@@ -38,7 +41,7 @@ export function SiteChrome({
     <header className={cn("z-30", home ? "contents" : "sticky top-0 z-30")}>
       <div
         className={cn(
-          "bg-ink px-bar text-paper flex h-[30px] items-center justify-between gap-4 text-[10px] font-medium tracking-[0.14em] uppercase",
+          "bg-ink px-bar text-paper flex h-[30px] items-center justify-between gap-4 text-[0.625rem] font-medium tracking-[0.14em] uppercase",
           home && "fixed inset-x-0 top-0 z-30",
         )}
       >
@@ -48,16 +51,21 @@ export function SiteChrome({
             href={githubUrl}
             target="_blank"
             rel="noreferrer"
+            data-bar="optional"
             className="text-paper hover:text-paper/70"
           >
             {github}
           </a>
-          <span aria-hidden="true" className="opacity-40">
+          <span aria-hidden="true" data-bar="optional" className="opacity-40">
             |
           </span>
-          <a href={emailUrl} className="text-paper hover:text-paper/70">
+          <a href={emailUrl} data-bar="optional" className="text-paper hover:text-paper/70">
             {email}
           </a>
+          <span aria-hidden="true" data-bar="optional" className="opacity-40">
+            |
+          </span>
+          <A11yPanel />
           <span aria-hidden="true" className="opacity-40">
             |
           </span>
@@ -74,7 +82,7 @@ export function SiteChrome({
             : "border-ink/12 bg-paper text-ink border-b",
         )}
       >
-        <div className="hidden min-w-0 gap-[clamp(14px,2.4vw,36px)] md:flex">
+        <div data-nav="full" className="min-w-0 gap-[clamp(14px,2.4vw,36px)]">
           {items.map((item) => (
             <NavLink key={item.key} item={item} home={home} />
           ))}
@@ -82,8 +90,8 @@ export function SiteChrome({
 
         <MobileMenu items={items} menuLabel={menuLabel} closeLabel={closeLabel} home={home} />
 
-        <a
-          href={brandHref}
+        <TargetLink
+          to={brandTarget}
           onClick={
             home
               ? (event) => {
@@ -95,9 +103,9 @@ export function SiteChrome({
           className="justify-self-center text-[clamp(16px,1.8vw,24px)] font-medium tracking-[0.22em] whitespace-nowrap"
         >
           {brand}
-        </a>
+        </TargetLink>
 
-        <div className="hidden items-center justify-end gap-2.5 md:flex">
+        <div data-nav="full" className="items-center justify-end gap-2.5">
           <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />
           <span className="whitespace-nowrap">{open}</span>
         </div>
@@ -118,9 +126,9 @@ function NavLink({ item, home }: { item: NavItem; home: boolean }) {
     );
   }
   return (
-    <a href={item.href} className="hover:text-muted whitespace-nowrap">
+    <TargetLink to={item.target} className="hover:text-muted whitespace-nowrap">
       {item.label}
-    </a>
+    </TargetLink>
   );
 }
 function MobileMenu({
@@ -145,14 +153,14 @@ function MobileMenu({
   }, [open]);
 
   return (
-    <div className="md:hidden">
+    <div data-nav="compact">
       <button
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? closeLabel : menuLabel}
         onClick={() => setOpen((value) => !value)}
-        className="flex h-11 w-11 -translate-x-3 items-center justify-center text-[18px]"
+        className="flex h-11 w-11 -translate-x-3 items-center justify-center text-[1.125rem]"
       >
         <span aria-hidden="true">{open ? "✕" : "☰"}</span>
       </button>
@@ -171,19 +179,19 @@ function MobileMenu({
                 setOpen(false);
                 goToPanel(item.panel);
               }}
-              className="text-left text-[22px] font-medium tracking-[0.08em] uppercase"
+              className="text-left text-[1.375rem] font-medium tracking-[0.08em] uppercase"
             >
               {item.label}
             </button>
           ) : (
-            <a
+            <TargetLink
               key={item.key}
-              href={item.href}
+              to={item.target}
               onClick={() => setOpen(false)}
-              className="text-[22px] font-medium tracking-[0.08em] uppercase"
+              className="text-[1.375rem] font-medium tracking-[0.08em] uppercase"
             >
               {item.label}
-            </a>
+            </TargetLink>
           ),
         )}
       </div>

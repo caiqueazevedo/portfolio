@@ -54,13 +54,13 @@ export default async function ExperimentPage({
         <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] break-words hyphens-auto">
           {experiment.title}
         </h1>
-        <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">
+        <p className="text-strong max-w-[520px] text-[clamp(0.9375rem,1.4vw,1.1875rem)] leading-[1.55] text-pretty">
           {experiment.summary[locale]}
         </p>
         <ul className="flex flex-wrap gap-2">
           {experiment.tags.map((tag) => (
             <li key={tag}>
-              <span className="border-ink/14 text-muted border px-2.5 py-1 text-[11px] tracking-[0.12em] uppercase">
+              <span className="border-ink/14 text-muted border px-2.5 py-1 text-[0.6875rem] tracking-[0.12em] uppercase">
                 {tag}
               </span>
             </li>

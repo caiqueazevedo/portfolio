@@ -51,11 +51,11 @@ export function FeaturedBoard({ items, labels }: { items: CaseView[]; labels: Fe
                     current ? "text-paper pl-2.5" : "text-paper/35"
                   }`}
                 >
-                  <span className="text-[10px] tracking-[0.14em] opacity-60">{item.number}</span>
+                  <span className="text-[0.625rem] tracking-[0.14em] opacity-60">{item.number}</span>
                   <span className="truncate text-[clamp(20px,2.4vw,34px)] leading-none font-medium tracking-[0.02em] uppercase">
                     {item.name}
                   </span>
-                  <span className="text-[10px] tracking-[0.14em] uppercase opacity-60">
+                  <span className="text-[0.625rem] tracking-[0.14em] uppercase opacity-60">
                     {item.tag}
                   </span>
                 </Link>
@@ -66,7 +66,7 @@ export function FeaturedBoard({ items, labels }: { items: CaseView[]; labels: Fe
 
         <div className="flex flex-col items-start gap-[2vh] md:flex-row md:items-end md:justify-between md:gap-10">
           <div className="flex min-w-0 flex-col gap-2.5">
-            <p className="max-w-[58ch] text-[clamp(13px,min(1.1vw,2.3vh),16px)] leading-[1.55] text-pretty opacity-85">
+            <p className="max-w-[58ch] text-[clamp(0.8125rem,min(1.1vw,2.3vh),1rem)] leading-[1.55] text-pretty opacity-85">
               {active.summary}
             </p>
             <span className="micro opacity-50">{active.stackLine}</span>

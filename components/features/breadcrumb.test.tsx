@@ -1,13 +1,20 @@
-import { describe, expect, it } from "vitest";
+import type { ComponentProps } from "react";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import type { Target } from "@/lib/urls";
 import { Breadcrumb, type Crumb } from "./breadcrumb";
 
-const HOME = "https://www.caiqueazevedo.com.br/pt";
-const WORK = "https://www.caiqueazevedo.com.br/pt/work";
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({ href, ...props }: ComponentProps<"a">) => <a href={href} {...props} />,
+}));
+
+const HOME: Target = { url: "https://www.caiqueazevedo.com.br/pt", link: "/" };
+const WORK: Target = { url: "https://www.caiqueazevedo.com.br/pt/work", link: "/work" };
+const OPEN_SOURCE: Target = { url: "https://open-source.caiqueazevedo.com.br/pt", link: null };
 
 const trail: Crumb[] = [
-  { label: "Início", href: HOME },
-  { label: "Cases", href: WORK },
+  { label: "Início", target: HOME },
+  { label: "Cases", target: WORK },
   { label: "ZenID" },
 ];
 
@@ -21,19 +28,19 @@ describe("Breadcrumb", () => {
     expect(items).toEqual(["Início", "/Cases", "/ZenID"]);
   });
 
-  it("links every crumb but the current one, at full host", () => {
+  it("links every crumb but the current one, by path", () => {
     render(<Breadcrumb items={trail} label="Trilha" />);
     const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
-    expect(hrefs).toEqual([HOME, WORK]);
+    expect(hrefs).toEqual([HOME.link, WORK.link]);
     expect(screen.queryByRole("link", { name: "ZenID" })).not.toBeInTheDocument();
   });
 
-  it("crosses to another host when a crumb asks for one", () => {
+  it("names the host when a crumb has to cross to it", () => {
     render(
       <Breadcrumb
         items={[
-          { label: "Início", href: HOME },
-          { label: "Código aberto", href: "https://open-source.caiqueazevedo.com.br/pt" },
+          { label: "Início", target: HOME },
+          { label: "Código aberto", target: OPEN_SOURCE },
           { label: "Pixel sort" },
         ]}
         label="Trilha"
@@ -41,7 +48,7 @@ describe("Breadcrumb", () => {
     );
     expect(screen.getByRole("link", { name: "Código aberto" })).toHaveAttribute(
       "href",
-      "https://open-source.caiqueazevedo.com.br/pt",
+      OPEN_SOURCE.url,
     );
   });
 
@@ -63,14 +70,14 @@ describe("Breadcrumb", () => {
     expect(screen.getByRole("navigation", { name: "Trilha de navegação" })).toBeInTheDocument();
   });
 
-  it("emits the same trail as a BreadcrumbList, with absolute URLs", () => {
+  it("keeps the BreadcrumbList absolute even where the links are relative", () => {
     const { container } = render(<Breadcrumb items={trail} label="Trilha" />);
     expect(jsonLd(container)).toEqual({
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Início", item: HOME },
-        { "@type": "ListItem", position: 2, name: "Cases", item: WORK },
+        { "@type": "ListItem", position: 1, name: "Início", item: HOME.url },
+        { "@type": "ListItem", position: 2, name: "Cases", item: WORK.url },
         { "@type": "ListItem", position: 3, name: "ZenID" },
       ],
     });

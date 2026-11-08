@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { openSourceUrl, wwwUrl } from "@/lib/urls";
+import { openSourceTarget, wwwHome, wwwPath } from "@/lib/urls";
 import { Breadcrumb, type Crumb } from "./breadcrumb";
 
 const OVERLAY = "px-edge absolute inset-x-0 top-[clamp(16px,3vh,28px)] z-10";
@@ -13,11 +13,11 @@ export async function PageBreadcrumb({ section, leaf }: Props) {
   const t = await getTranslations("breadcrumb");
   const locale = await getLocale();
 
-  const sectionHref = (name: Section) =>
-    name === "openSource" ? openSourceUrl(locale) : wwwUrl(locale, `/${name}`);
+  const sectionTarget = (name: Section) =>
+    name === "openSource" ? openSourceTarget(locale) : wwwPath(locale, `/${name}`);
 
-  const items: Crumb[] = [{ label: nav("home"), href: wwwUrl(locale, "/") }];
-  if (section) items.push({ label: nav(section), href: sectionHref(section) });
+  const items: Crumb[] = [{ label: nav("home"), target: wwwHome(locale) }];
+  if (section) items.push({ label: nav(section), target: sectionTarget(section) });
   if (leaf) items.push({ label: leaf });
 
   return <Breadcrumb items={items} label={t("label")} className={OVERLAY} />;

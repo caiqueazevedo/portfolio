@@ -66,7 +66,7 @@ export function ContactForm({ siteKey, title }: { siteKey: string; title: string
       aria-describedby={`${id}-status`}
       className="border-ink/14 bg-paper relative flex min-w-0 flex-col gap-6 border p-6 sm:p-9"
     >
-      <span className="text-[clamp(18px,2vw,26px)] font-medium tracking-[0.06em] uppercase">
+      <span className="text-[clamp(1.125rem,2vw,1.625rem)] font-medium tracking-[0.06em] uppercase">
         {title}
       </span>
 
@@ -128,12 +128,12 @@ export function ContactForm({ siteKey, title }: { siteKey: string; title: string
         role="status"
         aria-live="polite"
         className={cn(
-          "border-ink/14 inline-flex items-center gap-3 self-start border px-4 py-3 text-[12px] font-medium tracking-[0.12em] uppercase",
+          "border-ink/14 inline-flex items-center gap-3 self-start border px-4 py-3 text-[0.75rem] font-medium tracking-[0.12em] uppercase",
           toastColor,
           !feedback[status] && "hidden",
         )}
       >
-        <span aria-hidden="true" className="text-[16px] font-extrabold">
+        <span aria-hidden="true" className="text-[1rem] font-extrabold">
           ✱
         </span>
         {feedback[status] ?? ""}

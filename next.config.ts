@@ -39,6 +39,19 @@ const nextConfig: NextConfig = {
         destination: "/:locale/:slug",
         permanent: true,
       },
+      // The chrome links to www by path alone, so the subdomain has to hand those paths back.
+      {
+        source: `/${LOCALE}/:section(work|about|contact)`,
+        has: onOpenSource,
+        destination: `${site.url}/:locale/:section`,
+        permanent: true,
+      },
+      {
+        source: `/${LOCALE}/work/:slug`,
+        has: onOpenSource,
+        destination: `${site.url}/:locale/work/:slug`,
+        permanent: true,
+      },
     ];
   },
   async rewrites() {

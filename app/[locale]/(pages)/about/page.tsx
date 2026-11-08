@@ -50,7 +50,7 @@ export default async function AboutPage() {
             {bio[locale].map((paragraph) => (
               <p
                 key={paragraph.slice(0, 24)}
-                className="text-strong max-w-[60ch] text-[clamp(14px,1.2vw,17px)] leading-[1.6] text-pretty"
+                className="text-strong max-w-[60ch] text-[clamp(0.875rem,1.2vw,1.0625rem)] leading-[1.6] text-pretty"
               >
                 {paragraph}
               </p>
@@ -71,10 +71,10 @@ export default async function AboutPage() {
                 {item.start} – {item.end ?? t("present")}
               </span>
               <div className="flex min-w-0 flex-col gap-3">
-                <h3 className="text-[clamp(16px,1.6vw,22px)] font-medium tracking-[0.06em] uppercase">
+                <h3 className="text-[clamp(1rem,1.6vw,1.375rem)] font-medium tracking-[0.06em] uppercase">
                   {item.role[locale]} <span className="text-muted">· {item.company}</span>
                 </h3>
-                <p className="text-body max-w-[60ch] text-[14px] leading-[1.6] text-pretty">
+                <p className="text-body max-w-[60ch] text-[0.875rem] leading-[1.6] text-pretty">
                   {item.summary[locale]}
                 </p>
                 <p className="micro text-faint">{item.stack.join(" · ")}</p>
@@ -90,7 +90,7 @@ export default async function AboutPage() {
           {stack.map((group) => (
             <div key={group.label.en} className="flex min-w-0 flex-col gap-2.5">
               <span className="micro">{group.label[locale]}</span>
-              <span className="text-muted text-[14px] leading-[1.6] text-pretty">
+              <span className="text-muted text-[0.875rem] leading-[1.6] text-pretty">
                 {group.items.join(" · ")}
               </span>
             </div>

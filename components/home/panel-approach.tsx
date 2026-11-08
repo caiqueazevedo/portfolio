@@ -30,10 +30,10 @@ export async function PanelApproach() {
             <span className="text-[clamp(28px,min(4vw,6vh),64px)] leading-none font-light">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <h3 className="text-[13px] leading-[1.4] font-semibold tracking-[0.12em] uppercase">
+            <h3 className="text-[0.8125rem] leading-[1.4] font-semibold tracking-[0.12em] uppercase">
               {principle.title[locale]}
             </h3>
-            <p className="text-body text-[clamp(12px,min(1.05vw,2.3vh),15px)] leading-[1.5] text-pretty">
+            <p className="text-body text-[clamp(0.75rem,min(1.05vw,2.3vh),0.9375rem)] leading-[1.5] text-pretty">
               {principle.body[locale]}
             </p>
           </div>

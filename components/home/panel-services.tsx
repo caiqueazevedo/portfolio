@@ -22,7 +22,7 @@ export async function PanelServices() {
             {t("servicesTitle2")}
           </h2>
         </div>
-        <p className="max-w-[420px] text-[clamp(15px,1.3vw,19px)] leading-[1.55] text-pretty">
+        <p className="max-w-[420px] text-[clamp(0.9375rem,1.3vw,1.1875rem)] leading-[1.55] text-pretty">
           {hero("lead")}
         </p>
       </div>
@@ -32,15 +32,15 @@ export async function PanelServices() {
           <div key={service.slug} className="flex items-start gap-4">
             <span
               aria-hidden="true"
-              className="border-ink flex h-10 w-10 flex-none items-center justify-center rounded-full border text-[16px] font-light"
+              className="border-ink flex h-10 w-10 flex-none items-center justify-center rounded-full border text-[1rem] font-light"
             >
               {service.glyph}
             </span>
             <div className="flex min-w-0 flex-col gap-2">
-              <h3 className="text-[12px] font-semibold tracking-[0.12em] uppercase">
+              <h3 className="text-[0.75rem] font-semibold tracking-[0.12em] uppercase">
                 {service.title[locale]}
               </h3>
-              <p className="text-body text-[clamp(12px,min(1vw,2.2vh),14px)] leading-[1.5] text-pretty">
+              <p className="text-body text-[clamp(0.75rem,min(1vw,2.2vh),0.875rem)] leading-[1.5] text-pretty">
                 {service.description[locale]}
               </p>
             </div>

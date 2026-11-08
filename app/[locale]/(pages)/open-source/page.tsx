@@ -74,7 +74,7 @@ export default async function OpenSourcePage() {
         <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] break-words hyphens-auto">
           {t("title")}
         </h1>
-        <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">
+        <p className="text-strong max-w-[520px] text-[clamp(0.9375rem,1.4vw,1.1875rem)] leading-[1.55] text-pretty">
           {t("lead")}
         </p>
       </section>

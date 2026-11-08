@@ -29,7 +29,7 @@ export async function PanelContact() {
           <span className="micro">{chrome("email")}</span>
           <a
             href={`mailto:${site.email}`}
-            className="rule-link self-start text-[clamp(15px,1.5vw,22px)]"
+            className="rule-link self-start text-[clamp(0.9375rem,1.5vw,1.375rem)]"
           >
             {site.email}
           </a>
@@ -40,18 +40,18 @@ export async function PanelContact() {
             href={site.github}
             target="_blank"
             rel="noreferrer"
-            className="rule-link self-start text-[clamp(15px,1.5vw,22px)]"
+            className="rule-link self-start text-[clamp(0.9375rem,1.5vw,1.375rem)]"
           >
             {site.github.replace("https://", "")}
           </a>
         </div>
         <div className="flex flex-col gap-2.5">
           <span className="micro">{t("contactReply")}</span>
-          <span className="text-[clamp(15px,1.5vw,22px)]">{t("contactReplyValue")}</span>
+          <span className="text-[clamp(0.9375rem,1.5vw,1.375rem)]">{t("contactReplyValue")}</span>
         </div>
       </div>
 
-      <div className="text-muted flex items-center justify-between gap-6 text-[11px] tracking-[0.16em] uppercase">
+      <div className="text-muted flex items-center justify-between gap-6 text-[0.6875rem] tracking-[0.16em] uppercase">
         <span>
           © {year} {site.name}
         </span>

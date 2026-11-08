@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { TargetLink } from "@/components/ui/target-link";
 import { experiments } from "@/content/experiments";
-import { openSourceUrl } from "@/lib/urls";
+import { openSourceTarget } from "@/lib/urls";
 import { Panel, PANEL_PAD_TIGHT } from "./panel";
 const SHOWN = 6;
 export async function PanelOpenSource() {
@@ -27,7 +28,7 @@ export async function PanelOpenSource() {
             {t("openSourceTitle2")}
           </h2>
         </div>
-        <p className="max-w-[420px] text-[clamp(15px,1.3vw,19px)] leading-[1.55] text-pretty">
+        <p className="max-w-[420px] text-[clamp(0.9375rem,1.3vw,1.1875rem)] leading-[1.55] text-pretty">
           {section("lead")}
         </p>
       </div>
@@ -36,17 +37,17 @@ export async function PanelOpenSource() {
         <ul className="border-ink grid gap-x-[clamp(16px,2vw,36px)] border-t sm:grid-cols-2 lg:grid-cols-3">
           {newest.map((experiment) => (
             <li key={experiment.slug}>
-              <a
-                href={openSourceUrl(locale, experiment.slug)}
+              <TargetLink
+                to={openSourceTarget(locale, experiment.slug)}
                 className="border-ink/14 text-muted hover:text-ink grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 border-b py-[min(12px,1.6vh)] transition-[color,padding] hover:pl-2.5"
               >
-                <span className="truncate text-[clamp(11px,min(1vw,2.1vh),14px)] font-medium tracking-[0.08em] uppercase">
+                <span className="truncate text-[clamp(0.6875rem,min(1vw,2.1vh),0.875rem)] font-medium tracking-[0.08em] uppercase">
                   {experiment.title}
                 </span>
-                <span className="text-faint text-[10px] tracking-[0.14em]">
+                <span className="text-faint text-[0.625rem] tracking-[0.14em]">
                   {section(`filters.${experiment.category}`)}
                 </span>
-              </a>
+              </TargetLink>
             </li>
           ))}
         </ul>
@@ -55,9 +56,9 @@ export async function PanelOpenSource() {
           <span className="kicker text-muted">
             {t("openSourceCount", { count: experiments.length })}
           </span>
-          <a href={openSourceUrl(locale)} className="label rule-link">
+          <TargetLink to={openSourceTarget(locale)} className="label rule-link">
             {t("openSourceCta")}
-          </a>
+          </TargetLink>
         </div>
       </div>
     </Panel>

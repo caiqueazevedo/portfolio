@@ -37,14 +37,14 @@ function CaseCards({ items }: { items: CaseView[] }) {
           </div>
           <div className="flex items-baseline justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-1">
-              <span className="truncate text-[clamp(11px,1vw,14px)] font-medium tracking-[0.08em] uppercase">
+              <span className="truncate text-[clamp(0.6875rem,1vw,0.875rem)] font-medium tracking-[0.08em] uppercase">
                 {item.name}
               </span>
-              <span className="text-muted text-[12px] tracking-[0.04em]">
+              <span className="text-muted text-[0.75rem] tracking-[0.04em]">
                 {item.tag} · {item.statusLabel}
               </span>
             </div>
-            <span className="text-muted text-[11px] tracking-[0.14em]">{item.number}</span>
+            <span className="text-muted text-[0.6875rem] tracking-[0.14em]">{item.number}</span>
           </div>
         </Link>
       ))}
@@ -76,8 +76,8 @@ function CaseIndex({ items, labels }: { items: CaseView[]; labels: CasesLabels }
               index === hover ? "text-ink pl-2.5" : "text-muted"
             }`}
           >
-            <span className="text-faint text-[10px] tracking-[0.14em]">{item.number}</span>
-            <span className="truncate text-[clamp(11px,min(1vw,2.1vh),14px)] font-medium tracking-[0.08em] uppercase">
+            <span className="text-faint text-[0.625rem] tracking-[0.14em]">{item.number}</span>
+            <span className="truncate text-[clamp(0.6875rem,min(1vw,2.1vh),0.875rem)] font-medium tracking-[0.08em] uppercase">
               {item.name}
             </span>
             <StatusDot status={item.status} />
@@ -148,26 +148,26 @@ function CaseDetail({
 
       <div className="flex min-h-0 flex-1 flex-col gap-[min(12px,1.8vh)] overflow-hidden">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="min-w-0 text-[clamp(14px,min(1.4vw,3vh),20px)] font-medium tracking-[0.08em] uppercase">
+          <span className="min-w-0 text-[clamp(0.875rem,min(1.4vw,3vh),1.25rem)] font-medium tracking-[0.08em] uppercase">
             {active.name}
           </span>
-          <span className="text-faint flex-none text-[10px] tracking-[0.14em]">
+          <span className="text-faint flex-none text-[0.625rem] tracking-[0.14em]">
             {active.number}
           </span>
         </div>
-        <div className="text-muted flex items-center gap-2 text-[11px] tracking-[0.12em] uppercase">
+        <div className="text-muted flex items-center gap-2 text-[0.6875rem] tracking-[0.12em] uppercase">
           <StatusDot status={active.status} />
           {active.tag} · {active.statusLabel}
         </div>
         <p
           ref={summary}
-          className="text-strong m-0 [display:-webkit-box] flex-none overflow-hidden text-[clamp(12px,min(1vw,2.2vh),15px)] leading-[1.55] text-pretty [-webkit-box-orient:vertical] [-webkit-line-clamp:3]"
+          className="text-strong m-0 [display:-webkit-box] flex-none overflow-hidden text-[clamp(0.75rem,min(1vw,2.2vh),0.9375rem)] leading-[1.55] text-pretty [-webkit-box-orient:vertical] [-webkit-line-clamp:3]"
         >
           {active.summary}
         </p>
         <div className="border-ink/14 flex flex-col gap-1 border-t pt-[min(10px,1.5vh)]">
           <span className="micro">{labels.stack}</span>
-          <span className="text-muted text-[12px] leading-[1.4]">{active.stackLine}</span>
+          <span className="text-muted text-[0.75rem] leading-[1.4]">{active.stackLine}</span>
         </div>
       </div>
 

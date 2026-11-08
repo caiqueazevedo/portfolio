@@ -16,6 +16,7 @@ import {
 } from "@/lib/pager";
 import { onPanelRequest } from "@/lib/rail-bus";
 import { useMediaQuery } from "@/lib/use-media-query";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 type Labels = {
   names: string[];
@@ -29,7 +30,7 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
   const [panel, setPanel] = useState(0);
 
   const stacked = useMediaQuery("(max-width: 767px)");
-  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reduced = useReducedMotion();
   const wheel = useRef<WheelState>(idleWheel());
   const animating = useRef(false);
   const frame = useRef(0);
@@ -231,7 +232,7 @@ export function HomeRail({ labels, children }: { labels: Labels; children: React
       </div>
 
       {stacked ? null : (
-        <div className="px-bar fixed inset-x-0 bottom-0 z-30 grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-[clamp(16px,3vw,40px)] text-[11px] font-medium tracking-[0.16em] text-white uppercase mix-blend-difference">
+        <div className="px-bar fixed inset-x-0 bottom-0 z-30 grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-[clamp(16px,3vw,40px)] text-[0.6875rem] font-medium tracking-[0.16em] text-white uppercase mix-blend-difference">
           <span className="min-w-[150px]" data-testid="rail-label">
             {String(panel + 1).padStart(2, "0")} — {labels.names[panel]}
           </span>

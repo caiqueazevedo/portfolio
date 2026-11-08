@@ -50,7 +50,7 @@ export function ExperimentPreview({ slug, title, href, hint, className }: Props)
       ) : null}
       <span
         aria-hidden="true"
-        className="bg-ink/85 text-ink pointer-events-none absolute right-2 bottom-2 px-2 py-1 font-mono text-[10px] tracking-[0.1em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        className="bg-ink/85 text-ink pointer-events-none absolute right-2 bottom-2 px-2 py-1 font-mono text-[0.625rem] tracking-[0.1em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100"
       >
         {hint}
       </span>

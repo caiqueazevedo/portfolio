@@ -23,6 +23,24 @@
     "github": "GitHub",
     "email": "Email"
   },
+  "a11y": {
+    "open": "Accessibility",
+    "title": "Accessibility",
+    "intro": "These settings are saved on this device and apply to every page of the site.",
+    "textSize": "Text size",
+    "options": "Reading and motion settings",
+    "contrast": "High contrast",
+    "readable": "Reading font",
+    "readableHint": "Atkinson Hyperlegible, with more space between letters and lines. Helps with dyslexia and low vision.",
+    "links": "Underline links",
+    "cursor": "Large cursor",
+    "motion": "Pause animations",
+    "motionHint": "Turns off transitions and smooth scrolling.",
+    "guide": "Reading guide",
+    "guideHint": "A band that follows the mouse or the focused field.",
+    "reset": "Reset to default",
+    "close": "Close"
+  },
   "home": {
     "word": "Caique",
     "statement1": "Systems that leave",

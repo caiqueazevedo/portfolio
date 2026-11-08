@@ -1,7 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 const CONTROL =
-  "w-full min-w-0 border-0 border-b border-ink/30 bg-transparent px-0 py-2.5 text-[15px] text-ink outline-none transition-colors placeholder:text-faint focus:border-ink aria-invalid:border-danger";
+  "w-full min-w-0 border-0 border-b border-ink/30 bg-transparent px-0 py-2.5 text-[0.9375rem] text-ink outline-none transition-colors placeholder:text-faint focus:border-ink aria-invalid:border-danger";
 
 type FieldProps = {
   id: string;

@@ -40,7 +40,7 @@ export default async function ContactPage() {
           <br />
           {home("contactTitle2")}
         </h1>
-        <p className="text-strong max-w-[440px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">
+        <p className="text-strong max-w-[440px] text-[clamp(0.9375rem,1.4vw,1.1875rem)] leading-[1.55] text-pretty">
           {t("lead")}
         </p>
 
@@ -48,7 +48,7 @@ export default async function ContactPage() {
           <div className="flex flex-col gap-2">
             <dt className="micro text-muted">{chrome("email")}</dt>
             <dd>
-              <a href={`mailto:${site.email}`} className="rule-link text-[15px]">
+              <a href={`mailto:${site.email}`} className="rule-link text-[0.9375rem]">
                 {site.email}
               </a>
             </dd>
@@ -60,7 +60,7 @@ export default async function ContactPage() {
                 href={site.github}
                 target="_blank"
                 rel="me noreferrer"
-                className="rule-link text-[15px]"
+                className="rule-link text-[0.9375rem]"
               >
                 {site.github.replace("https://", "")}
               </a>
@@ -68,7 +68,7 @@ export default async function ContactPage() {
           </div>
           <div className="flex flex-col gap-2">
             <dt className="micro text-muted">{home("contactReply")}</dt>
-            <dd className="text-[15px]">{t("statReply")}</dd>
+            <dd className="text-[0.9375rem]">{t("statReply")}</dd>
           </div>
         </dl>
       </div>

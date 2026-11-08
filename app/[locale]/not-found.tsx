@@ -11,7 +11,7 @@ export default async function NotFound() {
       <section className="bg-mist px-edge relative flex min-h-svh flex-col items-start justify-center gap-7 pt-[94px]">
         <PageBreadcrumb leaf="404" />
         <h1 className="text-[clamp(72px,18vw,280px)] leading-[0.8] font-medium">404</h1>
-        <p className="text-[clamp(16px,2vw,24px)] font-medium tracking-[0.04em] uppercase">
+        <p className="text-[clamp(1rem,2vw,1.5rem)] font-medium tracking-[0.04em] uppercase">
           {t("title")}
         </p>
         <ButtonLink href="/">{t("back")}</ButtonLink>

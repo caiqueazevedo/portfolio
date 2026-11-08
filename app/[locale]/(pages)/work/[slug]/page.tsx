@@ -51,7 +51,7 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
   return (
     <article className="bg-paper">
       <div className="border-ink/12 px-bar label flex items-center justify-between gap-6 border-b py-3">
-        <span className="text-muted text-[10px] tracking-[0.2em]">
+        <span className="text-muted text-[0.625rem] tracking-[0.2em]">
           {t("counter", { num: number, total: padNumber(projects.length - 1) })} ·{" "}
           {t(`status.${project.status}`)}
         </span>
@@ -72,7 +72,7 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
             <h1 className="text-[clamp(52px,8vw,150px)] leading-[0.86] font-medium tracking-[-0.01em] text-balance break-words hyphens-auto">
               {project.name}
             </h1>
-            <p className="max-w-[520px] text-[clamp(18px,1.8vw,26px)] leading-[1.3] text-pretty">
+            <p className="max-w-[520px] text-[clamp(1.125rem,1.8vw,1.625rem)] leading-[1.3] text-pretty">
               {shortOf(project.headline[locale])}
             </p>
           </div>
@@ -81,7 +81,7 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
             {meta.map((item) => (
               <div key={item.label} className="flex flex-col gap-1.5">
                 <dt className="micro">{item.label}</dt>
-                <dd className="text-[14px]">{item.value}</dd>
+                <dd className="text-[0.875rem]">{item.value}</dd>
               </div>
             ))}
           </dl>
@@ -108,11 +108,11 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
               <span className="text-[clamp(28px,3vw,44px)] leading-none font-light">
                 {padNumber(i)}
               </span>
-              <h2 className="text-[13px] font-semibold tracking-[0.2em] uppercase">
+              <h2 className="text-[0.8125rem] font-semibold tracking-[0.2em] uppercase">
                 {section.heading[locale]}
               </h2>
             </div>
-            <p className="text-strong max-w-[640px] text-[clamp(16px,1.3vw,19px)] leading-[1.65] text-pretty">
+            <p className="text-strong max-w-[640px] text-[clamp(1rem,1.3vw,1.1875rem)] leading-[1.65] text-pretty">
               {section.body[locale]}
             </p>
           </div>

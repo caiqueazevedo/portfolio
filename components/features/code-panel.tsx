@@ -42,7 +42,7 @@ export function CodePanel({ views, copyLabel, copiedLabel, linesLabel }: Props) 
               aria-selected={v.id === view.id}
               onClick={() => setActive(v.id)}
               className={cn(
-                "px-4 py-2.5 text-[13px] font-bold tracking-[0.1em] uppercase transition-all duration-200",
+                "px-4 py-2.5 text-[0.8125rem] font-bold tracking-[0.1em] uppercase transition-all duration-200",
                 i > 0 && "border-ink/14 border-l",
                 v.id === view.id ? "bg-ink text-paper" : "text-ink hover:bg-ink hover:text-paper",
               )}
@@ -52,14 +52,14 @@ export function CodePanel({ views, copyLabel, copiedLabel, linesLabel }: Props) 
           ))}
         </div>
         <div className="flex items-center gap-3 pr-2">
-          <span className="text-muted hidden font-mono text-[11px] sm:inline">
+          <span className="text-muted hidden font-mono text-[0.6875rem] sm:inline">
             {view.lines} {linesLabel}
           </span>
           <button
             type="button"
             onClick={copy}
             className={cn(
-              "border-2 px-3 py-1.5 text-[12px] font-bold tracking-[0.1em] uppercase transition-all duration-200",
+              "border-2 px-3 py-1.5 text-[0.75rem] font-bold tracking-[0.1em] uppercase transition-all duration-200",
               copied
                 ? "border-ink bg-ink text-paper"
                 : "border-ink/14 text-ink hover:bg-ink hover:text-paper",
@@ -71,7 +71,7 @@ export function CodePanel({ views, copyLabel, copiedLabel, linesLabel }: Props) 
       </div>
       <div
         role="tabpanel"
-        className="code-panel max-h-[560px] min-w-0 overflow-auto p-4 font-mono text-[12.5px] leading-[1.6] lg:max-h-[640px]"
+        className="code-panel max-h-[560px] min-w-0 overflow-auto p-4 font-mono text-[0.78125rem] leading-[1.6] lg:max-h-[640px]"
         dangerouslySetInnerHTML={{ __html: view.html }}
       />
     </div>
