@@ -1,6 +1,5 @@
 {
   "version": 1,
-  "_": "Manifesto de qualidade do repo. Fonte unica dos comandos reais — lido pelo /verify e pelos hooks. null = etapa nao configurada (o gate pula e reporta, nunca finge que passou).",
   "commands": {
     "lint": "corepack pnpm lint",
     "typecheck": "corepack pnpm typecheck",

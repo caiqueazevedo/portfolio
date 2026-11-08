@@ -35,7 +35,8 @@ Dev server: `corepack pnpm dev` na porta 3000.
 ## Guardrails
 
 Hooks em `.claude/settings.json` (secret-guard, block-dangerous-bash, commit-guard), manifesto em
-`.claude/quality.json`. Harness: `bash .claude/hooks/test-hooks.sh`.
+`.claude/quality.json` — fonte única dos comandos reais, onde `null` significa etapa não configurada: o gate
+pula e reporta, nunca finge que passou. Harness: `bash .claude/hooks/test-hooks.sh`.
 
 Commits: `<tipo>: <descrição imperativa em EN>` com tipos de `quality.json` (`feature`, `bugfix`, …).
 Sem coautoria.
