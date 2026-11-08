@@ -5,6 +5,7 @@ import { ExperimentGrid, type GridItem } from "@/components/features/experiment-
 import { PageBreadcrumb } from "@/components/features/page-breadcrumb";
 import { Rule } from "@/components/ui/rule";
 import { experiments } from "@/content/experiments";
+import { site } from "@/content/site";
 import { LANG_TAG, routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
 
@@ -15,9 +16,10 @@ export async function generateMetadata({
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "openSource" });
   return {
+    metadataBase: new URL(site.openSource.url),
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: localizedAlternates(locale, "/open-source"),
+    alternates: localizedAlternates(locale, "/"),
   };
 }
 
@@ -69,7 +71,7 @@ export default async function OpenSourcePage() {
           <span className="kicker">{t("kicker")}</span>
           <Rule />
         </div>
-        <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] hyphens-auto break-words">
+        <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] break-words hyphens-auto">
           {t("title")}
         </h1>
         <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">

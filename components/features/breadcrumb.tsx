@@ -1,26 +1,16 @@
-import type { ComponentProps } from "react";
-import { Link } from "@/i18n/navigation";
-import type { Locale } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
-export type Crumb = { label: string; href?: ComponentProps<typeof Link>["href"] };
+export type Crumb = { label: string; href?: string };
 
 type Props = {
   items: Crumb[];
   label: string;
-  locale: Locale;
   className?: string;
 };
 
-export function Breadcrumb({ items, label, locale, className }: Props) {
-  const jsonLd = breadcrumbJsonLd(
-    locale,
-    items.map((item) => ({
-      label: item.label,
-      path: typeof item.href === "string" ? item.href : undefined,
-    })),
-  );
+export function Breadcrumb({ items, label, className }: Props) {
+  const jsonLd = breadcrumbJsonLd(items.map((item) => ({ label: item.label, url: item.href })));
 
   return (
     <>
@@ -39,9 +29,9 @@ export function Breadcrumb({ items, label, locale, className }: Props) {
                   </span>
                 ) : null}
                 {item.href && !last ? (
-                  <Link href={item.href} className="label hover:text-muted whitespace-nowrap">
+                  <a href={item.href} className="label hover:text-muted whitespace-nowrap">
                     {item.label}
-                  </Link>
+                  </a>
                 ) : (
                   <span
                     aria-current={last ? "page" : undefined}

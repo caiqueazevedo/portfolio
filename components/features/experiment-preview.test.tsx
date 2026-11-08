@@ -23,12 +23,7 @@ describe("ExperimentPreview", () => {
 
   it("mounts the demo in card mode and navigates when the frame asks to open", () => {
     render(
-      <ExperimentPreview
-        slug="pixel-sort"
-        title="Pixel Sort"
-        href="/open-source/pixel-sort"
-        hint="hover"
-      />,
+      <ExperimentPreview slug="pixel-sort" title="Pixel Sort" href="/pixel-sort" hint="hover" />,
     );
     const frame = screen.getByTitle("Pixel Sort") as HTMLIFrameElement;
     expect(frame).toHaveAttribute("src", "/experiments/pixel-sort/index.html?card=1");
@@ -42,17 +37,12 @@ describe("ExperimentPreview", () => {
         }),
       );
     });
-    expect(push).toHaveBeenCalledWith("/open-source/pixel-sort");
+    expect(push).toHaveBeenCalledWith("/pixel-sort");
   });
 
   it("ignores messages from other windows", () => {
     render(
-      <ExperimentPreview
-        slug="pixel-sort"
-        title="Pixel Sort"
-        href="/open-source/pixel-sort"
-        hint="hover"
-      />,
+      <ExperimentPreview slug="pixel-sort" title="Pixel Sort" href="/pixel-sort" hint="hover" />,
     );
     act(() => {
       window.dispatchEvent(

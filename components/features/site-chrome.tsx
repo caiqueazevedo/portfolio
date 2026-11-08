@@ -1,45 +1,45 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { goToPanel } from "@/lib/rail-bus";
 import { LocaleSwitch } from "./locale-switch";
 import type { NavItem } from "./nav-items";
 
 type Props = {
+  home: boolean;
   role: string;
   github: string;
   githubUrl: string;
   email: string;
   emailUrl: string;
   brand: string;
+  brandHref: string;
   open: string;
   items: NavItem[];
   menuLabel: string;
   closeLabel: string;
 };
 export function SiteChrome({
+  home,
   role,
   github,
   githubUrl,
   email,
   emailUrl,
   brand,
+  brandHref,
   open,
   items,
   menuLabel,
   closeLabel,
 }: Props) {
-  const pathname = usePathname();
-  const onHome = pathname === "/";
-
   return (
-    <header className={cn("z-30", onHome ? "contents" : "sticky top-0 z-30")}>
+    <header className={cn("z-30", home ? "contents" : "sticky top-0 z-30")}>
       <div
         className={cn(
           "bg-ink px-bar text-paper flex h-[30px] items-center justify-between gap-4 text-[10px] font-medium tracking-[0.14em] uppercase",
-          onHome && "fixed inset-x-0 top-0 z-30",
+          home && "fixed inset-x-0 top-0 z-30",
         )}
       >
         <span className="truncate">{role}</span>
@@ -69,23 +69,23 @@ export function SiteChrome({
         aria-label={brand}
         className={cn(
           "px-bar label grid h-16 grid-cols-[1fr_auto_1fr] items-center",
-          onHome
+          home
             ? "fixed inset-x-0 top-[30px] z-30 text-white mix-blend-difference"
             : "border-ink/12 bg-paper text-ink border-b",
         )}
       >
         <div className="hidden min-w-0 gap-[clamp(14px,2.4vw,36px)] md:flex">
           {items.map((item) => (
-            <NavLink key={item.href} item={item} onHome={onHome} />
+            <NavLink key={item.key} item={item} home={home} />
           ))}
         </div>
 
-        <MobileMenu items={items} menuLabel={menuLabel} closeLabel={closeLabel} onHome={onHome} />
+        <MobileMenu items={items} menuLabel={menuLabel} closeLabel={closeLabel} home={home} />
 
-        <Link
-          href="/"
+        <a
+          href={brandHref}
           onClick={
-            onHome
+            home
               ? (event) => {
                   event.preventDefault();
                   goToPanel(0);
@@ -95,7 +95,7 @@ export function SiteChrome({
           className="justify-self-center text-[clamp(16px,1.8vw,24px)] font-medium tracking-[0.22em] whitespace-nowrap"
         >
           {brand}
-        </Link>
+        </a>
 
         <div className="hidden items-center justify-end gap-2.5 md:flex">
           <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -105,8 +105,8 @@ export function SiteChrome({
     </header>
   );
 }
-function NavLink({ item, onHome }: { item: NavItem; onHome: boolean }) {
-  if (onHome) {
+function NavLink({ item, home }: { item: NavItem; home: boolean }) {
+  if (home) {
     return (
       <button
         type="button"
@@ -118,21 +118,21 @@ function NavLink({ item, onHome }: { item: NavItem; onHome: boolean }) {
     );
   }
   return (
-    <Link href={item.href} className="hover:text-muted whitespace-nowrap">
+    <a href={item.href} className="hover:text-muted whitespace-nowrap">
       {item.label}
-    </Link>
+    </a>
   );
 }
 function MobileMenu({
   items,
   menuLabel,
   closeLabel,
-  onHome,
+  home,
 }: {
   items: NavItem[];
   menuLabel: string;
   closeLabel: string;
-  onHome: boolean;
+  home: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
@@ -163,9 +163,9 @@ function MobileMenu({
         className="bg-paper px-edge text-ink fixed inset-x-0 top-[94px] bottom-0 z-40 flex flex-col gap-6 pt-10 mix-blend-normal"
       >
         {items.map((item) =>
-          onHome ? (
+          home ? (
             <button
-              key={item.href}
+              key={item.key}
               type="button"
               onClick={() => {
                 setOpen(false);
@@ -176,14 +176,14 @@ function MobileMenu({
               {item.label}
             </button>
           ) : (
-            <Link
-              key={item.href}
+            <a
+              key={item.key}
               href={item.href}
               onClick={() => setOpen(false)}
               className="text-[22px] font-medium tracking-[0.08em] uppercase"
             >
               {item.label}
-            </Link>
+            </a>
           ),
         )}
       </div>

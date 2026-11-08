@@ -23,6 +23,9 @@
     "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "",
   },
 
-  "routes": [{ "pattern": "www.caiqueazevedo.com.br", "custom_domain": true }],
+  "routes": [
+    { "pattern": "www.caiqueazevedo.com.br", "custom_domain": true },
+    { "pattern": "open-source.caiqueazevedo.com.br", "custom_domain": true },
+  ],
   "observability": { "enabled": true },
 }

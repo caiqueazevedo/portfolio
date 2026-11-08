@@ -3,7 +3,6 @@ import { Jost } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { Nav } from "@/components/features/nav";
 import { site } from "@/content/site";
 import { LANG_TAG, routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
@@ -33,10 +32,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   return (
     <html lang={LANG_TAG[locale]} className={`${jost.variable} h-full`}>
       <body className="min-h-full">
-        <NextIntlClientProvider>
-          <Nav />
-          {children}
-        </NextIntlClientProvider>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
   );

@@ -1,11 +1,12 @@
-import { getTranslations } from "next-intl/server";
-import { ButtonLink } from "@/components/ui/button";
+import { getLocale, getTranslations } from "next-intl/server";
+import { buttonClass } from "@/components/ui/button";
 import { site } from "@/content/site";
-import { Link } from "@/i18n/navigation";
+import { wwwUrl } from "@/lib/urls";
 export async function Footer() {
   const t = await getTranslations("home");
   const contact = await getTranslations("contact");
   const chrome = await getTranslations("chrome");
+  const locale = await getLocale();
   const year = new Date().getFullYear();
 
   return (
@@ -40,12 +41,12 @@ export async function Footer() {
           </div>
           <div className="flex flex-col items-start gap-2.5">
             <span className="micro opacity-60">{t("contactReply")}</span>
-            <ButtonLink
-              href="/contact"
-              className="bg-paper text-ink hover:bg-paper/80 hover:text-ink"
+            <a
+              href={wwwUrl(locale, "/contact")}
+              className={buttonClass("solid", "bg-paper text-ink hover:bg-paper/80 hover:text-ink")}
             >
               {contact("formTitle")}
-            </ButtonLink>
+            </a>
           </div>
         </div>
 
@@ -53,7 +54,7 @@ export async function Footer() {
           <span>
             © {year} {site.name}
           </span>
-          <Link href="/">{t("backToStart")}</Link>
+          <a href={wwwUrl(locale, "/")}>{t("backToStart")}</a>
         </div>
       </div>
     </footer>

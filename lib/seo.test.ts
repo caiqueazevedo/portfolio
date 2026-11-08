@@ -19,7 +19,12 @@ describe("localizedAlternates", () => {
 
 describe("breadcrumbJsonLd", () => {
   it("numbers a two-level trail from one", () => {
-    expect(breadcrumbJsonLd("pt", [{ label: "Início", path: "/" }, { label: "Cases" }])).toEqual({
+    expect(
+      breadcrumbJsonLd([
+        { label: "Início", url: "https://www.caiqueazevedo.com.br/pt" },
+        { label: "Cases" },
+      ]),
+    ).toEqual({
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
@@ -34,21 +39,21 @@ describe("breadcrumbJsonLd", () => {
     });
   });
 
-  it("carries the locale prefix into every absolute URL", () => {
-    const trail = breadcrumbJsonLd("en", [
-      { label: "Home", path: "/" },
-      { label: "Cases", path: "/work" },
-      { label: "ZenID", path: "/work/zenid" },
+  it("carries whatever host the crumb was built for", () => {
+    const trail = breadcrumbJsonLd([
+      { label: "Home", url: "https://www.caiqueazevedo.com.br/en" },
+      { label: "Open source", url: "https://open-source.caiqueazevedo.com.br/en" },
+      { label: "Pixel sort", url: "https://open-source.caiqueazevedo.com.br/en/pixel-sort" },
     ]);
     expect(trail.itemListElement.map((i) => i.item)).toEqual([
       "https://www.caiqueazevedo.com.br/en",
-      "https://www.caiqueazevedo.com.br/en/work",
-      "https://www.caiqueazevedo.com.br/en/work/zenid",
+      "https://open-source.caiqueazevedo.com.br/en",
+      "https://open-source.caiqueazevedo.com.br/en/pixel-sort",
     ]);
   });
 
-  it("leaves out item on a crumb that has no path", () => {
-    const [first] = breadcrumbJsonLd("pt", [{ label: "404" }]).itemListElement;
+  it("leaves out item on a crumb that has no url", () => {
+    const [first] = breadcrumbJsonLd([{ label: "404" }]).itemListElement;
     expect(first).not.toHaveProperty("item");
     expect(first.position).toBe(1);
   });

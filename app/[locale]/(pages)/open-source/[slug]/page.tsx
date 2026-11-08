@@ -8,6 +8,7 @@ import { Container } from "@/components/ui/container";
 import { IconButtonLink } from "@/components/ui/icon-button";
 import { Rule } from "@/components/ui/rule";
 import { experiments } from "@/content/experiments";
+import { site } from "@/content/site";
 import { routing } from "@/i18n/routing";
 import { localizedAlternates } from "@/lib/seo";
 
@@ -22,9 +23,10 @@ export async function generateMetadata({
   const experiment = experiments.find((e) => e.slug === slug);
   if (!experiment || !hasLocale(routing.locales, locale)) return {};
   return {
+    metadataBase: new URL(site.openSource.url),
     title: experiment.title,
     description: experiment.summary[locale],
-    alternates: localizedAlternates(locale, `/open-source/${slug}`),
+    alternates: localizedAlternates(locale, `/${slug}`),
   };
 }
 
@@ -49,7 +51,7 @@ export default async function ExperimentPage({
           </span>
           <Rule />
         </div>
-        <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] hyphens-auto break-words">
+        <h1 className="max-w-[16ch] text-[clamp(44px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] break-words hyphens-auto">
           {experiment.title}
         </h1>
         <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">
@@ -73,10 +75,7 @@ export default async function ExperimentPage({
           <span className="label text-muted">
             {t("next")}: {next.title}
           </span>
-          <IconButtonLink
-            href={`/open-source/${next.slug}`}
-            label={`${t("next")}: ${next.title}`}
-          />
+          <IconButtonLink href={`/${next.slug}`} label={`${t("next")}: ${next.title}`} />
         </Container>
       </section>
     </>

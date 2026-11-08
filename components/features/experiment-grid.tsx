@@ -145,7 +145,7 @@ export function ExperimentGrid({ items, labels }: { items: GridItem[]; labels: G
       ) : (
         <div className="grid grid-cols-1 gap-5 py-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {shown.map((e) => {
-            const href = `/open-source/${e.slug}`;
+            const href = `/${e.slug}`;
             return (
               <article
                 key={e.slug}

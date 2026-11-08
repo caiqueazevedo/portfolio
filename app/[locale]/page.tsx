@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { HomeRail } from "@/components/features/home-rail";
+import { Nav } from "@/components/features/nav";
 import { PanelAbout } from "@/components/home/panel-about";
 import { PanelApproach } from "@/components/home/panel-approach";
 import { PanelCases } from "@/components/home/panel-cases";
@@ -13,22 +14,25 @@ export default async function HomePage() {
   const t = await getTranslations("home");
 
   return (
-    <HomeRail
-      labels={{
-        names: PANELS.map((id) => t(`panels.${id}`)),
-        scroll: t("scroll"),
-        prev: t("prev"),
-        next: t("next"),
-      }}
-    >
-      <PanelIntro />
-      <PanelFeatured />
-      <PanelCases />
-      <PanelServices />
-      <PanelAbout />
-      <PanelApproach />
-      <PanelOpenSource />
-      <PanelContact />
-    </HomeRail>
+    <>
+      <Nav home />
+      <HomeRail
+        labels={{
+          names: PANELS.map((id) => t(`panels.${id}`)),
+          scroll: t("scroll"),
+          prev: t("prev"),
+          next: t("next"),
+        }}
+      >
+        <PanelIntro />
+        <PanelFeatured />
+        <PanelCases />
+        <PanelServices />
+        <PanelAbout />
+        <PanelApproach />
+        <PanelOpenSource />
+        <PanelContact />
+      </HomeRail>
+    </>
   );
 }

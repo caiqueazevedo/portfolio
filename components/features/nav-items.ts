@@ -1,5 +1,6 @@
 export type NavItem = {
-  href: "/" | "/work" | "/open-source" | "/about" | "/contact";
+  key: string;
+  href: string;
   label: string;
 
   panel: number;

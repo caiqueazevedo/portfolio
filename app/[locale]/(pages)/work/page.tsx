@@ -51,7 +51,7 @@ export default async function WorkPage() {
           <span className="kicker">{t("kicker")}</span>
           <Rule />
         </div>
-        <h1 className="max-w-[16ch] text-[clamp(38px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] hyphens-auto break-words">
+        <h1 className="max-w-[16ch] text-[clamp(38px,8vw,140px)] leading-[0.88] font-medium tracking-[-0.01em] break-words hyphens-auto">
           {t("title")}
         </h1>
         <p className="text-strong max-w-[520px] text-[clamp(15px,1.4vw,19px)] leading-[1.55] text-pretty">

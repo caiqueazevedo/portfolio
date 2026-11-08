@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import { site } from "@/content/site";
 import { LANG_TAG, routing, type Locale } from "@/i18n/routing";
-
-function localePath(locale: string, path: string) {
-  return `/${locale}${path === "/" ? "" : path}`;
-}
+import { localePath } from "./urls";
 
 export function localizedAlternates(locale: Locale, path: string): Metadata["alternates"] {
   const languages: Record<string, string> = {};
@@ -13,9 +9,9 @@ export function localizedAlternates(locale: Locale, path: string): Metadata["alt
   return { canonical: localePath(locale, path), languages };
 }
 
-export type BreadcrumbEntry = { label: string; path?: string };
+export type BreadcrumbEntry = { label: string; url?: string };
 
-export function breadcrumbJsonLd(locale: Locale, items: BreadcrumbEntry[]) {
+export function breadcrumbJsonLd(items: BreadcrumbEntry[]) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -23,7 +19,7 @@ export function breadcrumbJsonLd(locale: Locale, items: BreadcrumbEntry[]) {
       "@type": "ListItem",
       position: index + 1,
       name: item.label,
-      ...(item.path ? { item: `${site.url}${localePath(locale, item.path)}` } : {}),
+      ...(item.url ? { item: item.url } : {}),
     })),
   };
 }

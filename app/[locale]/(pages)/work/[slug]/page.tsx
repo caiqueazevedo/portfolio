@@ -69,7 +69,7 @@ export default async function CasePage({ params }: PageProps<"/[locale]/work/[sl
               </span>
               <Rule />
             </div>
-            <h1 className="text-[clamp(52px,8vw,150px)] leading-[0.86] font-medium tracking-[-0.01em] text-balance hyphens-auto break-words">
+            <h1 className="text-[clamp(52px,8vw,150px)] leading-[0.86] font-medium tracking-[-0.01em] text-balance break-words hyphens-auto">
               {project.name}
             </h1>
             <p className="max-w-[520px] text-[clamp(18px,1.8vw,26px)] leading-[1.3] text-pretty">
