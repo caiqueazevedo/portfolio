@@ -109,3 +109,19 @@ movimento; a sequência contínua que vem logo atrás (a inércia do próprio ge
 
 **Sintoma quando violada:** ou um flick pula três painéis, ou rolar duas vezes seguidas só anda
 uma. Coberto por `lib/pager.test.ts`.
+
+### A seção de código aberto só existe no subdomínio, e cruzar host exige `<a>` absoluto
+
+`open-source.caiqueazevedo.com.br` não é um atalho: é onde a seção mora. O `next.config.ts`
+reescreve `/<locale>[/:slug]` para `/<locale>/open-source[/:slug]` quando o host é o do
+subdomínio, e redireciona o caminho redundante nos dois hosts. O `Link` do next-intl resolve
+locale, não host — ele sempre gera um caminho relativo ao host atual. Então nav, marca, menu
+mobile, rodapé, trilha de migalhas e o painel 7 da home usam `<a>` com URL absoluta vinda de
+`lib/urls.ts` (`wwwUrl`, `openSourceUrl`); só links que ficam no mesmo host seguem com `Link`.
+Pela mesma razão a nav recebe `home` como prop em vez de derivar de `usePathname() === "/"`, que
+daria falso positivo na raiz do subdomínio.
+
+**Sintoma quando violada:** um link para fora da seção aterrissa em
+`open-source.caiqueazevedo.com.br/pt/work`, que não existe; ou a home do subdomínio se comporta
+como se fosse a home do `www`. Coberto por `lib/urls.test.ts` e
+`components/features/breadcrumb.test.tsx`.
